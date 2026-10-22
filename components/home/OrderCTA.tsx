@@ -39,7 +39,7 @@ export default function OrderCTA() {
           </div>
           <div className="relative aspect-157/74 w-full shrink-0 overflow-hidden rounded-tr-[100px] md:aspect-auto md:h-92.5 md:w-1/2 md:rounded-tr-[160px] xl:w-196.25">
             <Image
-              src="/images/cover-living.png"
+              src="/images/living-room.jpg"
               alt="سجاد نظيف يضيف الدفء والراحة لبيتك"
               width={785}
               height={370}

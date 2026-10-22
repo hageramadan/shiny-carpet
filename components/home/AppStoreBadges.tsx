@@ -31,8 +31,18 @@ function GooglePlayIcon() {
 }
 
 const stores = [
-  { name: "App Store", caption: "Download on the", icon: FaApple },
-  { name: "Google Play", caption: "GET IT ON", icon: GooglePlayIcon },
+  {
+    name: "App Store",
+    caption: "Download on the",
+    icon: FaApple,
+    href: "https://apps.apple.com/eg/app/shiny-carpet-%D8%A7%D9%84%D8%B3%D8%AC%D8%A7%D8%AF%D8%A9-%D8%A7%D9%84%D9%84%D8%A7%D9%85%D8%B9%D8%A9/id6749577085",
+  },
+  {
+    name: "Google Play",
+    caption: "GET IT ON",
+    icon: GooglePlayIcon,
+    href: "https://play.google.com/store/apps/details?id=com.tawajood.shinycarpet",
+  },
 ];
 
 export default function AppStoreBadges() {
@@ -59,15 +69,16 @@ export default function AppStoreBadges() {
       ref={container}
       className="flex flex-wrap items-center gap-3"
     >
-      {stores.map(({ name, caption, icon: Icon }) => (
-        <button
+      {stores.map(({ name, caption, icon: Icon, href }) => (
+        <a
           key={name}
-          type="button"
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
           data-visible={visible}
-          disabled
           dir="ltr"
-          aria-label={`تحميل من ${name} — قريبًا`}
-          className="inline-flex cursor-pointer h-11 items-center gap-2 rounded-lg bg-black px-3 py-1 text-white transition duration-200 hover:bg-black/85 motion-safe:hover:-translate-y-0.5 motion-safe:data-[visible=true]:animate-store-reveal disabled:cursor-default disabled:opacity-100 sm:h-12 sm:px-3.5"
+          aria-label={`تحميل التطبيق من ${name}`}
+          className="inline-flex cursor-pointer h-11 items-center gap-2 rounded-lg bg-black px-3 py-1 text-white transition duration-200 hover:bg-black/85 motion-safe:hover:-translate-y-0.5 motion-safe:data-[visible=true]:animate-store-reveal sm:h-12 sm:px-3.5"
         >
           <Icon
             aria-hidden="true"
@@ -79,7 +90,7 @@ export default function AppStoreBadges() {
               {name}
             </strong>
           </span>
-        </button>
+        </a>
       ))}
     </div>
   );
