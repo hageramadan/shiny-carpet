@@ -82,11 +82,11 @@ export default function CheckoutPage() {
   }
 
   return (
-    <section className="min-h-[70vh] bg-[#f7f9fa] py-7 lg:pb-16">
-      <div className="container mx-auto px-5 sm:px-6 lg:px-8">
+    <section className="min-h-[70vh] bg-[#f7f9fa] py-5 sm:py-7 lg:pb-16">
+      <div className="container mx-auto min-w-0 px-4 sm:px-6 lg:px-8">
         <nav
           aria-label="مسار التصفح"
-          className="mb-5 flex flex-wrap gap-2 text-xs text-muted"
+          className="mb-3 flex sm:mb-5 flex-wrap gap-2 text-xs text-muted"
         >
           <Link href="/">الرئيسية</Link>
           <span>/</span>
@@ -94,10 +94,10 @@ export default function CheckoutPage() {
           <span>/</span>
           <span>استكمال الطلب</span>
         </nav>
-        <h1 className="text-3xl font-extrabold leading-relaxed text-ink lg:text-4xl">
+        <h1 className="text-2xl font-extrabold leading-snug text-ink sm:text-3xl sm:leading-relaxed lg:text-4xl">
           استكمال الطلب
         </h1>
-        <p className="mb-8 mt-3 text-sm md:text-base  text-[#607779]">
+        <p className="mb-5 mt-2 text-sm leading-7 sm:mb-8 sm:mt-3 md:text-base  text-[#607779]">
           أكد عنوان الاستلام وأضف التفاصيل اللي تهمك.
         </p>
         {!ready ? (
@@ -112,7 +112,7 @@ export default function CheckoutPage() {
             role="status"
             className="rounded-2xl border border-gray-200 bg-white p-10 text-center"
           >
-            <p className="text-ink">تم حفظ طلبك ال، جاري فتح التأكيد…</p>
+            <p className="text-ink">تم حفظ طلبك التجريبي، جاري فتح التأكيد…</p>
             <Link
               href={"/order-confirmation?order=" + orderId}
               className="mt-4 inline-block text-primary underline"
@@ -123,8 +123,8 @@ export default function CheckoutPage() {
         ) : !state.cart.length ? (
           <EmptyCart />
         ) : (
-          <div className="grid items-start gap-6 lg:grid-cols-3">
-            <div className="space-y-5 lg:col-span-2">
+          <div className="grid items-start gap-4 *:min-w-0 sm:gap-6 lg:grid-cols-3">
+            <div className="space-y-4 sm:space-y-5 lg:col-span-2">
               <AddressCard
                 addresses={state.addresses}
                 selected={address}
@@ -140,7 +140,7 @@ export default function CheckoutPage() {
                 onChange={setPhotos}
                 onBusyChange={setPreparingPhotos}
               />
-              <section className="rounded-2xl border border-gray-200 bg-white p-5 lg:p-6">
+              <section className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 lg:p-6">
                 <label className="block text-sm font-bold text-ink">
                   ملاحظات{" "}
                   <span className="text-xs font-normal text-muted">(اختياري)</span>
@@ -148,21 +148,21 @@ export default function CheckoutPage() {
                     name="notes"
                     form="checkout-form"
                     maxLength={500}
-                    placeholder="هل لديكي أي ملاحظات عن القطع أو الاستلام؟"
-                    className="mt-3 min-h-28 w-full resize-y rounded-xl border border-gray-200 p-3 text-sm font-normal"
+                    placeholder="هل لديك أي ملاحظات عن القطع أو الاستلام؟"
+                    className="mt-3 min-h-28 w-full resize-y rounded-xl border border-gray-200 p-3 text-base font-normal sm:text-sm"
                   />
                 </label>
               </section>
               <form
                 id="checkout-form"
                 onSubmit={submit}
-                className="rounded-2xl border border-gray-200 bg-white p-5 lg:p-6"
+                className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 lg:p-6"
               >
                 <h2 className="flex items-center gap-2 text-base font-bold text-ink">
                   <FiClock className="text-primary" />
                   موعد الاستلام
                 </h2>
-                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <div className="mt-4 grid gap-4 *:min-w-0 sm:grid-cols-2">
                   <label className="text-sm text-ink">
                     اليوم
                     <input
@@ -170,14 +170,14 @@ export default function CheckoutPage() {
                       type="date"
                       required
                       min={minDate}
-                      className="mt-2 min-h-12 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm"
+                      className="mt-2 min-h-12 min-w-0 max-w-full w-full rounded-xl border border-gray-200 bg-white px-3 text-base sm:text-sm"
                     />
                   </label>
                   <label className="text-sm text-ink">
                     الفترة
                     <select
                       name="slot"
-                      className="mt-2 min-h-12 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm"
+                      className="mt-2 min-h-12 min-w-0 max-w-full w-full rounded-xl border border-gray-200 bg-white px-3 text-base sm:text-sm"
                     >
                       <option>صباحًا — من ٩ لـ ١٢</option>
                       <option>ظهرًا — من ١٢ لـ ٤</option>
@@ -185,8 +185,7 @@ export default function CheckoutPage() {
                     </select>
                   </label>
                 </div>
-            
-                
+
                 {error && (
                   <p
                     role="alert"

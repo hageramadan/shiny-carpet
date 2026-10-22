@@ -120,8 +120,8 @@ export default function PhotoUpload({
   }
 
   return (
-    <section className="rounded-2xl border border-gray-200 bg-white p-5 lg:p-6">
-      <h2 className="flex items-center gap-2 text-base font-bold text-ink">
+    <section className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 lg:p-6">
+      <h2 className="flex flex-wrap items-center gap-2 text-base font-bold text-ink">
         <FiImage className="text-primary" />
         صور السجاد <span className="text-xs font-normal text-muted">(اختياري)</span>
       </h2>
@@ -141,7 +141,7 @@ export default function PhotoUpload({
       <div
         onDragOver={(event) => event.preventDefault()}
         onDrop={drop}
-        className="mt-4 rounded-2xl border border-dashed border-gray-200 bg-primary/10 p-6 text-center"
+        className="mt-4 rounded-2xl border border-dashed border-gray-200 bg-primary/10 p-4 text-center sm:p-6"
       >
         <FiUpload className="mx-auto text-2xl text-primary" />
         <p className="mt-3 text-xs leading-7 text-primary">
@@ -164,11 +164,11 @@ export default function PhotoUpload({
         </p>
       )}
       {photos.length > 0 && (
-        <ul className="mt-4 flex flex-wrap gap-3">
+        <ul className="mt-4 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:gap-3">
           {photos.map((photo) => (
             <li
               key={photo.id}
-              className="relative"
+              className="relative min-w-0"
             >
               <Image
                 src={photo.url}
@@ -176,13 +176,13 @@ export default function PhotoUpload({
                 width={96}
                 height={96}
                 unoptimized
-                className="size-24 rounded-xl object-cover"
+                className="aspect-square h-auto w-full rounded-xl object-cover sm:size-24"
               />
               <button
                 type="button"
                 onClick={() => remove(photo)}
                 aria-label={"حذف صورة " + photo.name}
-                className="absolute right-1 top-1 grid size-6 place-items-center rounded-full border border-gray-200 bg-white text-ink"
+                className="absolute right-1 top-1 grid size-8 place-items-center rounded-full border border-gray-200 bg-white text-ink"
               >
                 <FiX />
               </button>
@@ -191,7 +191,7 @@ export default function PhotoUpload({
         </ul>
       )}
       <p className="mt-3 text-xs leading-6 text-muted">
-        الصور بتتحفظ مصغرة للمعاينة المحلية مع الطلب ال. الرفع الفعلي للخدمة عند
+        الصور بتتحفظ مصغرة للمعاينة المحلية مع الطلب التجريبي. الرفع الفعلي للخدمة عند
         الربط.
       </p>
     </section>

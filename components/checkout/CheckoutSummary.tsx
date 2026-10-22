@@ -13,7 +13,7 @@ export default function CheckoutSummary({
   preparingPhotos?: boolean;
 }) {
   return (
-    <aside className="rounded-2xl border border-gray-200 bg-white p-5 lg:sticky lg:top-6 lg:p-6">
+    <aside className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 lg:sticky lg:top-24 lg:p-6">
       <h2 className="mb-5 text-lg font-bold text-ink">ملخص الطلب</h2>
       <OrderItems items={items} />
       <div className="mt-6 border-t border-gray-200 pt-5">

@@ -39,7 +39,7 @@ export default function SizeEditor({ item, product, onSave, onCancel }: Props) {
     event.preventDefault();
     const size = resolveSize(carpet, choice, length, width);
     if (!size) {
-      setError("أدخلي طول وعرض صحيحين من ٠٫١ إلى ٢٠ متر.");
+      setError("أدخل طول وعرض صحيحين من ٠٫١ إلى ٢٠ متر.");
       return;
     }
     const message = onSave(size);
@@ -59,7 +59,7 @@ export default function SizeEditor({ item, product, onSave, onCancel }: Props) {
             setChoice(event.target.value as SizeChoice);
             setError("");
           }}
-          className="mt-2 min-h-11 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm font-normal"
+          className="mt-2 min-h-11 w-full rounded-xl border border-gray-200 bg-white px-3 text-base font-normal sm:text-sm"
         >
           {carpet ? (
             <>
@@ -78,7 +78,7 @@ export default function SizeEditor({ item, product, onSave, onCancel }: Props) {
         </select>
       </label>
       {choice === "custom" && (
-        <div className="mt-4 grid grid-cols-2 gap-3 rounded-xl bg-primary/10 p-4">
+        <div className="mt-4 grid grid-cols-2 gap-3 rounded-xl bg-primary/10 p-3 *:min-w-0 sm:p-4">
           <label className="text-sm text-ink">
             الطول بالمتر
             <input
@@ -89,7 +89,7 @@ export default function SizeEditor({ item, product, onSave, onCancel }: Props) {
               required
               value={length}
               onChange={(event) => setLength(event.target.value)}
-              className="mt-2 min-h-11 w-full rounded-lg border border-gray-200 bg-white px-3"
+              className="mt-2 min-h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-base sm:text-sm"
             />
           </label>
           <label className="text-sm text-ink">
@@ -102,7 +102,7 @@ export default function SizeEditor({ item, product, onSave, onCancel }: Props) {
               required
               value={width}
               onChange={(event) => setWidth(event.target.value)}
-              className="mt-2 min-h-11 w-full rounded-lg border border-gray-200 bg-white px-3"
+              className="mt-2 min-h-11 w-full rounded-lg border border-gray-200 bg-white px-3 text-base sm:text-sm"
             />
           </label>
         </div>
@@ -115,7 +115,7 @@ export default function SizeEditor({ item, product, onSave, onCancel }: Props) {
           {error}
         </p>
       )}
-      <div className="mt-4 flex gap-3">
+      <div className="mt-4 grid grid-cols-2 gap-3 sm:flex">
         <button
           type="submit"
           className="min-h-11 rounded-xl bg-primary px-5 py-2 text-sm font-bold text-white hover:bg-ink shadow-button"

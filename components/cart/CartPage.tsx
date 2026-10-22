@@ -22,11 +22,11 @@ export default function CartPage() {
   }
 
   return (
-    <section className="min-h-[70vh] bg-[#f7f9fa] pb-12 pt-7 lg:pb-16">
-      <div className="container mx-auto px-5 sm:px-6 lg:px-8">
+    <section className="min-h-[70vh] bg-[#f7f9fa] pb-8 pt-5 sm:pb-12 sm:pt-7 lg:pb-16">
+      <div className="container mx-auto min-w-0 px-4 sm:px-6 lg:px-8">
         <nav
           aria-label="مسار التصفح"
-          className="mb-5 text-xs leading-6 text-muted"
+          className="mb-3 text-xs leading-6 sm:mb-5 text-muted"
         >
           <Link
             href="/"
@@ -37,10 +37,10 @@ export default function CartPage() {
           <span className="mx-2">/</span>
           <span>السلة</span>
         </nav>
-        <h1 className="text-3xl font-extrabold leading-relaxed text-ink lg:text-4xl">
+        <h1 className="text-2xl font-extrabold leading-snug text-ink sm:text-3xl sm:leading-relaxed lg:text-4xl">
           السلة
         </h1>
-        <p className="my-4 text-sm leading-8 text-muted">
+        <p className="my-3 text-sm leading-7 sm:my-4 sm:leading-8 text-muted">
           {ready && state.cart.length
             ? "راجع قطعك والمقاسات والكميات قبل استكمال الطلب."
             : "أضف القطع اللي محتاجة عناية، وبعدها كمّل تفاصيل الاستلام."}
@@ -55,10 +55,10 @@ export default function CartPage() {
         ) : state.cart.length === 0 ? (
           <EmptyCart />
         ) : (
-          <div className="grid items-start gap-7 lg:grid-cols-3">
+          <div className="grid items-start gap-5 *:min-w-0 sm:gap-7 lg:grid-cols-3">
             <div className="lg:col-span-2">
-              <div className="mb-5 flex items-center justify-between gap-4">
-                <h2 className="text-xl font-bold text-ink">القطع المضافة</h2>
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-2 sm:mb-5 sm:gap-4">
+                <h2 className="text-lg font-bold text-ink sm:text-xl">القطع المضافة</h2>
                 <span className="text-sm text-[#6B7280] font-semibold">
                   {money(state.cart.length)} منتجات
                 </span>
@@ -94,11 +94,11 @@ export default function CartPage() {
               </div>
               <Link
                 href="/products"
-                className="mt-4 inline-flex min-h-12 items-center justify-center rounded-xl border border-gray-200 bg-white px-7 py-3 text-sm font-extrabold text-[#087B82] md:text-base transition-colors hover:bg-primary/5"
+                className="mt-4 inline-flex min-h-12 w-full sm:w-auto items-center justify-center rounded-xl border border-gray-200 bg-white px-7 py-3 text-sm font-extrabold text-[#087B82] md:text-base transition-colors hover:bg-primary/5"
               >
                 إضافة منتج
               </Link>
-              <div className="mt-6 flex items-center gap-4 rounded-2xl bg-[#E6F6F7] px-5 py-4">
+              <div className="mt-4 flex items-start gap-3 rounded-2xl bg-[#E6F6F7] p-4 sm:mt-6 sm:items-center sm:gap-4 sm:px-5">
                 <FiMapPin className="shrink-0 text-xl text-primary" />
                 <p className="text-sm leading-7 text-[#17202A] font-semibold">
                   في الخطوة التالية، أضف صور القطع وملاحظاتك إن رغبت وعنوان الاستلام.

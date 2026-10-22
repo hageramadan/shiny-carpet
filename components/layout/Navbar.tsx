@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { FiShoppingCart, FiUser, FiMenu, FiX, FiArrowUpLeft } from "react-icons/fi";
 import { useStore } from "@/components/store";
+
 const links = [
   ["/#top", "الرئيسية"],
   ["/#services", "خدماتنا"],
@@ -13,6 +14,7 @@ const links = [
   ["/tracking", "تتبع الطلب"],
   ["/#faq", "الأسئلة الشائعة"],
 ];
+
 export default function Navbar() {
   const path = usePathname();
   const [open, setOpen] = useState(false);
@@ -66,13 +68,56 @@ export default function Navbar() {
     };
   }, [path]);
 
+ 
+  useEffect(() => {
+    setOpen(false);
+  }, [path]);
+
+
+  useEffect(() => {
+    if (!open) return;
+
+    function handleClickOutside(event: MouseEvent | TouchEvent) {
+      const navbar = navbarRef.current;
+      const nav = document.getElementById("primary-navbar");
+      const target = event.target as Node;
+
+ 
+      if (navbar && navbar.contains(target)) return;
+    
+      if (nav && nav.contains(target)) return;
+
+      setOpen(false);
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [open]);
+
+  // إغلاق المنيو بزر Escape
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+
   function isActive(href: string) {
     return href.startsWith("/#")
       ? path === "/" && href === `/#${activeSection}`
       : path === href;
   }
+
   const { state } = useStore();
   const count = state.cart.reduce((n, p) => n + p.quantity, 0);
+
   return (
     <header
       ref={navbarRef}
@@ -88,6 +133,7 @@ export default function Navbar() {
         >
           <Logo />
         </Link>
+
         <nav
           id="primary-navbar"
           aria-label="التنقل الرئيسي"
@@ -96,19 +142,24 @@ export default function Navbar() {
         >
           {links.map(([href, label]) => (
             <Link
-              className="relative whitespace-nowrap py-2 transition-colors  duration-200 hover:text-primary data-[active=true]:text-primary md:py-0"
+              className="relative whitespace-nowrap py-2 transition-colors duration-200 hover:text-primary data-[active=true]:text-primary md:py-0"
               key={href}
               href={href}
               onClick={() => setOpen(false)}
               data-active={isActive(href)}
               aria-current={
-                isActive(href) ? (href.startsWith("/#") ? "location" : "page") : undefined
+                isActive(href)
+                  ? href.startsWith("/#")
+                    ? "location"
+                    : "page"
+                  : undefined
               }
             >
               {label}
             </Link>
           ))}
         </nav>
+
         <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3">
           <Link
             href={state.profile ? "/profile" : "/login"}
@@ -117,6 +168,7 @@ export default function Navbar() {
           >
             <FiUser />
           </Link>
+
           <Link
             href="/cart"
             className="w-9.25 h-9.25 inline-flex items-center justify-center text-[18px] relative rounded-[10px] border border-solid border-gray-200 sm:w-10.5 sm:h-10.5 sm:text-[20px]"
@@ -129,12 +181,14 @@ export default function Navbar() {
               </span>
             )}
           </Link>
+
           <Link
             href="/products"
             className="hidden items-center justify-center gap-3.5 min-h-12 font-bold text-base transition-[background,transform] duration-200 text-white bg-primary hover:-translate-y-0.5 hover:bg-[#188e95] px-3.25 py-2.5 rounded-[9px] border border-solid border-transparent sm:inline-flex lg:px-8 shadow-button"
           >
             اطلب الآن
           </Link>
+
           <button
             className="w-9.25 h-9.25 flex items-center justify-center text-[18px] rounded-[10px] border border-solid border-gray-200 sm:w-10.5 sm:h-10.5 sm:text-[20px] md:hidden"
             aria-label={open ? "إغلاق القائمة" : "فتح القائمة"}

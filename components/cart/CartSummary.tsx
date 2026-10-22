@@ -7,7 +7,7 @@ export default function CartSummary({ items }: { items: CartItem[] }) {
   return (
     <aside
       aria-labelledby="cart-summary-title"
-      className="rounded-2xl border border-gray-200 bg-white p-5 lg:sticky lg:top-6 lg:p-6"
+      className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 lg:sticky lg:top-24 lg:p-6"
     >
       <h2
         id="cart-summary-title"
@@ -15,26 +15,28 @@ export default function CartSummary({ items }: { items: CartItem[] }) {
       >
         ملخص الطلب
       </h2>
-      <dl className="mt-6 space-y-5 text-sm">
-        <div className="flex items-center justify-between gap-4">
+      <dl className="mt-4 space-y-4 text-sm sm:mt-6 sm:space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
           <dt className="text-muted">السعر</dt>
           <dd className="text-ink">{money(summary.subtotal)} ج.م</dd>
         </div>
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
           <dt className="text-muted">التوصيل</dt>
           <dd className="text-ink">{money(summary.delivery)} ج.م</dd>
         </div>
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
           <dt className="text-muted">الضريبة</dt>
           <dd className="text-ink">{money(summary.tax)} ج.م</dd>
         </div>
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
           <dt className="text-muted">الخصم</dt>
           <dd className="text-primary">{money(summary.discount)} ج.م</dd>
         </div>
-        <div className="flex items-center justify-between gap-4 border-t border-gray-200 pt-5">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t border-gray-200 pt-5">
           <dt className="text-lg font-bold text-ink">الإجمالي</dt>
-          <dd className="text-xl font-bold text-primary">{money(summary.total)} ج.م</dd>
+          <dd className="text-lg font-bold text-primary sm:text-xl">
+            {money(summary.total)} ج.م
+          </dd>
         </div>
       </dl>
       <Link
@@ -44,7 +46,7 @@ export default function CartSummary({ items }: { items: CartItem[] }) {
         استكمال الطلب
       </Link>
       <p className="mt-4 text-sm leading-7 text-[#6B7280] font-semibold text-center">
-     يمكنك تعديل المقاسات والكمية قبل المتابعة.
+        يمكنك تعديل المقاسات والكمية قبل المتابعة.
       </p>
     </aside>
   );
