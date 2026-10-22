@@ -9,7 +9,7 @@ export default function Logo() {
         width={432}
         height={328}
        
-        className="object-cover w-18 h-16 "
+        className="object-cover w-18 h-15.5 "
       />
     </span>
   );
