@@ -129,7 +129,7 @@ export default function Navbar() {
           href="/#top"
           aria-label="Shiny Carpet الرئيسية"
           onClick={() => setOpen(false)}
-          className="mt-1"
+          className="mt-1 max-md:mt-0 max-md:flex max-md:items-center max-md:[&_img]:h-12 max-md:[&_img]:object-contain"
         >
           <Logo />
         </Link>
