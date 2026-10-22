@@ -21,9 +21,9 @@ export function Quantity({
   onChange: (n: number) => void;
 }) {
   return (
-    <div className="inline-flex items-center gap-2.5 [direction:ltr] h-9.25 p-1.25 rounded-[7px] border border-solid border-gray-200 sm:gap-3.75 sm:h-10.5">
+    <div className="inline-flex shrink-0 items-center gap-2 [direction:ltr] h-13 p-1 rounded-lg border border-solid border-gray-200 sm:gap-3.75 sm:h-10.5 sm:p-1.25">
       <button
-        className="w-6.75 h-6.75 bg-soft grid place-items-center text-[14px] rounded-sm sm:w-7 sm:h-7"
+        className="size-11 bg-soft grid place-items-center text-sm rounded-sm sm:size-7"
         type="button"
         aria-label="زيادة الكمية"
         disabled={value >= 99}
@@ -33,7 +33,7 @@ export function Quantity({
       </button>
       <span className="min-w-4.5 text-center text-[13px] sm:text-[14px]">{value}</span>
       <button
-        className="w-6.75 h-6.75 bg-soft grid place-items-center text-[14px] rounded-sm sm:w-7 sm:h-7"
+        className="size-11 bg-soft grid place-items-center text-sm rounded-sm sm:size-7"
         type="button"
         aria-label="تقليل الكمية"
         disabled={value <= 1}

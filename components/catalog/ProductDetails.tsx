@@ -75,11 +75,11 @@ export default function ProductDetails({ product }: { product: Product }) {
   }
 
   return (
-    <section className="min-h-[70vh] bg-[#f7f9fa] py-7 lg:pb-16">
-      <div className="container mx-auto px-5 sm:px-6 lg:px-8">
+    <section className="min-h-[70vh] bg-[#f7f9fa] py-5 sm:py-7 lg:pb-16">
+      <div className="container mx-auto min-w-0 px-4 sm:px-6 lg:px-8">
         <nav
           aria-label="مسار التصفح"
-          className="mb-6 flex flex-wrap items-center gap-2 text-xs leading-6 text-muted"
+          className="mb-4 flex flex-wrap sm:mb-6 items-center gap-2 text-xs leading-6 text-muted"
         >
           <Link
             href="/"
@@ -97,20 +97,20 @@ export default function ProductDetails({ product }: { product: Product }) {
           <span>/</span>
           <span>{product.name}</span>
         </nav>
-        <div className="grid items-start gap-9 lg:grid-cols-2 lg:gap-14">
+        <div className="grid items-start gap-5 *:min-w-0 sm:gap-9 lg:grid-cols-2 lg:gap-14">
           <div>
-            <div className="relative aspect-square overflow-hidden rounded-2xl border border-gray-200 bg-white">
+            <div className="relative aspect-[4/3] overflow-hidden sm:aspect-square rounded-2xl border border-gray-200 bg-white">
               <Image
                 src={activeImage}
                 alt={product.name}
                 fill
                 priority
-                sizes="(max-width: 1023px) 100vw, 50vw"
+                sizes="(max-width: 639px) calc(100vw - 32px), (max-width: 1023px) calc(100vw - 48px), 50vw"
                 className="object-cover"
               />
             </div>
             <div
-              className="mt-4 flex gap-3"
+              className="mt-3 flex flex-wrap gap-3 sm:mt-4"
               aria-label="صور المنتج"
             >
               {photos.map((photo, index) => (
@@ -121,7 +121,7 @@ export default function ProductDetails({ product }: { product: Product }) {
                   aria-pressed={activeImage === photo}
                   onClick={() => setActiveImage(photo)}
                   className={
-                    "relative size-16 overflow-hidden rounded-xl border border-gray-200 bg-white " +
+                    "relative size-12 shrink-0 overflow-hidden sm:size-16 rounded-xl border border-gray-200 bg-white " +
                     (activeImage === photo ? "ring-2 ring-primary ring-offset-2" : "")
                   }
                 >
@@ -129,7 +129,7 @@ export default function ProductDetails({ product }: { product: Product }) {
                     src={photo}
                     alt=""
                     fill
-                    sizes="64px"
+                    sizes="(min-width: 640px) 64px, 48px"
                     className="object-cover"
                   />
                 </button>
@@ -143,30 +143,34 @@ export default function ProductDetails({ product }: { product: Product }) {
             <span className="text-xs font-bold text-primary">
               {carpet ? "غسيل السجاد" : "غسيل البطاطين"}
             </span>
-            <h1 className="mt-3 text-3xl font-extrabold leading-relaxed text-ink lg:text-4xl">
+            <h1 className="mt-2 text-2xl font-extrabold leading-snug text-[#17202A] sm:mt-3 sm:text-3xl sm:leading-relaxed lg:text-4xl">
               {product.name}
             </h1>
-            <div className="mt-4 text-2xl font-bold text-primary">
-              {money(product.price)}{" "}
-              <span className="text-base">
-                ج.م{" "}
-                
-              </span>
+            <div className="mt-3 text-xl font-bold text-primary sm:mt-4 sm:text-2xl">
+              {money(product.price)} <span className="text-base">ج.م </span>
             </div>
-            <p className="mt-5 text-sm leading-8 text-muted">{product.description}</p>
+            <p className="mt-3 text-sm leading-7 text-muted sm:mt-5 sm:leading-8">
+              {product.description}
+            </p>
             <form
               onSubmit={addToCart}
-              className="mt-6 border-t border-gray-200 pt-5"
+              className="mt-4 border-t border-gray-200 pt-4 sm:mt-6 sm:pt-5"
             >
-              <fieldset>
-                <legend className="mb-4 text-sm font-bold text-ink">
+              <fieldset className="min-w-0">
+                <legend className="mb-3 text-sm font-bold sm:mb-4 text-ink">
                   {carpet ? "المقاس" : "حجم البطانية"}
                 </legend>
-                <div className="flex flex-wrap gap-2">
+                <div
+                  className={
+                    carpet
+                      ? "grid grid-cols-2 gap-2 sm:flex sm:flex-wrap"
+                      : "grid grid-cols-3 gap-2 sm:flex sm:flex-wrap"
+                  }
+                >
                   {options.map((option) => (
                     <label
                       key={option.value}
-                      className="cursor-pointer"
+                      className="min-w-0 cursor-pointer"
                     >
                       <input
                         type="radio"
@@ -176,7 +180,7 @@ export default function ProductDetails({ product }: { product: Product }) {
                         onChange={() => changeChoice(option.value)}
                         className="peer sr-only"
                       />
-                      <span className="inline-flex min-h-11 min-w-16 items-center justify-center rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm text-ink peer-checked:bg-primary/10 peer-checked:text-primary peer-checked:ring-1 peer-checked:ring-primary peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary">
+                      <span className="inline-flex min-h-11 w-full min-w-0 sm:w-auto sm:min-w-16 items-center justify-center rounded-xl border border-gray-200 bg-white px-2 py-2 text-sm text-ink sm:px-4 peer-checked:bg-primary/10 peer-checked:text-primary peer-checked:ring-1 peer-checked:ring-primary peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary">
                         {option.label}
                       </span>
                     </label>
@@ -184,11 +188,11 @@ export default function ProductDetails({ product }: { product: Product }) {
                 </div>
               </fieldset>
               {choice === "custom" && (
-                <fieldset className="mt-4 rounded-2xl bg-primary/10 p-4">
-                  <legend className="float-right mb-3 w-full text-sm font-smeibold text-[#17202A]">
-                  أدخل المقاس الخاص بك
+                <fieldset className="mt-4 min-w-0 rounded-2xl bg-primary/10 p-3 sm:p-4">
+                  <legend className="float-right mb-3 w-full text-sm font-semibold text-[#17202A]">
+                    أدخل المقاس الخاص بك
                   </legend>
-                  <div className="clear-both grid grid-cols-2 gap-3">
+                  <div className="clear-both grid grid-cols-2 gap-3 *:min-w-0">
                     <label className="text-sm text-ink">
                       الطول
                       <input
@@ -203,8 +207,8 @@ export default function ProductDetails({ product }: { product: Product }) {
                           setLength(e.target.value);
                           setAdded(false);
                         }}
-                        placeholder="أدخلي الطول"
-                        className="mt-2 min-h-12 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm"
+                        placeholder="أدخل الطول"
+                        className="mt-2 min-h-12 min-w-0 w-full rounded-xl border border-gray-200 bg-white px-3 text-base sm:text-sm"
                       />
                     </label>
                     <label className="text-sm text-ink">
@@ -221,19 +225,19 @@ export default function ProductDetails({ product }: { product: Product }) {
                           setWidth(e.target.value);
                           setAdded(false);
                         }}
-                        placeholder="أدخلي العرض"
-                        className="mt-2 min-h-12 w-full rounded-xl border border-gray-200 bg-white px-3 text-sm"
+                        placeholder="أدخل العرض"
+                        className="mt-2 min-h-12 min-w-0 w-full rounded-xl border border-gray-200 bg-white px-3 text-base sm:text-sm"
                       />
                     </label>
                   </div>
                   {!carpet && (
                     <p className="mt-3 text-xs leading-6 text-muted">
-                      السعر المعروض للمقاس المخصص  لحين تأكيد التسعير.
+                      السعر المعروض للمقاس المخصص لحين تأكيد التسعير.
                     </p>
                   )}
                 </fieldset>
               )}
-              <div className="mt-5 flex items-center justify-between gap-4">
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 sm:mt-5 sm:gap-4">
                 <span className="text-sm font-bold text-ink">الكمية</span>
                 <Quantity
                   value={quantity}
@@ -243,15 +247,15 @@ export default function ProductDetails({ product }: { product: Product }) {
                   }}
                 />
               </div>
-              <div className="my-5 flex items-center justify-between gap-4 text-sm text-ink">
+              <div className="my-4 flex flex-wrap items-center justify-between gap-3 sm:my-5 sm:gap-4 text-sm text-ink">
                 <span>الإجمالي</span>
-                <strong className="text-xl text-primary">
+                <strong className="text-lg text-primary sm:text-xl">
                   {total === null ? "حدد المقاس" : money(total) + " ج.م"}
                 </strong>
               </div>
               <button
                 type="submit"
-                className="flex min-h-12 w-full items-center justify-center gap-3 rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-ink shadow-button"
+                className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary sm:gap-3 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-ink shadow-button"
               >
                 {added ? (
                   <>
@@ -286,26 +290,26 @@ export default function ProductDetails({ product }: { product: Product }) {
                 </p>
               )}
               <p className="mt-4 text-xs leading-6 text-muted">
-                يمكنك إضافة المنتجات إلى السلة لاستكمال الطلب. الأسعار ة.
+                يمكنك إضافة المنتجات إلى السلة لاستكمال الطلب. الأسعار تجريبية.
               </p>
             </form>
           </div>
         </div>
         <section
           aria-labelledby="related-title"
-          className="mt-10 border-t border-gray-200 pt-8 lg:mt-14"
+          className="mt-7 border-t border-gray-200 pt-6 sm:mt-10 sm:pt-8 lg:mt-14"
         >
-          <FiLayers className="text-xl text-primary" />
+          <FiLayers className="text-lg text-primary sm:text-xl" />
           <h2
             id="related-title"
-            className="mt-3 text-2xl font-bold text-ink"
+            className="mt-3 text-xl font-bold leading-8 text-[#17202A] sm:text-2xl"
           >
             {carpet ? "هل عندك بطانية أيضًا؟" : "عندك سجادة محتاجة عناية؟"}
           </h2>
           <p className="mt-3 text-sm md:text-base  text-[#607779]">
             كمّل طلبك وأضف القطع اللي محتاجة غسيل.
           </p>
-          <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-4 grid gap-4 *:min-w-0 sm:mt-6 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
             {related.map((p) => (
               <ProductCard
                 key={p.id}
