@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Order } from "@/lib/data";
-import { money, products } from "@/lib/data";
+import { money, cartProduct, cartCurrency, currencyLabel } from "@/lib/data";
 import { orderStages } from "@/lib/order-status";
 
 const dateFormatter = new Intl.DateTimeFormat("ar-EG", {
@@ -15,7 +15,7 @@ export default function OrderCard({ order }: { order: Order }) {
   const pieces = order.items.reduce((total, item) => total + item.quantity, 0);
   const summary = order.items
     .map((item) => {
-      const name = products.find((product) => product.id === item.id)?.name ?? "قطعة";
+      const name = cartProduct(item)?.name ?? "قطعة";
       const size = item.dimensions
         ? `${item.dimensions.length} × ${item.dimensions.width} م`
         : item.sizeLabel;
@@ -53,7 +53,7 @@ export default function OrderCard({ order }: { order: Order }) {
           عرض التفاصيل
         </Link>
         <strong className="whitespace-nowrap text-sm text-primary">
-          {money(order.total)} ج.م
+          {money(order.total)} {currencyLabel(cartCurrency(order.items))}
         </strong>
       </div>
     </article>

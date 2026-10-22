@@ -4,7 +4,15 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { FiMinus, FiPlus, FiTrash2 } from "react-icons/fi";
-import { itemPrice, money, type CartItem, type Product } from "@/lib/data";
+import {
+  itemPrice,
+  money,
+  currencyLabel,
+  productCurrency,
+  productHref,
+  type CartItem,
+  type Product,
+} from "@/lib/data";
 import type { ResolvedSize } from "@/lib/product-options";
 import SizeEditor from "./SizeEditor";
 
@@ -44,7 +52,7 @@ export default function CartItemRow({
     <article className="rounded-2xl border border-gray-200 bg-white p-4 lg:p-5">
       <div className="grid grid-cols-[4.5rem_minmax(0,1fr)] items-start gap-3 sm:flex sm:items-center sm:gap-4">
         <Link
-          href={"/products/" + product.id}
+          href={productHref(product)}
           className="relative block h-24 w-18 shrink-0 sm:h-28 sm:w-22 overflow-hidden rounded-xl bg-white"
         >
           <Image
@@ -57,18 +65,22 @@ export default function CartItemRow({
         </Link>
         <div className="min-w-0 flex-1">
           <h3 className="text-base font-bold leading-7 text-ink sm:text-lg">
-            <Link href={"/products/" + product.id}>{product.name}</Link>
+            <Link href={productHref(product)}>{product.name}</Link>
           </h3>
           <p className="mt-2 text-xs leading-6 text-muted">المقاس: {label}</p>
-          <button
-            type="button"
-            aria-expanded={editing}
-            onClick={() => setEditing(!editing)}
-            className="mt-1 inline-flex min-h-9 items-center text-xs font-bold text-primary hover:underline"
-          >
-            {editing ? "إغلاق تعديل المقاس" : "تعديل المقاس"}
-          </button>
-          <p className="mt-2 text-sm text-primary">{money(itemPrice(item))} ج.م</p>
+          {(product.apiId === undefined || product.hasSizes) && (
+            <button
+              type="button"
+              aria-expanded={editing}
+              onClick={() => setEditing(!editing)}
+              className="mt-1 inline-flex min-h-9 items-center text-xs font-bold text-primary hover:underline"
+            >
+              {editing ? "إغلاق تعديل المقاس" : "تعديل المقاس"}
+            </button>
+          )}
+          <p className="mt-2 text-sm text-primary">
+            {money(itemPrice(item))} {currencyLabel(productCurrency(product))}
+          </p>
         </div>
         <div className="col-span-2 flex w-full items-center justify-between gap-3 border-t border-gray-100 pt-3 sm:w-auto sm:justify-end sm:gap-4 sm:border-0 sm:pt-0">
           <div

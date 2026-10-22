@@ -3,7 +3,7 @@ import Link from "next/link";
 import { FiCheckCircle } from "react-icons/fi";
 import { useStore } from "@/components/store";
 import { cartSummary } from "@/lib/cart";
-import { money } from "@/lib/data";
+import { money, cartCurrency } from "@/lib/data";
 import { OrderItems, PriceBreakdown } from "./OrderSummary";
 
 export default function ConfirmationPage({ id }: { id?: string }) {
@@ -132,6 +132,7 @@ export default function ConfirmationPage({ id }: { id?: string }) {
               <aside className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 lg:sticky lg:top-24 lg:p-6">
                 <h2 className="mb-6 text-lg font-bold text-ink">تفاصيل الدفع</h2>
                 <PriceBreakdown
+                  currency={cartCurrency(order.items)}
                   pricing={
                     order.pricing || { ...cartSummary(order.items), total: order.total }
                   }

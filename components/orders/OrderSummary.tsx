@@ -1,12 +1,21 @@
 import Image from "next/image";
-import { itemPrice, money, products, type CartItem, type OrderPricing } from "@/lib/data";
+import {
+  itemPrice,
+  money,
+  cartProduct,
+  currencyLabel,
+  productCurrency,
+  type Currency,
+  type CartItem,
+  type OrderPricing,
+} from "@/lib/data";
 import { cartItemKey } from "@/lib/product-options";
 
 export function OrderItems({ items }: { items: CartItem[] }) {
   return (
     <ul className="space-y-4 sm:space-y-5">
       {items.map((item) => {
-        const product = products.find((product) => product.id === item.id);
+        const product = cartProduct(item);
         if (!product) return null;
         return (
           <li
@@ -35,7 +44,7 @@ export function OrderItems({ items }: { items: CartItem[] }) {
                 · الكمية: {money(item.quantity)}
               </p>
               <p className="mt-1 text-xs font-bold text-primary">
-                {money(itemPrice(item))} ج.م
+                {money(itemPrice(item))} {currencyLabel(productCurrency(product))}
               </p>
             </div>
           </li>
@@ -45,32 +54,44 @@ export function OrderItems({ items }: { items: CartItem[] }) {
   );
 }
 
-export function PriceBreakdown({ pricing }: { pricing: OrderPricing }) {
+export function PriceBreakdown({
+  pricing,
+  currency = "EGP",
+}: {
+  pricing: OrderPricing;
+  currency?: Currency;
+}) {
   return (
     <dl className="space-y-3 text-sm sm:space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <dt className="text-muted">السعر</dt>
-        <dd className="text-ink">{money(pricing.subtotal)} ج.م</dd>
+        <dd className="text-ink">
+          {money(pricing.subtotal)} {currencyLabel(currency)}
+        </dd>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <dt className="text-muted">التوصيل</dt>
-        <dd className="text-ink">{money(pricing.delivery)} ج.م</dd>
+        <dd className="text-ink">
+          {money(pricing.delivery)} {currencyLabel(currency)}
+        </dd>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <dt className="text-muted">الضريبة</dt>
-        <dd className="text-ink">{money(pricing.tax)} ج.م</dd>
+        <dd className="text-ink">
+          {money(pricing.tax)} {currencyLabel(currency)}
+        </dd>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <dt className="text-muted">الخصم</dt>
         <dd className={pricing.discount ? "text-red-500" : "text-muted"}>
           {pricing.discount > 0 ? "−" : ""}
-          {money(pricing.discount)} ج.م
+          {money(pricing.discount)} {currencyLabel(currency)}
         </dd>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-gray-200 pt-5">
         <dt className="text-base font-bold text-ink">الإجمالي</dt>
         <dd className="text-lg font-bold text-primary sm:text-xl">
-          {money(pricing.total)} ج.م
+          {money(pricing.total)} {currencyLabel(currency)}
         </dd>
       </div>
     </dl>

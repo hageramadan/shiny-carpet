@@ -4,6 +4,8 @@ export type SizeChoice = "small" | "medium" | "large" | "custom";
 export type ResolvedSize = {
   size: number;
   sizeLabel: string;
+  sizeId?: number;
+  unitPrice?: number;
   dimensions?: { length: number; width: number };
 };
 
@@ -51,6 +53,7 @@ export function resolveSize(
 export function cartItemKey(item: CartItem): string {
   return [
     item.id,
+    item.sizeId ?? "",
     item.size,
     item.dimensions?.length ?? "",
     item.dimensions?.width ?? "",

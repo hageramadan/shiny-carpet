@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { FiMapPin } from "react-icons/fi";
-import { products, money } from "@/lib/data";
+import { cartProduct, money } from "@/lib/data";
 import { cartItemKey, type ResolvedSize } from "@/lib/product-options";
 import { updateCartSize } from "@/lib/cart";
 import { useStore } from "@/components/store";
@@ -65,7 +65,7 @@ export default function CartPage() {
               </div>
               <div className="space-y-4">
                 {state.cart.map((item) => {
-                  const product = products.find((product) => product.id === item.id);
+                  const product = cartProduct(item);
                   if (!product) return null;
                   const key = cartItemKey(item);
                   return (

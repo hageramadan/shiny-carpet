@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { money, type CartItem } from "@/lib/data";
+import { money, currencyLabel, cartCurrency, type CartItem } from "@/lib/data";
 import { cartSummary } from "@/lib/cart";
 
 export default function CartSummary({ items }: { items: CartItem[] }) {
@@ -18,24 +18,32 @@ export default function CartSummary({ items }: { items: CartItem[] }) {
       <dl className="mt-4 space-y-4 text-sm sm:mt-6 sm:space-y-5">
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
           <dt className="text-muted">السعر</dt>
-          <dd className="text-ink">{money(summary.subtotal)} ج.م</dd>
+          <dd className="text-ink">
+            {money(summary.subtotal)} {currencyLabel(cartCurrency(items))}
+          </dd>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
           <dt className="text-muted">التوصيل</dt>
-          <dd className="text-ink">{money(summary.delivery)} ج.م</dd>
+          <dd className="text-ink">
+            {money(summary.delivery)} {currencyLabel(cartCurrency(items))}
+          </dd>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
           <dt className="text-muted">الضريبة</dt>
-          <dd className="text-ink">{money(summary.tax)} ج.م</dd>
+          <dd className="text-ink">
+            {money(summary.tax)} {currencyLabel(cartCurrency(items))}
+          </dd>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
           <dt className="text-muted">الخصم</dt>
-          <dd className="text-primary">{money(summary.discount)} ج.م</dd>
+          <dd className="text-primary">
+            {money(summary.discount)} {currencyLabel(cartCurrency(items))}
+          </dd>
         </div>
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 border-t border-gray-200 pt-5">
           <dt className="text-lg font-bold text-ink">الإجمالي</dt>
           <dd className="text-lg font-bold text-primary sm:text-xl">
-            {money(summary.total)} ج.م
+            {money(summary.total)} {currencyLabel(cartCurrency(items))}
           </dd>
         </div>
       </dl>

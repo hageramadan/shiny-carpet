@@ -15,7 +15,13 @@ export function updateCartSize(
   const index = cart.findIndex((item) => cartItemKey(item) === key);
   if (index < 0) return cart;
   const original = cart[index];
-  const replacement: CartItem = { id: original.id, quantity: original.quantity, ...size };
+  const replacement: CartItem = {
+    ...original,
+    ...size,
+    dimensions: size.dimensions,
+    sizeId: size.sizeId,
+    unitPrice: size.unitPrice,
+  };
   const replacementKey = cartItemKey(replacement);
   const match = cart.findIndex(
     (item, i) => i !== index && cartItemKey(item) === replacementKey,

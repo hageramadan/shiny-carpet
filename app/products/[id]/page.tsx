@@ -1,31 +1,36 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import { products } from "@/lib/data";
-import ProductDetails from "@/components/catalog/ProductDetails";
-export function generateStaticParams() {
-  return products.map((p) => ({ id: p.id }));
-}
-export async function generateMetadata({
-  params,
-}: {
+import { notFound, redirect } from "next/navigation";
+import ClientProductPage from "@/components/catalog/ClientProductPage";
+
+type Props = {
   params: Promise<{ id: string }>;
-}): Promise<Metadata> {
-  const { id } = await params;
-  const p = products.find((p) => p.id === id);
-  return {
-    title: p?.name ?? "خدمة غير موجودة",
-    description: p?.description,
-    alternates: { canonical: `/products/${id}` },
-  };
+  searchParams: Promise<{ category?: string | string[] }>;
+};
+function positiveId(value: unknown): number | undefined {
+  return typeof value === "string" &&
+    /^[1-9]\d*$/.test(value) &&
+    Number.isSafeInteger(Number(value))
+    ? Number(value)
+    : undefined;
 }
-export default async function Page({ params }: { params: Promise<{ id: string }> }) {
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const p = products.find((p) => p.id === id);
-  if (!p) notFound();
+  return { title: "تفاصيل المنتج", alternates: { canonical: `/products/${id}` } };
+}
+
+export default async function Page({ params, searchParams }: Props) {
+  const { id } = await params;
+  if (id === "carpet") redirect("/products?category=16");
+  if (id === "blanket") redirect("/products?category=18");
+  const { category } = await searchParams;
+  const productId = positiveId(id),
+    categoryId = positiveId(category);
+  if (!productId || (category !== undefined && !categoryId)) notFound();
   return (
-    <ProductDetails
-      key={p.id}
-      product={p}
+    <ClientProductPage
+      id={productId}
+      categoryId={categoryId}
     />
   );
 }

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { FiSearch } from "react-icons/fi";
 import { useStore } from "@/components/store";
 import { cartSummary } from "@/lib/cart";
-import { money } from "@/lib/data";
+import { money, cartCurrency } from "@/lib/data";
 import { OrderItems, PriceBreakdown } from "./OrderSummary";
 import OrderTimeline from "./OrderTimeline";
 import OrderPhotos from "./OrderPhotos";
@@ -155,6 +155,7 @@ export default function TrackingPage({ initialId = "" }: { initialId?: string })
                 <section className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 lg:p-6">
                   <h2 className="mb-6 text-lg font-bold text-ink">تفاصيل الدفع</h2>
                   <PriceBreakdown
+                    currency={cartCurrency(order.items)}
                     pricing={
                       order.pricing || { ...cartSummary(order.items), total: order.total }
                     }

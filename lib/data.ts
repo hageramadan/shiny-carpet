@@ -1,5 +1,5 @@
 import type { OrderStatus } from "./order-status";
-export const products = [
+export const products: Product[] = [
   {
     id: "carpet",
     name: "سجاد يدوي",
@@ -25,12 +25,40 @@ export const products = [
     tag: "نعومة تستاهليها",
   },
 ];
-export type Product = (typeof products)[number];
+export type Currency = "SAR" | "EGP";
+export type ProductSize = {
+  id: number;
+  label: string;
+  price: number;
+  originalPrice?: number;
+  dimensions?: { length: number; width: number };
+};
+export type Product = {
+  id: string;
+  name: string;
+  description: string;
+  image: string;
+  category: string;
+  price: number;
+  unit: string;
+  short?: string;
+  tag?: string;
+  apiId?: number;
+  categoryId?: number;
+  currency?: Currency;
+  hasSizes?: boolean;
+  sizes?: ProductSize[];
+  pricePerUnit?: number;
+  originalPrice?: number;
+};
 export type CartItem = {
   id: string;
   quantity: number;
   size: number;
   sizeLabel?: string;
+  sizeId?: number;
+  unitPrice?: number;
+  product?: Product;
   dimensions?: { length: number; width: number };
 };
 export type Address = {
@@ -74,6 +102,20 @@ export type Order = {
 };
 export const money = (value: number) =>
   new Intl.NumberFormat("ar-EG", { maximumFractionDigits: 2 }).format(value);
-export const itemPrice = (item: CartItem) =>
-  (products.find((p) => p.id === item.id)?.price ?? 0) * item.quantity * item.size;
+export const cartProduct = (item: CartItem) =>
+  item.product ?? products.find((product) => product.id === item.id);
+export const productCurrency = (product?: Product): Currency =>
+  product?.currency ?? "EGP";
+export const cartCurrency = (items: CartItem[]): Currency =>
+  items.length ? productCurrency(cartProduct(items[0])) : "SAR";
+export const currencyLabel = (currency: Currency) => (currency === "SAR" ? "ر.س" : "ج.م");
+export const productHref = (product: Product) =>
+  product.apiId !== undefined ? `/products/${product.apiId}` : `/products/${product.id}`;
+export const itemPrice = (item: CartItem) => {
+  const price =
+    item.unitPrice !== undefined
+      ? item.unitPrice * item.quantity
+      : (cartProduct(item)?.price ?? 0) * item.quantity * item.size;
+  return Math.round(price * 100) / 100;
+};
 export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3001";

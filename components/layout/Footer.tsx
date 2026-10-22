@@ -10,8 +10,8 @@ const quickLinks = [
   { href: "/tracking", label: "تتبع الطلب" },
 ];
 const serviceLinks = [
-  { href: "/products/carpet", label: "غسيل السجاد" },
-  { href: "/products/blanket", label: "غسيل البطاطين" },
+  { href: "/products?category=16", label: "غسيل السجاد" },
+  { href: "/products?category=18", label: "غسيل البطاطين" },
   { href: "/products", label: "المقاسات والأسعار" },
   { href: "/#download", label: "حمل التطبيق" },
 ];
@@ -136,10 +136,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="border-t border-gray-200 pt-6 text-center text-sm leading-7 text-slate-300">
-          <p>
-       © 2026 Shiny Carpet · الشروط والأحكام · سياسة الخصوصية
-          </p>
-         
+          <p>© 2026 Shiny Carpet · الشروط والأحكام · سياسة الخصوصية</p>
         </div>
       </div>
     </footer>

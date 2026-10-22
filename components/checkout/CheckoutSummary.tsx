@@ -1,4 +1,4 @@
-import type { CartItem, OrderPricing } from "@/lib/data";
+import { cartCurrency, type CartItem, type OrderPricing } from "@/lib/data";
 import { OrderItems, PriceBreakdown } from "@/components/orders/OrderSummary";
 
 export default function CheckoutSummary({
@@ -17,7 +17,10 @@ export default function CheckoutSummary({
       <h2 className="mb-5 text-lg font-bold text-ink">ملخص الطلب</h2>
       <OrderItems items={items} />
       <div className="mt-6 border-t border-gray-200 pt-5">
-        <PriceBreakdown pricing={pricing} />
+        <PriceBreakdown
+          pricing={pricing}
+          currency={cartCurrency(items)}
+        />
       </div>
       <button
         type="submit"

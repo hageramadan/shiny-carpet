@@ -1,23 +1,87 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
-import { FiArrowLeft } from "react-icons/fi";
+import { useApiResource } from "@/hooks/useApiResource";
+import { FiArrowLeft, FiGrid } from "react-icons/fi";
+import { getCategories } from "@/lib/categories";
+import ServicesFeedback from "./ServicesFeedback";
 
-const services = [
-  {
-    id: "carpet",
-    number: "01",
-    title: "غسيل السجاد",
-    description: "عناية بسجادك بمختلف أنواعه ومقاساته.",
-    image: "/images/carpet1.png",
-  },
-  {
-    id: "blanket",
-    number: "02",
-    title: "غسيل البطاطين",
-    description: "نظافة وانتعاش لبطاطينك مع الحفاظ على نعومتها.",
-    image: "/images/blanket1.png",
-  },
-];
+const servicesGridClassName =
+  "grid grid-flow-col auto-cols-[85%] snap-x snap-proximity gap-4 overflow-x-auto overscroll-x-contain pb-3 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary md:auto-cols-auto md:grid-flow-row md:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0";
+
+function ServicesLoading() {
+  return (
+    <div
+      role="status"
+      aria-label="جاري تحميل الخدمات"
+      className={servicesGridClassName}
+    >
+      {[0, 1].map((index) => (
+        <div
+          key={index}
+          aria-hidden="true"
+          className="h-[299.9px] min-w-0 animate-pulse rounded-3xl bg-primary/10 motion-reduce:animate-none md:h-[429.9px]"
+        />
+      ))}
+      <span className="sr-only">جاري تحميل الخدمات…</span>
+    </div>
+  );
+}
+
+function ServiceCards() {
+  const request = useApiResource("categories", getCategories);
+  if (request.status === "loading") return <ServicesLoading />;
+  if (request.status === "error")
+    return (
+      <ServicesFeedback
+        error
+        onRetry={request.reload}
+      />
+    );
+  const categories = request.data ?? [];
+  if (!categories.length) return <ServicesFeedback />;
+
+  return (
+    <div
+      role="region"
+      aria-label="الخدمات، اسحب لعرض الخدمة التالية"
+      tabIndex={0}
+      className={servicesGridClassName}
+    >
+      {categories.map((category, index) => (
+        <Link
+          key={category.id}
+          href={`/products?category=${category.id}`}
+          aria-label={"عرض منتجات " + category.name}
+          className="group relative isolate block h-[299.9px] min-w-0 snap-start overflow-hidden rounded-3xl bg-soft md:h-[429.9px]"
+        >
+          {category.image ? (
+            <Image
+              src={category.image}
+              alt={category.name}
+              fill
+              sizes="(max-width: 767px) 85vw, 50vw"
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+          ) : (
+            <FiGrid
+              aria-hidden="true"
+              className="absolute inset-0 m-auto size-16 text-primary"
+            />
+          )}
+          <div className="absolute inset-0 bg-linear-to-t from-ink via-ink/25 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 p-7 text-white lg:p-9 max-sm:p-4">
+            <span className="text-lg font-bold text-cyan-200 max-sm:text-base">
+              {String(index + 1).padStart(2, "0")}
+            </span>
+            <h3 className="mt-3 text-2xl font-bold max-sm:text-xl">{category.name}</h3>
+          </div>
+        </Link>
+      ))}
+    </div>
+  );
+}
 
 export default function Services() {
   return (
@@ -41,40 +105,7 @@ export default function Services() {
             خدمات متخصصة بعناية حقيقية لكل قطعة في بيتك.
           </p>
         </div>
-        <div
-          role="region"
-          aria-label="الخدمات، اسحب لعرض الخدمة التالية"
-          tabIndex={0}
-          className="grid grid-flow-col auto-cols-[85%] snap-x snap-proximity gap-4 overflow-x-auto overscroll-x-contain pb-3 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary md:auto-cols-auto md:grid-flow-row md:grid-cols-2 md:gap-6 md:overflow-visible md:pb-0"
-        >
-          {services.map((service) => (
-            <Link
-              key={service.id}
-              href={"/products/" + service.id}
-              className="group relative isolate block h-[299.9px] min-w-0 snap-start overflow-hidden rounded-3xl md:h-[429.9px]"
-            >
-              <Image
-                src={service.image}
-                alt={service.title}
-                fill
-                sizes="(max-width: 767px) 85vw, 50vw"
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-linear-to-t from-ink via-ink/25 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 p-7 text-white lg:p-9 max-sm:p-4">
-                <span className="text-lg font-bold text-cyan-200 max-sm:text-base">
-                  {service.number}
-                </span>
-                <h3 className="mt-3 text-2xl font-bold max-sm:text-xl">
-                  {service.title}
-                </h3>
-                <p className="mt-2 text-sm leading-7 text-white/80 max-sm:text-xs max-sm:leading-6">
-                  {service.description}
-                </p>
-              </div>
-            </Link>
-          ))}
-        </div>
+        <ServiceCards />
         <div className="mt-8 flex justify-center max-sm:mt-5">
           <Link
             href="/products"
