@@ -1,5 +1,8 @@
 import type { NextConfig } from "next";
 const config: NextConfig = {
+  experimental: {
+    agentUpgrade: "security",
+  },
   images: {
     qualities: [75, 100],
     remotePatterns: [

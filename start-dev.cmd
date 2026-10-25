@@ -1,4 +1,4 @@
 @echo off
 cd /d "%~dp0"
-node node_modules\next\dist\bin\next dev --port 3001
+node node_modules\next\dist\bin\next dev --port 3000
 pause

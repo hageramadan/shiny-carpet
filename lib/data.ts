@@ -118,4 +118,4 @@ export const itemPrice = (item: CartItem) => {
       : (cartProduct(item)?.price ?? 0) * item.quantity * item.size;
   return Math.round(price * 100) / 100;
 };
-export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3001";
+export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";

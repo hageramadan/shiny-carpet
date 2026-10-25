@@ -9,7 +9,7 @@ npm install
 npm run dev
 ```
 
-المعاينة: http://localhost:3001. على Windows يمكن تشغيل start-dev.cmd مباشرة بعد تثبيت المكتبات. لو أمر npm غير متاح استخدم: node node_modules/next/dist/bin/next dev --port 3001
+المعاينة: http://localhost:3000. على Windows يمكن تشغيل start-dev.cmd مباشرة بعد تثبيت المكتبات. لو أمر npm غير متاح استخدم: node node_modules/next/dist/bin/next dev --port 3000
 
 ```sh
 npm run typecheck
