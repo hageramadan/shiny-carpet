@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { FiMinus, FiPlus, FiTrash2 } from "react-icons/fi";
@@ -13,15 +12,13 @@ import {
   type CartItem,
   type Product,
 } from "@/lib/data";
-import type { ResolvedSize } from "@/lib/product-options";
-import SizeEditor from "./SizeEditor";
 
 type Props = {
   item: CartItem;
   product: Product;
   onQuantity: (quantity: number) => void;
   onRemove: () => void;
-  onResize: (size: ResolvedSize) => string | null;
+  disabled?: boolean;
 };
 
 export default function CartItemRow({
@@ -29,9 +26,8 @@ export default function CartItemRow({
   product,
   onQuantity,
   onRemove,
-  onResize,
+  disabled = false,
 }: Props) {
-  const [editing, setEditing] = useState(false);
   const label =
     item.sizeLabel ||
     (product.category === "السجاد"
@@ -41,12 +37,6 @@ export default function CartItemRow({
         : item.size === 1.5
           ? "شخصين"
           : "كبير");
-
-  function save(size: ResolvedSize) {
-    const error = onResize(size);
-    if (!error) setEditing(false);
-    return error;
-  }
 
   return (
     <article className="rounded-2xl border border-gray-200 bg-white p-4 lg:p-5">
@@ -68,16 +58,12 @@ export default function CartItemRow({
             <Link href={productHref(product)}>{product.name}</Link>
           </h3>
           <p className="mt-2 text-xs leading-6 text-muted">المقاس: {label}</p>
-          {(product.apiId === undefined || product.hasSizes) && (
-            <button
-              type="button"
-              aria-expanded={editing}
-              onClick={() => setEditing(!editing)}
-              className="mt-1 inline-flex min-h-9 items-center text-xs font-bold text-primary hover:underline"
-            >
-              {editing ? "إغلاق تعديل المقاس" : "تعديل المقاس"}
-            </button>
-          )}
+          <Link
+            href={productHref(product)}
+            className="mt-1 inline-flex min-h-9 items-center text-xs font-bold text-primary hover:underline"
+          >
+            عرض المنتج والمقاسات
+          </Link>
           <p className="mt-2 text-sm text-primary">
             {money(itemPrice(item))} {currencyLabel(productCurrency(product))}
           </p>
@@ -89,7 +75,7 @@ export default function CartItemRow({
           >
             <button
               type="button"
-              disabled={item.quantity <= 1}
+              disabled={disabled || item.quantity <= 1}
               aria-label={"تقليل كمية " + product.name}
               onClick={() => onQuantity(Math.max(1, item.quantity - 1))}
               className="grid size-9 place-items-center sm:size-7 text-primary disabled:opacity-40"
@@ -104,7 +90,7 @@ export default function CartItemRow({
             </span>
             <button
               type="button"
-              disabled={item.quantity >= 99}
+              disabled={disabled || item.quantity >= 99}
               aria-label={"زيادة كمية " + product.name}
               onClick={() => onQuantity(Math.min(99, item.quantity + 1))}
               className="grid size-9 place-items-center sm:size-7 text-primary disabled:opacity-40"
@@ -115,6 +101,7 @@ export default function CartItemRow({
           <button
             type="button"
             onClick={onRemove}
+            disabled={disabled}
             aria-label={"حذف " + product.name + " من السلة"}
             className="inline-flex min-h-11 items-center gap-2 px-2 sm:px-0 text-xs text-red-500 hover:text-red-700"
           >
@@ -123,14 +110,6 @@ export default function CartItemRow({
           </button>
         </div>
       </div>
-      {editing && (
-        <SizeEditor
-          item={item}
-          product={product}
-          onSave={save}
-          onCancel={() => setEditing(false)}
-        />
-      )}
     </article>
   );
 }

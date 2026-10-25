@@ -1,8 +1,17 @@
-export const DEMO_OTP = "246815";
+import { validPhone } from "./phone";
+export { normalizeDigits, normalizePhone, validPhone } from "./phone";
+
 export const RESEND_DELAY = 60_000;
-export const CODE_LIFETIME = 300_000;
-const DRAFT_KEY = "shiny-carpet-demo-auth";
-const destinations = ["/profile", "/checkout", "/cart", "/orders", "/products"];
+const DRAFT_KEY = "shiny-carpet-auth-challenge";
+const destinations = [
+  "/profile",
+  "/checkout",
+  "/cart",
+  "/orders",
+  "/products",
+  "/addresses",
+  "/addresses/new",
+];
 
 export type AuthDraft = {
   mode: "login" | "register";
@@ -15,21 +24,12 @@ export type AuthDraft = {
 let memoryDraft: AuthDraft | null = null;
 
 export function authDestination(value?: string) {
-  return value && destinations.includes(value) ? value : "/profile";
-}
-
-export function normalizeDigits(value: string) {
-  return value.replace(/[٠-٩۰-۹]/g, (digit) =>
-    String(digit.charCodeAt(0) - (digit <= "٩" ? 0x660 : 0x6f0)),
-  );
-}
-
-export function normalizePhone(value: string) {
-  return normalizeDigits(value).replace(/[\s()-]/g, "");
-}
-
-export function validPhone(value: string) {
-  return /^\+?\d{8,15}$/.test(normalizePhone(value));
+  return value &&
+    (destinations.includes(value) ||
+      /^\/products\/[1-9]\d*$/.test(value) ||
+      /^\/addresses\/[1-9]\d*\/edit$/.test(value))
+    ? value
+    : "/profile";
 }
 
 export function authHref(path: "/login" | "/register", destination: string) {
@@ -41,7 +41,7 @@ export function saveAuthDraft(draft: AuthDraft) {
   try {
     sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
   } catch {
-    // Keep the demo usable when browser storage is unavailable.
+    /* Keep the current tab usable without storage. */
   }
 }
 
@@ -62,7 +62,7 @@ export function readAuthDraft(): AuthDraft | null {
       }
     }
   } catch {
-    // Fall back to the draft held in memory.
+    /* The in-memory draft contains no token. */
   }
   return memoryDraft;
 }
@@ -71,7 +71,8 @@ export function clearAuthDraft() {
   memoryDraft = null;
   try {
     sessionStorage.removeItem(DRAFT_KEY);
+    sessionStorage.removeItem("shiny-carpet-demo-auth");
   } catch {
-    // Clearing the in-memory draft is sufficient without browser storage.
+    /* Storage is optional. */
   }
 }

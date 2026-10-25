@@ -2,24 +2,19 @@
 
 import Link from "next/link";
 import { FiMapPin } from "react-icons/fi";
+import { useCart } from "./CartProvider";
+import { useAuthAction } from "@/hooks/useAuthAction";
 import { cartProduct, money } from "@/lib/data";
-import { cartItemKey, type ResolvedSize } from "@/lib/product-options";
-import { updateCartSize } from "@/lib/cart";
 import { useStore } from "@/components/store";
 import CartItemRow from "./CartItemRow";
 import CartSummary from "./CartSummary";
 import EmptyCart from "./EmptyCart";
 
 export default function CartPage() {
-  const { state, update, ready } = useStore();
-
-  function resize(key: string, size: ResolvedSize): string | null {
-    const cart = updateCartSize(state.cart, key, size);
-    if (!cart)
-      return "المقاس ده موجود في السلة، ودمج الكميات هيتجاوز الحد الأقصى ٩٩ قطعة.";
-    update((current) => ({ ...current, cart }));
-    return null;
-  }
+  const { state, ready } = useStore();
+  const { cart, status, busy, error, reload, setQuantity, remove, clear } = useCart();
+  const action = useAuthAction();
+  const disabled = busy || action.pending || status !== "ready";
 
   return (
     <section className="min-h-[70vh] bg-[#f7f9fa] pb-8 pt-5 sm:pb-12 sm:pt-7 lg:pb-16">
@@ -41,10 +36,18 @@ export default function CartPage() {
           السلة
         </h1>
         <p className="my-3 text-sm leading-7 sm:my-4 sm:leading-8 text-muted">
-          {ready && state.cart.length
+          {ready && cart?.items.length
             ? "راجع قطعك والمقاسات والكميات قبل استكمال الطلب."
             : "أضف القطع اللي محتاجة عناية، وبعدها كمّل تفاصيل الاستلام."}
         </p>
+        {(error || action.error) && status !== "error" && (
+          <p
+            role="alert"
+            className="mb-4 text-sm text-red-700"
+          >
+            {error || action.error}
+          </p>
+        )}
         {!ready ? (
           <div
             role="status"
@@ -52,7 +55,40 @@ export default function CartPage() {
           >
             جاري تحميل السلة…
           </div>
-        ) : state.cart.length === 0 ? (
+        ) : !state.profile ? (
+          <div className="rounded-2xl border border-gray-200 bg-white p-10 text-center">
+            <p className="text-ink">سجّل الدخول لعرض سلتك وإضافة المنتجات.</p>
+            <Link
+              href="/login?next=%2Fcart"
+              className="mt-4 inline-flex min-h-11 items-center rounded-xl bg-primary px-6 font-bold text-white"
+            >
+              تسجيل الدخول
+            </Link>
+          </div>
+        ) : status === "error" ? (
+          <div className="rounded-2xl border border-gray-200 bg-white p-10 text-center">
+            <p
+              role="alert"
+              className="text-red-700"
+            >
+              {error}
+            </p>
+            <button
+              type="button"
+              onClick={() => void reload()}
+              className="mt-4 min-h-11 font-bold text-primary"
+            >
+              إعادة المحاولة
+            </button>
+          </div>
+        ) : !cart || status === "loading" ? (
+          <p
+            role="status"
+            className="rounded-2xl border border-gray-200 bg-white p-10 text-center text-muted"
+          >
+            جاري تحميل السلة…
+          </p>
+        ) : cart.items.length === 0 ? (
           <EmptyCart />
         ) : (
           <div className="grid items-start gap-5 *:min-w-0 sm:gap-7 lg:grid-cols-3">
@@ -60,34 +96,41 @@ export default function CartPage() {
               <div className="mb-4 flex flex-wrap items-center justify-between gap-2 sm:mb-5 sm:gap-4">
                 <h2 className="text-lg font-bold text-ink sm:text-xl">القطع المضافة</h2>
                 <span className="text-sm text-[#6B7280] font-semibold">
-                  {money(state.cart.length)} منتجات
+                  {money(cart.count)} منتجات
                 </span>
+                <button
+                  type="button"
+                  disabled={disabled}
+                  onClick={() =>
+                    void action.run("clear", async () => {
+                      await clear();
+                    })
+                  }
+                  className="min-h-11 text-sm font-bold text-red-600 disabled:opacity-50"
+                >
+                  إفراغ السلة
+                </button>
               </div>
               <div className="space-y-4">
-                {state.cart.map((item) => {
+                {cart.items.map((item) => {
                   const product = cartProduct(item);
                   if (!product) return null;
-                  const key = cartItemKey(item);
                   return (
                     <CartItemRow
-                      key={key}
+                      key={item.cartItemId}
                       item={item}
                       product={product}
+                      disabled={disabled}
                       onQuantity={(quantity) =>
-                        update((current) => ({
-                          ...current,
-                          cart: current.cart.map((row) =>
-                            cartItemKey(row) === key ? { ...row, quantity } : row,
-                          ),
-                        }))
+                        void action.run("quantity", async () => {
+                          await setQuantity(item.cartItemId!, quantity);
+                        })
                       }
                       onRemove={() =>
-                        update((current) => ({
-                          ...current,
-                          cart: current.cart.filter((row) => cartItemKey(row) !== key),
-                        }))
+                        void action.run("remove", async () => {
+                          await remove(item.cartItemId!);
+                        })
                       }
-                      onResize={(size) => resize(key, size)}
                     />
                   );
                 })}
@@ -105,7 +148,10 @@ export default function CartPage() {
                 </p>
               </div>
             </div>
-            <CartSummary items={state.cart} />
+            <CartSummary
+              cart={cart}
+              disabled={disabled}
+            />
           </div>
         )}
       </div>

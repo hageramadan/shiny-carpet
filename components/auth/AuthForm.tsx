@@ -4,13 +4,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
 import AuthLayout, { authButtonClass, authInputClass } from "./AuthLayout";
+import PhoneInput from "@/components/forms/PhoneInput";
+import { useAuthAction } from "@/hooks/useAuthAction";
+import { authRequest } from "@/lib/auth/client";
+import { apiPhone } from "@/lib/phone";
 import {
   authHref,
   normalizePhone,
   readAuthDraft,
   saveAuthDraft,
   validPhone,
-} from "@/lib/demo-auth";
+} from "@/lib/auth-flow";
 
 export default function AuthForm({
   register = false,
@@ -22,7 +26,7 @@ export default function AuthForm({
   const router = useRouter();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [error, setError] = useState("");
+  const { error, setError, pending, run } = useAuthAction();
   const title = register ? "إنشاء حساب" : "تسجيل الدخول";
 
   useEffect(() => {
@@ -33,24 +37,34 @@ export default function AuthForm({
     }
   }, []);
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (pending) return;
     if (register && !name.trim()) {
       setError("يرجى إدخال الاسم.");
       return;
     }
     if (!validPhone(phone)) {
-      setError("يرجى إدخال رقم هاتف صحيح من ٨ إلى ١٥ رقمًا، مع رمز الدولة عند الحاجة.");
+      setError("يرجى إدخال رقم هاتف صحيح للدولة المختارة.");
       return;
     }
-    saveAuthDraft({
-      mode: register ? "register" : "login",
-      name: name.trim(),
-      phone: normalizePhone(phone),
-      destination,
-      issuedAt: Date.now(),
+    await run(register ? "register" : "login", async (signal) => {
+      const credentials = apiPhone(phone);
+      await authRequest(
+        register ? "register" : "login",
+        { ...credentials, ...(register ? { name: name.trim() } : {}) },
+        signal,
+      );
+      signal.throwIfAborted();
+      saveAuthDraft({
+        mode: register ? "register" : "login",
+        name: name.trim(),
+        phone: normalizePhone(phone),
+        destination,
+        issuedAt: Date.now(),
+      });
+      router.push("/verify-otp");
     });
-    router.push("/verify-otp");
   }
 
   return (
@@ -73,7 +87,6 @@ export default function AuthForm({
       <form
         onSubmit={submit}
         className="space-y-3"
-        aria-describedby="auth-demo-note"
       >
         {register && (
           <label className="block text-sm font-bold">
@@ -82,48 +95,41 @@ export default function AuthForm({
               name="name"
               autoComplete="name"
               required
+              disabled={pending}
               maxLength={80}
               value={name}
               onChange={(event) => {
                 setName(event.target.value);
                 setError("");
               }}
-              placeholder="فاطمة طارق"
+              placeholder="الاسم"
               className={`${authInputClass} mt-1.5`}
             />
           </label>
         )}
-        <label className="block text-sm font-bold">
-          رقم الهاتف
-          <input
-            name="phone"
-            type="tel"
-            inputMode="tel"
-            dir="ltr"
-            autoComplete="tel"
-            required
-            maxLength={24}
-            value={phone}
-            onChange={(event) => {
-              setPhone(event.target.value);
-              setError("");
-            }}
-            aria-invalid={!!error}
-            aria-describedby={error ? "auth-error" : undefined}
-            placeholder="+966 55 123 4567"
-            className={`${authInputClass} mt-1.5`}
-          />
-        </label>
+        <PhoneInput
+          name="phone"
+          disabled={pending}
+          required
+          value={phone}
+          onChange={(value) => {
+            setPhone(value);
+            setError("");
+          }}
+          aria-invalid={!!error}
+          aria-describedby={error ? "auth-error" : undefined}
+        />
         {register && (
           <>
             <p className="text-sm md:text-base leading-6 text-[#6B7280]">
-             سيرسل رمز تحقق من 6 أرقام إلى هاتفك لإتمام إنشاء الحساب.
+              سيرسل رمز تحقق من 6 أرقام إلى هاتفك لإتمام إنشاء الحساب.
             </p>
             <label className="flex cursor-pointer items-start gap-2 text-sm leading-6 text-primary">
               <input
                 type="checkbox"
                 name="terms"
                 required
+                disabled={pending}
                 className="mt-1 size-3.5 shrink-0 accent-primary"
               />
               أوافق على الشروط والأحكام وسياسة الخصوصية
@@ -141,9 +147,11 @@ export default function AuthForm({
         )}
         <button
           type="submit"
+          disabled={pending}
+          aria-busy={pending}
           className={authButtonClass}
         >
-          {title}
+          {pending ? "جاري المتابعة…" : title}
         </button>
       </form>
       <div className="mt-3 border-t border-gray-100 pt-3 text-center">
@@ -163,7 +171,6 @@ export default function AuthForm({
           الدخول كزائر
         </Link>
       </div>
-      
     </AuthLayout>
   );
 }

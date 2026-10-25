@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import AuthForm from "@/components/auth/AuthForm";
-import { authDestination } from "@/lib/demo-auth";
+import { authDestination } from "@/lib/auth-flow";
 
 export const metadata: Metadata = {
   title: "تسجيل الدخول",

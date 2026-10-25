@@ -6,11 +6,13 @@ export default function CheckoutSummary({
   pricing,
   busy,
   preparingPhotos = false,
+  unavailable = false,
 }: {
   items: CartItem[];
   pricing: OrderPricing;
   busy: boolean;
   preparingPhotos?: boolean;
+  unavailable?: boolean;
 }) {
   return (
     <aside className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 lg:sticky lg:top-24 lg:p-6">
@@ -20,22 +22,27 @@ export default function CheckoutSummary({
         <PriceBreakdown
           pricing={pricing}
           currency={cartCurrency(items)}
+          deliveryPending
         />
       </div>
       <button
         type="submit"
         form="checkout-form"
-        disabled={busy || preparingPhotos}
+        disabled={busy || preparingPhotos || unavailable}
         className="mt-5 flex min-h-12 w-full items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-ink shadow-button"
       >
-        {preparingPhotos
-          ? "جاري تجهيز الصور…"
-          : busy
-            ? "جاري إتمام الطلب…"
-            : "إتمام الطلب"}
+        {unavailable
+          ? "إتمام الطلب غير متاح حاليًا"
+          : preparingPhotos
+            ? "جاري تجهيز الصور…"
+            : busy
+              ? "جاري إتمام الطلب…"
+              : "إتمام الطلب"}
       </button>
       <p className="mt-4 text-sm leading-7 text-[#6B7280] font-semibold text-center">
-        راجع تفاصيل الطلب قبل الإتمام.
+        {unavailable
+          ? "سلتك محفوظة في حسابك. سيتم توضيح رسوم التوصيل عند إتاحة إتمام الطلب."
+          : "راجع تفاصيل الطلب قبل الإتمام."}
       </p>
     </aside>
   );

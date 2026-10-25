@@ -1,16 +1,18 @@
 "use client";
 
 import { useRef, type ClipboardEvent, type KeyboardEvent } from "react";
-import { normalizeDigits } from "@/lib/demo-auth";
+import { normalizeDigits } from "@/lib/phone";
 
 export default function OtpInput({
   value,
   onChange,
   invalid,
+  disabled = false,
 }: {
   value: string[];
   onChange: (value: string[]) => void;
   invalid: boolean;
+  disabled?: boolean;
 }) {
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -47,7 +49,10 @@ export default function OtpInput({
   }
 
   return (
-    <fieldset className="mt-3">
+    <fieldset
+      disabled={disabled}
+      className="mt-3"
+    >
       <legend className="sr-only">رمز التحقق المكون من ستة أرقام</legend>
       <div
         dir="ltr"
@@ -64,7 +69,7 @@ export default function OtpInput({
             autoComplete={index === 0 ? "one-time-code" : "off"}
             aria-label={`الرقم ${index + 1} من رمز التحقق`}
             aria-invalid={invalid}
-            aria-describedby={invalid ? "otp-error" : "otp-demo-note"}
+            aria-describedby={invalid ? "otp-error" : undefined}
             value={digit}
             onFocus={(event) => event.currentTarget.select()}
             onChange={(event) => {

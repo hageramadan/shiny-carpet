@@ -3,16 +3,20 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import { useStore } from "@/components/store";
+import { useAddresses } from "./AddressesProvider";
+import { useAuthAction } from "@/hooks/useAuthAction";
+import { TEMPORARY_ADDRESS_LOCATION_IDS } from "@/lib/api/addresses";
+import toast from "react-hot-toast";
 import type { Address } from "@/lib/data";
 import type { Place } from "@/lib/geocoding";
-import { saveAddress, validCoordinates } from "@/lib/addresses";
+import { validCoordinates } from "@/lib/addresses";
 import AddressFields, { type AddressFieldsValue } from "./AddressFields";
 import LocationPicker from "./LocationPicker";
 
 export default function AddressEditor({ address }: { address?: Address }) {
   const router = useRouter();
-  const { update } = useStore();
+  const addresses = useAddresses();
+  const action = useAuthAction();
   const [fields, setFields] = useState<AddressFieldsValue>({
     label: address?.label ?? "",
     region: address?.region ?? "",
@@ -22,12 +26,12 @@ export default function AddressEditor({ address }: { address?: Address }) {
     floor: address?.floor ?? "",
     apartment: address?.apartment ?? "",
     details: address?.details ?? "",
+    notes: address?.notes ?? "",
   });
   const [location, setLocation] = useState(address?.location);
-  const [country, setCountry] = useState(address?.country ?? "");
-  const [postalCode, setPostalCode] = useState(address?.postalCode ?? "");
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
+  const { error, setError } = action;
+  const pending = action.pending || addresses.busy;
 
   function placeSelected(place: Place) {
     setFields((current) => ({
@@ -37,46 +41,37 @@ export default function AddressEditor({ address }: { address?: Address }) {
       street: place.street,
       building: place.building,
     }));
-    setCountry(place.country);
-    setPostalCode(place.postalCode);
     setError("");
   }
 
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busy) return;
+    if (busy || pending) return;
     if (!location || !validCoordinates(location)) {
       setError("حدد موقع العنوان على الخريطة أو باستخدام البحث أولًا.");
       return;
     }
     if (
-      [fields.label, fields.region, fields.city, fields.street, fields.building].some(
-        (value) => !value.trim(),
-      )
+      [
+        fields.label,
+        fields.region,
+        fields.city,
+        ...(address ? [] : [fields.street, fields.building]),
+      ].some((value) => !value.trim())
     ) {
       setError("يرجى استكمال تفاصيل العنوان المطلوبة.");
       return;
     }
-    const value: Address = {
-      ...address,
-      ...Object.fromEntries(
-        Object.entries(fields).map(([key, text]) => [key, text.trim()]),
-      ),
-      id: address?.id || crypto.randomUUID(),
-      label: fields.label.trim(),
-      region: fields.region.trim(),
-      city: fields.city.trim(),
-      street: fields.street.trim(),
-      building: fields.building.trim(),
-      country,
-      postalCode,
-      location,
-    };
-    update((current) => ({
-      ...current,
-      addresses: saveAddress(current.addresses, value),
-    }));
-    router.push("/addresses");
+    await action.run("save", async (signal) => {
+      const draft = { ...fields, location, ...TEMPORARY_ADDRESS_LOCATION_IDS };
+      const saved = address
+        ? await addresses.edit(address.id, draft)
+        : await addresses.create(draft);
+      signal.throwIfAborted();
+      toast.success(address ? "تم تحديث العنوان بنجاح." : "تمت إضافة العنوان بنجاح.");
+      const next = new URLSearchParams(window.location.search).get("next");
+      router.push(next === "/checkout" ? `/checkout?address=${saved.id}` : "/addresses");
+    });
   }
 
   return (
@@ -86,17 +81,20 @@ export default function AddressEditor({ address }: { address?: Address }) {
           {address ? `تفاصيل عنوان ${address.label}` : "تفاصيل العنوان"}
         </h2>
         <form onSubmit={submit}>
-          <AddressFields
-            value={fields}
-            onChange={(value) => {
-              setFields(value);
-              setError("");
-            }}
-          />
+          <fieldset disabled={pending}>
+            <AddressFields
+              editing={Boolean(address)}
+              value={fields}
+              onChange={(value) => {
+                setFields(value);
+                setError("");
+              }}
+            />
+          </fieldset>
           <p className="mt-3 text-xs leading-6 text-muted">
             {address?.isDefault
               ? "هذا هو عنوانك الافتراضي للاستلام والتوصيل."
-              : "سيُحفظ هذا العنوان في المتصفح لاستخدامه في طلبات المعاينة القادمة."}
+              : "سيُحفظ هذا العنوان في حسابك لاستخدامه عند الاستلام والتوصيل."}
           </p>
           {error && (
             <p
@@ -109,10 +107,11 @@ export default function AddressEditor({ address }: { address?: Address }) {
           <div className="mt-3 flex flex-wrap gap-2">
             <button
               type="submit"
-              disabled={busy}
+              disabled={busy || pending}
+              aria-busy={pending}
               className="min-h-11 rounded-lg bg-primary px-5 py-2 text-sm font-bold text-white transition-colors hover:bg-ink shadow-button"
             >
-              {address ? "حفظ التغييرات" : "حفظ العنوان"}
+              {pending ? "جاري الحفظ…" : address ? "حفظ التغييرات" : "حفظ العنوان"}
             </button>
             <Link
               href="/addresses"

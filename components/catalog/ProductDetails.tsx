@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { FiCheck, FiLayers, FiShoppingBag } from "react-icons/fi";
@@ -9,15 +10,17 @@ import { Quantity } from "@/components/ui";
 import { ProductCard } from "@/components/products";
 import {
   money,
-  cartCurrency,
   productCurrency,
   currencyLabel,
   type Product,
-  type CartItem,
+  productHref,
 } from "@/lib/data";
-import { cartItemKey } from "@/lib/product-options";
+import { cartAddInput } from "@/lib/api/cart";
+import { useCart } from "@/components/cart/CartProvider";
+import { useAuthAction } from "@/hooks/useAuthAction";
 import { productSizeOptions, resolveProductSize } from "@/lib/product-selection";
 import ProductSizePicker from "./ProductSizePicker";
+import { useCustomProductPrice } from "@/hooks/useCustomProductPrice";
 
 export default function ProductDetails({
   product,
@@ -26,19 +29,28 @@ export default function ProductDetails({
   product: Product;
   related?: Product[];
 }) {
-  const { state, update } = useStore();
+  const { state } = useStore();
+  const router = useRouter();
+  const cart = useCart();
   const [choice, setChoice] = useState(productSizeOptions(product)[0]?.value ?? "");
   const [length, setLength] = useState("");
   const [width, setWidth] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [activeImage, setActiveImage] = useState(product.image);
   const [added, setAdded] = useState(false);
-  const [error, setError] = useState("");
+  const { error, setError, run, pending: adding } = useAuthAction();
+  const [customTotal, setCustomTotal] = useState<number | null>(null);
+  const { calculate, pending: calculating } = useCustomProductPrice(product.apiId);
+  const pending = adding || calculating || cart.busy;
+  const isApiCustom = product.apiId !== undefined && choice === "custom";
   const resolved = resolveProductSize(product, choice, length, width);
-  const total = resolved
-    ? Math.round((resolved.unitPrice ?? product.price * resolved.size) * quantity * 100) /
-      100
-    : null;
+  const total = isApiCustom
+    ? customTotal
+    : resolved
+      ? Math.round(
+          (resolved.unitPrice ?? product.price * resolved.size) * quantity * 100,
+        ) / 100
+      : null;
   const photos = [product.image];
   const currency = currencyLabel(productCurrency(product));
 
@@ -46,40 +58,37 @@ export default function ProductDetails({
     setChoice(value);
     setAdded(false);
     setError("");
+    setCustomTotal(null);
   }
 
-  function addToCart(event: FormEvent<HTMLFormElement>) {
+  async function addToCart(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (pending) return;
+    if (!state.profile) {
+      router.push(`/login?next=${encodeURIComponent(productHref(product))}`);
+      return;
+    }
+    setError("");
+    setAdded(false);
     if (!resolved) {
       setError("اكتب طول وعرض صحيحين من ٠٫١ إلى ٢٠ متر.");
       return;
     }
-    if (state.cart.length && cartCurrency(state.cart) !== productCurrency(product)) {
-      setError(
-        "السلة تحتوي على منتجات من النسخة السابقة بعملة مختلفة. احذفها من السلة قبل إضافة المنتج الجديد.",
-      );
-      return;
-    }
-    const item: CartItem = { id: product.id, quantity, ...resolved, product };
-    const currentItem = state.cart.find((i) => cartItemKey(i) === cartItemKey(item));
-    if (currentItem && currentItem.quantity + quantity > 99) {
-      setError("الحد الأقصى ٩٩ قطعة من نفس المقاس. راجع الكمية في السلة.");
-      return;
-    }
-    update((state) => {
-      const key = cartItemKey(item);
-      const existing = state.cart.find((i) => cartItemKey(i) === key);
-      return {
-        ...state,
-        cart: existing
-          ? state.cart.map((i) =>
-              cartItemKey(i) === key ? { ...i, quantity: i.quantity + quantity } : i,
-            )
-          : [...state.cart, item],
-      };
+    await run("add", async (signal) => {
+      if (isApiCustom && resolved.dimensions) {
+        const price = await calculate({
+          width: resolved.dimensions.width,
+          length: resolved.dimensions.length,
+          quantity,
+        });
+        signal.throwIfAborted();
+        setCustomTotal(price);
+      }
+      await cart.add(cartAddInput(product, resolved, quantity));
+      signal.throwIfAborted();
+      setAdded(true);
+      setError("");
     });
-    setAdded(true);
-    setError("");
   }
 
   return (
@@ -175,6 +184,7 @@ export default function ProductDetails({
               className="mt-4 border-t border-gray-200 pt-4 sm:mt-6 sm:pt-5"
             >
               <ProductSizePicker
+                disabled={pending}
                 product={product}
                 choice={choice}
                 length={length}
@@ -183,40 +193,55 @@ export default function ProductDetails({
                 onLength={(value) => {
                   setLength(value);
                   setAdded(false);
+                  setCustomTotal(null);
+                  setError("");
                 }}
                 onWidth={(value) => {
                   setWidth(value);
                   setAdded(false);
+                  setCustomTotal(null);
+                  setError("");
                 }}
               />
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3 sm:mt-5 sm:gap-4">
                 <span className="text-sm font-bold text-ink">الكمية</span>
                 <Quantity
+                  disabled={pending}
                   value={quantity}
                   onChange={(n) => {
                     setQuantity(n);
                     setAdded(false);
+                    setCustomTotal(null);
+                    setError("");
                   }}
                 />
               </div>
               <div className="my-4 flex flex-wrap items-center justify-between gap-3 sm:my-5 sm:gap-4 text-sm text-ink">
                 <span>الإجمالي</span>
                 <strong className="text-lg text-primary sm:text-xl">
-                  {total === null ? "حدد المقاس" : money(total) + " " + currency}
+                  {total === null
+                    ? isApiCustom && resolved
+                      ? "يُحسب عند الإضافة"
+                      : "حدد المقاس"
+                    : money(total) + " " + currency}
                 </strong>
               </div>
               <button
                 type="submit"
-                disabled={!resolved && choice !== "custom"}
+                disabled={pending || (!resolved && choice !== "custom")}
+                aria-busy={pending}
                 className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-primary sm:gap-3 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-ink shadow-button disabled:cursor-not-allowed"
               >
-                {added ? (
+                {pending ? (
+                  "جاري الإضافة…"
+                ) : added ? (
                   <>
                     <FiCheck /> تمت الإضافة — أضف مرة أخرى
                   </>
                 ) : (
                   <>
-                    <FiShoppingBag /> أضف إلى السلة
+                    <FiShoppingBag />{" "}
+                    {isApiCustom ? "احسب السعر وأضف إلى السلة" : "أضف إلى السلة"}
                   </>
                 )}
               </button>
@@ -226,6 +251,20 @@ export default function ProductDetails({
                   className="mt-3 text-sm text-red-600"
                 >
                   {error}{" "}
+                  <Link
+                    href="/cart"
+                    className="font-bold underline"
+                  >
+                    عرض السلة
+                  </Link>
+                </p>
+              )}
+              {state.profile && cart.status === "error" && (
+                <p
+                  role="alert"
+                  className="mt-3 text-sm text-red-600"
+                >
+                  {cart.error}{" "}
                   <Link
                     href="/cart"
                     className="font-bold underline"
@@ -248,7 +287,6 @@ export default function ProductDetails({
                   </Link>
                 </p>
               )}
-            
             </form>
           </div>
         </div>

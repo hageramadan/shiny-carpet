@@ -16,9 +16,11 @@ export function PageHeading({ title, text }: { title: string; text: string }) {
 export function Quantity({
   value,
   onChange,
+  disabled = false,
 }: {
   value: number;
   onChange: (n: number) => void;
+  disabled?: boolean;
 }) {
   return (
     <div className="inline-flex shrink-0 items-center gap-2 [direction:ltr] h-13 p-1 rounded-lg border border-solid border-gray-200 sm:gap-3.75 sm:h-10.5 sm:p-1.25">
@@ -26,7 +28,7 @@ export function Quantity({
         className="size-11 bg-soft grid place-items-center text-sm rounded-sm sm:size-7"
         type="button"
         aria-label="زيادة الكمية"
-        disabled={value >= 99}
+        disabled={disabled || value >= 99}
         onClick={() => onChange(Math.min(99, value + 1))}
       >
         <FiPlus />
@@ -36,7 +38,7 @@ export function Quantity({
         className="size-11 bg-soft grid place-items-center text-sm rounded-sm sm:size-7"
         type="button"
         aria-label="تقليل الكمية"
-        disabled={value <= 1}
+        disabled={disabled || value <= 1}
         onClick={() => onChange(Math.max(1, value - 1))}
       >
         <FiMinus />

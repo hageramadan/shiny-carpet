@@ -5,9 +5,15 @@ import { addressLines } from "@/lib/addresses";
 export default function ProfileAddress({
   address,
   count,
+  loading = false,
+  error = "",
+  onRetry,
 }: {
   address?: Address;
   count: number;
+  loading?: boolean;
+  error?: string;
+  onRetry?: () => void;
 }) {
   return (
     <section
@@ -20,7 +26,29 @@ export default function ProfileAddress({
       >
         عنوان الاستلام والتوصيل
       </h2>
-      {address ? (
+      {loading ? (
+        <p
+          role="status"
+          className="mt-4 text-sm text-muted"
+        >
+          جاري تحميل العناوين…
+        </p>
+      ) : error ? (
+        <div>
+          <p
+            role="alert"
+            className="mt-4 text-sm text-red-700"
+          >
+            {error}
+          </p>
+          <button
+            onClick={onRetry}
+            className="min-h-11 text-sm text-primary"
+          >
+            إعادة المحاولة
+          </button>
+        </div>
+      ) : address ? (
         <>
           <h3 className="mt-4 text-lg font-bold text-[#17202A]">{address.label}</h3>
           <address className="mt-3 space-y-3 text-sm not-italic leading-7 text-muted">

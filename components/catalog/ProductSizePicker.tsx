@@ -9,6 +9,7 @@ type Props = {
   onChoice: (value: string) => void;
   onLength: (value: string) => void;
   onWidth: (value: string) => void;
+  disabled?: boolean;
 };
 
 export default function ProductSizePicker({
@@ -19,12 +20,16 @@ export default function ProductSizePicker({
   onChoice,
   onLength,
   onWidth,
+  disabled = false,
 }: Props) {
   const options = productSizeOptions(product);
   if (product.apiId !== undefined && !product.hasSizes) return null;
   return (
     <div>
-      <fieldset className="min-w-0">
+      <fieldset
+        disabled={disabled}
+        className="min-w-0"
+      >
         <legend className="mb-3 text-sm font-bold text-[#17202A]">المقاس</legend>
         <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
           {options.map((option) => (
@@ -51,7 +56,10 @@ export default function ProductSizePicker({
         )}
       </fieldset>
       {choice === "custom" && options.some((option) => option.value === "custom") && (
-        <fieldset className="mt-4 min-w-0 rounded-2xl bg-primary/10 p-3 sm:p-4">
+        <fieldset
+          disabled={disabled}
+          className="mt-4 min-w-0 rounded-2xl bg-primary/10 p-3 sm:p-4"
+        >
           <legend className="float-right mb-3 w-full text-sm font-semibold text-[#17202A]">
             أدخل المقاس بالمتر
           </legend>

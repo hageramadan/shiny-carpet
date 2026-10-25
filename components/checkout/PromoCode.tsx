@@ -1,25 +1,13 @@
 "use client";
 import { useState, type FormEvent } from "react";
 
-export default function PromoCode({
-  applied,
-  onApply,
-}: {
-  applied: string;
-  onApply: (code: string) => void;
-}) {
+export default function PromoCode() {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
 
   function apply(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (code.trim().toUpperCase() === "DEMO10") {
-      onApply("DEMO10");
-      setError("");
-    } else {
-      onApply("");
-      setError("الكود غير متاح. للتجربة استخدم DEMO10.");
-    }
+    setError("تفعيل أكواد الخصم غير متاح حاليًا.");
   }
 
   return (
@@ -59,27 +47,9 @@ export default function PromoCode({
           {error}
         </p>
       )}
-      {applied ? (
-        <div
-          role="status"
-          className="mt-3 flex flex-wrap items-center justify-between gap-3 text-xs text-primary"
-        >
-          <span>تم تطبيق خصم ١٠٪: {applied}</span>
-          <button
-            type="button"
-            onClick={() => {
-              onApply("");
-              setCode("");
-              setError("");
-            }}
-            className="underline underline-offset-4"
-          >
-            إزالة
-          </button>
-        </div>
-      ) : (
-        <p className="mt-3 text-xs leading-6 text-muted">للتجربة فقط: DEMO10</p>
-      )}
+      <p className="mt-3 text-xs leading-6 text-muted">
+        تفعيل أكواد الخصم غير متاح حاليًا.
+      </p>
     </section>
   );
 }

@@ -1,30 +1,4 @@
 import type { OrderStatus } from "./order-status";
-export const products: Product[] = [
-  {
-    id: "carpet",
-    name: "سجاد يدوي",
-    short: "نظافة من الأعماق، ونعومة من أول لمسة.",
-    description:
-      "عناية متكاملة بسجاد بيتك، تبدأ بإزالة الأتربة ثم الغسيل والتنظيف العميق، وتنتهي بالتجفيف والتغليف. اختر المقاس والكمية وسيب الباقي علينا.",
-    price: 25,
-    unit: "م²",
-    image: "/images/carpet.jpg",
-    category: "السجاد",
-    tag: "عناية بكل خيط",
-  },
-  {
-    id: "blanket",
-    name: "بطانية",
-    short: "دفا نضيف، وريحة تفتح النفس.",
-    description:
-      "غسيل لطيف للبطاطين يساعد على إزالة الأوساخ والروائح مع الحفاظ على ملمسها الناعم. اختر حجم البطانية وحدد العدد لاستعراض السعر ال.",
-    price: 75,
-    unit: "قطعة",
-    image: "/images/blankets.jpg",
-    category: "البطاطين",
-    tag: "نعومة تستاهليها",
-  },
-];
 export type Currency = "SAR" | "EGP";
 export type ProductSize = {
   id: number;
@@ -52,6 +26,8 @@ export type Product = {
   originalPrice?: number;
 };
 export type CartItem = {
+  cartItemId?: number;
+  lineTotal?: number;
   id: string;
   quantity: number;
   size: number;
@@ -62,6 +38,10 @@ export type CartItem = {
   dimensions?: { length: number; width: number };
 };
 export type Address = {
+  governorateId?: number;
+  areaId?: number;
+  districtId?: number;
+  notes?: string;
   id: string;
   label: string;
   city: string;
@@ -76,7 +56,12 @@ export type Address = {
   isDefault?: boolean;
   location?: { lat: number; lng: number; label?: string };
 };
-export type Profile = { name: string; email: string; phone: string };
+export type Profile = {
+  name: string;
+  email: string;
+  phone: string;
+  image?: string | null;
+};
 export type OrderPricing = {
   subtotal: number;
   delivery: number;
@@ -102,8 +87,7 @@ export type Order = {
 };
 export const money = (value: number) =>
   new Intl.NumberFormat("ar-EG", { maximumFractionDigits: 2 }).format(value);
-export const cartProduct = (item: CartItem) =>
-  item.product ?? products.find((product) => product.id === item.id);
+export const cartProduct = (item: CartItem) => item.product;
 export const productCurrency = (product?: Product): Currency =>
   product?.currency ?? "EGP";
 export const cartCurrency = (items: CartItem[]): Currency =>
@@ -112,6 +96,7 @@ export const currencyLabel = (currency: Currency) => (currency === "SAR" ? "ر.�
 export const productHref = (product: Product) =>
   product.apiId !== undefined ? `/products/${product.apiId}` : `/products/${product.id}`;
 export const itemPrice = (item: CartItem) => {
+  if (item.lineTotal !== undefined) return item.lineTotal;
   const price =
     item.unitPrice !== undefined
       ? item.unitPrice * item.quantity

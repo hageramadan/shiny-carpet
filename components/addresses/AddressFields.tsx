@@ -11,6 +11,7 @@ export type AddressFieldsValue = {
   floor: string;
   apartment: string;
   details: string;
+  notes: string;
 };
 
 const fields: {
@@ -66,14 +67,23 @@ const fields: {
     wide: true,
     max: 300,
   },
+  {
+    name: "notes",
+    label: "ملاحظات",
+    placeholder: "ملاحظات الاستلام (اختياري)",
+    wide: true,
+    max: 500,
+  },
 ];
 
 export default function AddressFields({
   value,
   onChange,
+  editing = false,
 }: {
   value: AddressFieldsValue;
   onChange: (value: AddressFieldsValue) => void;
+  editing?: boolean;
 }) {
   const id = useId();
   return (
@@ -88,7 +98,10 @@ export default function AddressFields({
           <input
             id={`${id}-${field.name}`}
             name={field.name}
-            required={field.required}
+            required={
+              field.required &&
+              !(editing && (field.name === "street" || field.name === "building"))
+            }
             maxLength={field.max}
             value={value[field.name]}
             onChange={(event) => onChange({ ...value, [field.name]: event.target.value })}

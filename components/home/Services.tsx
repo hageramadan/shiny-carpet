@@ -2,9 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useApiResource } from "@/hooks/useApiResource";
+import { useCategories } from "@/hooks/useCatalogApi";
 import { FiArrowLeft, FiGrid } from "react-icons/fi";
-import { getCategories } from "@/lib/categories";
 import ServicesFeedback from "./ServicesFeedback";
 
 const servicesGridClassName =
@@ -30,7 +29,7 @@ function ServicesLoading() {
 }
 
 function ServiceCards() {
-  const request = useApiResource("categories", getCategories);
+  const request = useCategories();
   if (request.status === "loading") return <ServicesLoading />;
   if (request.status === "error")
     return (

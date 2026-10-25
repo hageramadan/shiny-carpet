@@ -3,28 +3,17 @@
 import Link from "next/link";
 import { FiShoppingBag } from "react-icons/fi";
 import { ProductCard } from "@/components/products";
-import { useCallback } from "react";
-import { useApiResource } from "@/hooks/useApiResource";
-import { getCategories } from "@/lib/categories";
-import { getProductsByCategory } from "@/lib/api-products";
+import { useCategories, useCategoryProducts } from "@/hooks/useCatalogApi";
 import CatalogFeedback from "./CatalogFeedback";
 
 export default function Catalog({ categoryId }: { categoryId?: number }) {
-  const categoriesRequest = useApiResource("categories", getCategories);
+  const categoriesRequest = useCategories();
   const categories = categoriesRequest.data ?? [];
   const selected =
     categoryId === undefined
       ? categories[0]
       : categories.find((category) => category.id === categoryId);
-  const selectedId = selected?.id;
-  const loadProducts = useCallback(
-    (signal: AbortSignal) => getProductsByCategory(selectedId!, signal),
-    [selectedId],
-  );
-  const productsRequest = useApiResource(
-    selectedId === undefined ? null : `category:${selectedId}`,
-    loadProducts,
-  );
+  const productsRequest = useCategoryProducts(selected?.id);
   const products = productsRequest.data ?? [];
   const failed =
     categoriesRequest.status === "error" || productsRequest.status === "error";

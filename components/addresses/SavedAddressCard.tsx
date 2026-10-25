@@ -6,12 +6,12 @@ import { addressLines } from "@/lib/addresses";
 export default function SavedAddressCard({
   address,
   isDefault,
-  onDefault,
+  disabled = false,
   onDelete,
 }: {
   address: Address;
   isDefault: boolean;
-  onDefault: () => void;
+  disabled?: boolean;
   onDelete: () => void;
 }) {
   return (
@@ -34,15 +34,6 @@ export default function SavedAddressCard({
               </p>
             ))}
           </address>
-          {!isDefault && (
-            <button
-              type="button"
-              onClick={onDefault}
-              className="mt-3 min-h-8 text-xs font-semibold text-primary hover:underline"
-            >
-              تعيين كعنوان افتراضي
-            </button>
-          )}
         </div>
         <div className="flex shrink-0 items-center gap-5">
           <Link
@@ -56,6 +47,7 @@ export default function SavedAddressCard({
           <button
             type="button"
             onClick={onDelete}
+            disabled={disabled}
             aria-label={`حذف عنوان ${address.label}`}
             className="inline-flex min-h-11 items-center gap-2 px-2 py-2 text-sm font-semibold text-[#f44e51] transition-colors hover:text-red-700"
           >

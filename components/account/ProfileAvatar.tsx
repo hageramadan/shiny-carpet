@@ -2,14 +2,16 @@ import Image from "next/image";
 
 export default function ProfileAvatar({
   name,
+  image,
   small = false,
 }: {
   name?: string;
+  image?: string | null;
   small?: boolean;
 }) {
   return (
     <Image
-      src="/images/Profile.png"
+      src={image || "/images/Profile.png"}
       alt={name ? `صورة الملف الشخصي لـ ${name}` : "صورة الملف الشخصي"}
       width={72}
       height={72}

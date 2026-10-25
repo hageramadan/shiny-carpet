@@ -7,15 +7,30 @@
     "build": "next build",
     "start": "next start --port 3000",
     "typecheck": "tsc --noEmit",
+    "test:api": "node --require ./tests/register-typescript.cjs --test tests/api.test.cjs",
+    "test:cart": "node --require ./tests/register-typescript.cjs --test tests/cart.test.cjs",
+    "test:addresses": "node --require ./tests/register-typescript.cjs --test tests/addresses.test.cjs",
+    "test:addresses:browser": "node tests/addresses-browser.cjs",
+    "test:cart:browser": "node tests/cart-browser.cjs",
+    "test:phone": "node --require ./tests/register-typescript.cjs --test tests/phone.test.cjs",
+    "test:auth": "node --require ./tests/register-typescript.cjs --test tests/auth.test.cjs",
+    "test:profile": "node --require ./tests/register-typescript.cjs --test tests/profile.test.cjs",
+    "test:profile:browser": "node tests/profile-browser.cjs",
+    "test:auth:browser": "node tests/auth-browser.cjs",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@radix-ui/react-dropdown-menu": "^2.2.1",
+    "country-flag-icons": "^1.6.20",
     "leaflet": "^1.9.4",
+    "libphonenumber-js": "^1.13.15",
     "next": "16.4.3",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "react-icons": "5.7.0"
+    "react-hot-toast": "^2.6.1",
+    "react-icons": "5.7.0",
+    "react-phone-number-input": "^3.4.18"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",

@@ -1,84 +1,46 @@
 "use client";
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { FiClock } from "react-icons/fi";
 import { useStore } from "@/components/store";
 import EmptyCart from "@/components/cart/EmptyCart";
-import { checkoutPricing, earliestPickupDate } from "@/lib/checkout";
-import type { Address, Order, OrderPhoto } from "@/lib/data";
+import { earliestPickupDate } from "@/lib/checkout";
+import type { OrderPhoto } from "@/lib/data";
+import { useCart } from "@/components/cart/CartProvider";
 import AddressCard from "./AddressCard";
-import { defaultAddress, saveAddress as upsertAddress } from "@/lib/addresses";
+import { defaultAddress } from "@/lib/addresses";
+import { useAddresses } from "@/components/addresses/AddressesProvider";
 import PromoCode from "./PromoCode";
 import PhotoUpload from "./PhotoUpload";
 import CheckoutSummary from "./CheckoutSummary";
 
 export default function CheckoutPage() {
-  const { state, update, ready } = useStore();
-  const router = useRouter();
+  const { state, ready } = useStore();
+  const addressState = useAddresses();
+  const { cart, status, reload, error: cartError } = useCart();
   const [selectedId, setSelectedId] = useState("");
-  const [coupon, setCoupon] = useState("");
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("address");
+    if (id && /^[1-9]\d*$/.test(id)) setSelectedId(id);
+  }, []);
   const [photos, setPhotos] = useState<OrderPhoto[]>([]);
   const [preparingPhotos, setPreparingPhotos] = useState(false);
   const [error, setError] = useState("");
-  const [orderId, setOrderId] = useState("");
-  const submitting = useRef(false);
   const address =
-    state.addresses.find((item) => item.id === selectedId) ||
-    defaultAddress(state.addresses);
-  const pricing = checkoutPricing(state.cart, coupon);
+    addressState.addresses.find((item) => item.id === selectedId) ||
+    defaultAddress(addressState.addresses);
+  const pricing = {
+    subtotal: cart?.subtotal ?? 0,
+    tax: cart?.vat ?? 0,
+    total: cart?.total ?? 0,
+    delivery: 0,
+    discount: 0,
+  };
   const minDate = earliestPickupDate();
-
-  function saveAddress(value: Address) {
-    update((current) => ({
-      ...current,
-      addresses: upsertAddress(current.addresses, value),
-    }));
-    setSelectedId(value.id);
-    setError("");
-  }
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (submitting.current) return;
-    if (preparingPhotos) {
-      setError("انتظر لحظات لحد ما تجهز معاينة الصور.");
-      return;
-    }
-    if (!address) {
-      setError("أضف عنوان الاستلام واحفظه الأول.");
-      return;
-    }
-    if (!state.cart.length) {
-      setError("السلة فارغة. أضف القطع الأول.");
-      return;
-    }
-    const form = new FormData(event.currentTarget);
-    const date = String(form.get("date") || "");
-    if (date < minDate) {
-      setError("اختر موعد استلام من بكرة أو بعده.");
-      return;
-    }
-    const id = "SC-" + crypto.randomUUID().slice(0, 8).toUpperCase();
-    const order: Order = {
-      id,
-      items: state.cart.map((item) => ({ ...item })),
-      total: pricing.total,
-      pricing,
-      status: "received",
-      coupon: coupon || undefined,
-      address: { ...address },
-      phone: String(form.get("phone") || "").trim(),
-      date,
-      slot: String(form.get("slot") || ""),
-      notes: String(form.get("notes") || "").trim(),
-      photos,
-      createdAt: new Date().toISOString(),
-    };
-    submitting.current = true;
-    setOrderId(id);
-    update((current) => ({ ...current, orders: [order, ...current.orders], cart: [] }));
-    router.push("/order-confirmation?order=" + id);
+    setError("إتمام الطلب غير متاح حاليًا. سلتك محفوظة في حسابك.");
   }
 
   return (
@@ -107,35 +69,42 @@ export default function CheckoutPage() {
           >
             جاري تحميل تفاصيل الطلب…
           </div>
-        ) : orderId ? (
-          <div
-            role="status"
-            className="rounded-2xl border border-gray-200 bg-white p-10 text-center"
+        ) : !state.profile ? (
+          <Link
+            href="/login?next=%2Fcheckout"
+            className="inline-flex min-h-11 items-center rounded-xl bg-primary px-6 text-white"
           >
-            <p className="text-ink">تم حفظ طلبك التجريبي، جاري فتح التأكيد…</p>
-            <Link
-              href={"/order-confirmation?order=" + orderId}
-              className="mt-4 inline-block text-primary underline"
+            سجّل الدخول لاستكمال الطلب
+          </Link>
+        ) : status === "error" ? (
+          <div>
+            <p role="alert">{cartError}</p>
+            <button
+              onClick={() => void reload()}
+              className="min-h-11 text-primary"
             >
-              عرض تأكيد الطلب
-            </Link>
+              إعادة المحاولة
+            </button>
           </div>
-        ) : !state.cart.length ? (
+        ) : !cart || status === "loading" ? (
+          <p role="status">جاري تحميل تفاصيل الطلب…</p>
+        ) : !cart.items.length ? (
           <EmptyCart />
         ) : (
           <div className="grid items-start gap-4 *:min-w-0 sm:gap-6 lg:grid-cols-3">
             <div className="space-y-4 sm:space-y-5 lg:col-span-2">
               <AddressCard
-                addresses={state.addresses}
+                addresses={addressState.addresses}
                 selected={address}
                 phone={state.profile?.phone}
                 onSelect={setSelectedId}
-                onSave={saveAddress}
+                loading={
+                  addressState.status === "loading" || addressState.status === "idle"
+                }
+                error={addressState.error}
+                onRetry={() => void addressState.reload()}
               />
-              <PromoCode
-                applied={coupon}
-                onApply={setCoupon}
-              />
+              <PromoCode />
               <PhotoUpload
                 onChange={setPhotos}
                 onBusyChange={setPreparingPhotos}
@@ -197,9 +166,10 @@ export default function CheckoutPage() {
               </form>
             </div>
             <CheckoutSummary
-              items={state.cart}
+              items={cart.items}
               pricing={pricing}
-              busy={Boolean(orderId)}
+              busy={false}
+              unavailable
               preparingPhotos={preparingPhotos}
             />
           </div>

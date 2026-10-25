@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { FiShoppingCart, FiUser, FiMenu, FiX, FiArrowUpLeft } from "react-icons/fi";
 import { useStore } from "@/components/store";
+import { useCart } from "@/components/cart/CartProvider";
 
 const links = [
   ["/#top", "الرئيسية"],
@@ -68,11 +69,9 @@ export default function Navbar() {
     };
   }, [path]);
 
- 
   useEffect(() => {
     setOpen(false);
   }, [path]);
-
 
   useEffect(() => {
     if (!open) return;
@@ -82,9 +81,8 @@ export default function Navbar() {
       const nav = document.getElementById("primary-navbar");
       const target = event.target as Node;
 
- 
       if (navbar && navbar.contains(target)) return;
-    
+
       if (nav && nav.contains(target)) return;
 
       setOpen(false);
@@ -116,7 +114,8 @@ export default function Navbar() {
   }
 
   const { state } = useStore();
-  const count = state.cart.reduce((n, p) => n + p.quantity, 0);
+  const { cart } = useCart();
+  const count = cart?.count ?? 0;
 
   return (
     <header
@@ -148,11 +147,7 @@ export default function Navbar() {
               onClick={() => setOpen(false)}
               data-active={isActive(href)}
               aria-current={
-                isActive(href)
-                  ? href.startsWith("/#")
-                    ? "location"
-                    : "page"
-                  : undefined
+                isActive(href) ? (href.startsWith("/#") ? "location" : "page") : undefined
               }
             >
               {label}

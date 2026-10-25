@@ -1,13 +1,13 @@
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
-import type { Address, CartItem, Order, Profile } from "@/lib/data";
+import type { Order, Profile } from "@/lib/data";
+import { announceSessionChange, fetchSession } from "@/lib/auth/client";
+import { AUTH_SESSION_KEY } from "@/lib/auth/session";
 type State = {
-  cart: CartItem[];
   profile: Profile | null;
-  addresses: Address[];
   orders: Order[];
 };
-const empty: State = { cart: [], profile: null, addresses: [], orders: [] };
+const empty: State = { profile: null, orders: [] };
 const Context = createContext<{
   state: State;
   ready: boolean;
@@ -17,18 +17,62 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<State>(empty);
   const [ready, setReady] = useState(false);
   useEffect(() => {
+    let active = true;
+    let request: AbortController | null = null;
     try {
       const raw = localStorage.getItem("shiny-carpet-demo-v1");
-      if (raw) setState({ ...empty, ...JSON.parse(raw) });
+      if (raw) {
+        const stored = JSON.parse(raw);
+        setState({
+          ...empty,
+          orders: Array.isArray(stored.orders) ? stored.orders : [],
+        });
+      }
     } catch {
       /* An unavailable store starts a fresh demo. */
     }
-    setReady(true);
+    async function syncSession() {
+      request?.abort();
+      const current = new AbortController();
+      request = current;
+      try {
+        const profile = await fetchSession(current.signal);
+        if (active && !current.signal.aborted)
+          setState((state) => ({ ...state, profile }));
+      } catch {
+        if (active && !current.signal.aborted)
+          setState((state) => ({ ...state, profile: null }));
+      } finally {
+        if (active && !current.signal.aborted) setReady(true);
+      }
+    }
+    void syncSession();
+    function onStorage(event: StorageEvent) {
+      if (
+        (event.key === AUTH_SESSION_KEY || event.key === null) &&
+        event.storageArea === window.localStorage
+      )
+        announceSessionChange();
+    }
+    window.addEventListener("storage", onStorage);
+    window.addEventListener("shiny-auth-session-change", syncSession);
+    window.addEventListener("focus", syncSession);
+    return () => {
+      active = false;
+      request?.abort();
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("shiny-auth-session-change", syncSession);
+      window.removeEventListener("focus", syncSession);
+    };
   }, []);
   useEffect(() => {
     if (ready) {
       try {
-        localStorage.setItem("shiny-carpet-demo-v1", JSON.stringify(state));
+        // Local cart/address/order previews do not establish an authenticated session.
+        localStorage.setItem(
+          "shiny-carpet-demo-v1",
+          JSON.stringify({ orders: state.orders }),
+        );
       } catch {
         /* The interface also works without persistence. */
       }

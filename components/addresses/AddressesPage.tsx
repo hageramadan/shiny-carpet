@@ -5,17 +5,20 @@ import { useState } from "react";
 import { FiMapPin } from "react-icons/fi";
 import { useStore } from "@/components/store";
 import type { Address } from "@/lib/data";
-import { defaultAddress, removeAddress, setDefaultAddress } from "@/lib/addresses";
+import { useAddresses } from "./AddressesProvider";
+import { useAuthAction } from "@/hooks/useAuthAction";
+import toast from "react-hot-toast";
 import AddressesLayout from "./AddressesLayout";
 import SavedAddressCard from "./SavedAddressCard";
 import DeleteAddressDialog from "./DeleteAddressDialog";
 
 export default function AddressesPage() {
-  const { state, update, ready } = useStore();
+  const { state, ready } = useStore();
+  const { addresses, status, error, reload, remove, busy } = useAddresses();
+  const action = useAuthAction();
   const [deleting, setDeleting] = useState<Address | null>(null);
   const [message, setMessage] = useState("");
-  const preferred = defaultAddress(state.addresses);
-  const count = state.addresses.length;
+  const count = addresses.length;
   const countLabel =
     count === 1
       ? "عنوان محفوظ"
@@ -23,14 +26,15 @@ export default function AddressesPage() {
         ? "عنوانان محفوظان"
         : `${new Intl.NumberFormat("ar-EG").format(count)} من العناوين المحفوظة`;
 
-  function confirmDelete() {
+  async function confirmDelete() {
     if (!deleting) return;
-    update((current) => ({
-      ...current,
-      addresses: removeAddress(current.addresses, deleting.id),
-    }));
-    setMessage(`تم حذف عنوان «${deleting.label}» من المتصفح.`);
-    setDeleting(null);
+    await action.run("delete", async (signal) => {
+      await remove(deleting.id);
+      signal.throwIfAborted();
+      setMessage(`تم حذف عنوان «${deleting.label}».`);
+      toast.success("تم حذف العنوان بنجاح.");
+      setDeleting(null);
+    });
   }
 
   return (
@@ -40,7 +44,7 @@ export default function AddressesPage() {
     >
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <h2 className="text-lg font-bold text-[#17202A]">
-          {ready ? countLabel : "العناوين المحفوظة"}
+          {ready && status === "ready" ? countLabel : "العناوين المحفوظة"}
         </h2>
         <Link
           href="/addresses/new"
@@ -64,20 +68,33 @@ export default function AddressesPage() {
         >
           جاري تحميل العناوين…
         </p>
+      ) : !state.profile ? (
+        <Link
+          href="/login?next=%2Faddresses"
+          className="inline-flex min-h-11 items-center rounded-lg bg-primary px-5 text-white"
+        >
+          سجّل الدخول لعرض عناوينك
+        </Link>
+      ) : status === "error" ? (
+        <div>
+          <p role="alert">{error}</p>
+          <button
+            onClick={() => void reload()}
+            className="min-h-11 text-primary"
+          >
+            إعادة المحاولة
+          </button>
+        </div>
+      ) : status !== "ready" && !busy ? (
+        <p role="status">جاري تحميل العناوين…</p>
       ) : count ? (
         <ul className="space-y-4">
-          {state.addresses.map((address) => (
+          {addresses.map((address) => (
             <li key={address.id}>
               <SavedAddressCard
                 address={address}
-                isDefault={address.id === preferred?.id}
-                onDefault={() => {
-                  update((current) => ({
-                    ...current,
-                    addresses: setDefaultAddress(current.addresses, address.id),
-                  }));
-                  setMessage(`تم تعيين «${address.label}» كعنوان افتراضي.`);
-                }}
+                isDefault={Boolean(address.isDefault)}
+                disabled={busy || action.pending}
                 onDelete={() => setDeleting(address)}
               />
             </li>
@@ -100,6 +117,8 @@ export default function AddressesPage() {
           address={deleting}
           onCancel={() => setDeleting(null)}
           onConfirm={confirmDelete}
+          pending={busy || action.pending}
+          error={action.error || error}
         />
       )}
     </AddressesLayout>
