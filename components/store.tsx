@@ -1,13 +1,12 @@
 "use client";
 import { createContext, useContext, useEffect, useState } from "react";
-import type { Order, Profile } from "@/lib/data";
+import type { Profile } from "@/lib/data";
 import { announceSessionChange, fetchSession } from "@/lib/auth/client";
 import { AUTH_SESSION_KEY } from "@/lib/auth/session";
 type State = {
   profile: Profile | null;
-  orders: Order[];
 };
-const empty: State = { profile: null, orders: [] };
+const empty: State = { profile: null };
 const Context = createContext<{
   state: State;
   ready: boolean;
@@ -19,18 +18,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let active = true;
     let request: AbortController | null = null;
-    try {
-      const raw = localStorage.getItem("shiny-carpet-demo-v1");
-      if (raw) {
-        const stored = JSON.parse(raw);
-        setState({
-          ...empty,
-          orders: Array.isArray(stored.orders) ? stored.orders : [],
-        });
-      }
-    } catch {
-      /* An unavailable store starts a fresh demo. */
-    }
     async function syncSession() {
       request?.abort();
       const current = new AbortController();
@@ -65,19 +52,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       window.removeEventListener("focus", syncSession);
     };
   }, []);
-  useEffect(() => {
-    if (ready) {
-      try {
-        // Local cart/address/order previews do not establish an authenticated session.
-        localStorage.setItem(
-          "shiny-carpet-demo-v1",
-          JSON.stringify({ orders: state.orders }),
-        );
-      } catch {
-        /* The interface also works without persistence. */
-      }
-    }
-  }, [state, ready]);
   return (
     <Context.Provider value={{ state, ready, update: setState }}>
       {children}

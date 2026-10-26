@@ -40,7 +40,10 @@ export default function OrderCard({ order }: { order: Order }) {
             {dateFormatter.format(new Date(order.createdAt))}
           </time>
         </p>
-        <p className="mt-0.5 text-sm leading-6 text-muted">
+        <p
+          hidden={!order.items.length}
+          className="mt-0.5 text-sm leading-6 text-muted"
+        >
           {pieces} قطع · {summary}
         </p>
       </div>

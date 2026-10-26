@@ -1,3 +1,5 @@
+"use client";
+import { useSettings } from "@/components/settings/SettingsProvider";
 import Image from "next/image";
 
 export default function ProfileAvatar({
@@ -9,9 +11,10 @@ export default function ProfileAvatar({
   image?: string | null;
   small?: boolean;
 }) {
+  const { data: settings } = useSettings();
   return (
     <Image
-      src={image || "/images/Profile.png"}
+      src={image ||  "/images/Profile.png"}
       alt={name ? `صورة الملف الشخصي لـ ${name}` : "صورة الملف الشخصي"}
       width={72}
       height={72}

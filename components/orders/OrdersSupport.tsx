@@ -1,6 +1,9 @@
+"use client";
+import { useSettings } from "@/components/settings/SettingsProvider";
 export default function OrdersSupport() {
-  const phone = process.env.NEXT_PUBLIC_CONTACT_PHONE;
-  const email = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
+  const { data: settings } = useSettings();
+  const phone = settings?.phone;
+  const email = settings?.email;
 
   return (
     <aside
@@ -49,8 +52,8 @@ export default function OrdersSupport() {
             تواصل مع الدعم
           </summary>
           <p className="mt-3 leading-6 text-muted">
-            التواصل مع الدعم غير متاح في النسخة الة. يمكنك مراجعة تفاصيل طلبك من زر
-            «عرض التفاصيل».
+            بيانات التواصل غير متاحة حاليًا. يمكنك مراجعة تفاصيل طلبك من زر «عرض
+            التفاصيل».
           </p>
         </details>
       )}

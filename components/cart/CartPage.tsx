@@ -40,6 +40,18 @@ export default function CartPage() {
             ? "راجع قطعك والمقاسات والكميات قبل استكمال الطلب."
             : "أضف القطع اللي محتاجة عناية، وبعدها كمّل تفاصيل الاستلام."}
         </p>
+         <button
+                  type="button"
+                  disabled={disabled}
+                  onClick={() =>
+                    void action.run("clear", async () => {
+                      await clear();
+                    })
+                  }
+                  className="min-h-11 text-sm font-bold text-red-600 disabled:opacity-50"
+                >
+                   حذف جميع عناصر السله
+                </button>
         {(error || action.error) && status !== "error" && (
           <p
             role="alert"
@@ -98,18 +110,7 @@ export default function CartPage() {
                 <span className="text-sm text-[#6B7280] font-semibold">
                   {money(cart.count)} منتجات
                 </span>
-                <button
-                  type="button"
-                  disabled={disabled}
-                  onClick={() =>
-                    void action.run("clear", async () => {
-                      await clear();
-                    })
-                  }
-                  className="min-h-11 text-sm font-bold text-red-600 disabled:opacity-50"
-                >
-                  إفراغ السلة
-                </button>
+               
               </div>
               <div className="space-y-4">
                 {cart.items.map((item) => {

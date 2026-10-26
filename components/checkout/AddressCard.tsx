@@ -120,7 +120,7 @@ export default function AddressCard({
           </div>
         </>
       )}
-      <div className="mt-5 border-t border-gray-200 pt-4">
+      {/* <div className="mt-5 border-t border-gray-200 pt-4">
         <PhoneInput
           form="checkout-form"
           name="phone"
@@ -130,7 +130,7 @@ export default function AddressCard({
         <p className="mt-2 text-xs leading-6 text-muted">
           يمكنك تعديل رقم التواصل لهذا الطلب.
         </p>
-      </div>
+      </div> */}
     </section>
   );
 }

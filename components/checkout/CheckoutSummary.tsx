@@ -22,7 +22,7 @@ export default function CheckoutSummary({
         <PriceBreakdown
           pricing={pricing}
           currency={cartCurrency(items)}
-          deliveryPending
+          orderTotals
         />
       </div>
       <button
@@ -32,7 +32,7 @@ export default function CheckoutSummary({
         className="mt-5 flex min-h-12 w-full items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-ink shadow-button"
       >
         {unavailable
-          ? "إتمام الطلب غير متاح حاليًا"
+          ? "اختر عنوان الاستلام أولًا"
           : preparingPhotos
             ? "جاري تجهيز الصور…"
             : busy
@@ -41,7 +41,7 @@ export default function CheckoutSummary({
       </button>
       <p className="mt-4 text-sm leading-7 text-[#6B7280] font-semibold text-center">
         {unavailable
-          ? "سلتك محفوظة في حسابك. سيتم توضيح رسوم التوصيل عند إتاحة إتمام الطلب."
+          ? "أضف عنوانًا محفوظًا أو انتظر تحميل العناوين."
           : "راجع تفاصيل الطلب قبل الإتمام."}
       </p>
     </aside>

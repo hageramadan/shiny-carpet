@@ -69,20 +69,26 @@ export type OrderPricing = {
   discount: number;
   total: number;
 };
-export type OrderPhoto = { name: string; type: string; size: number; preview?: string };
+export type OrderPhoto = {
+  name: string;
+  type: string;
+  size: number;
+  preview?: string;
+  file?: File;
+};
 export type Order = {
   id: string;
   items: CartItem[];
   total: number;
-  address: Address;
-  date: string;
-  slot: string;
+  address?: Address;
+  date?: string;
+  slot?: string;
   phone?: string;
   notes?: string;
   photos?: OrderPhoto[];
   coupon?: string;
   pricing?: OrderPricing;
-  status?: OrderStatus;
+  status: OrderStatus;
   createdAt: string;
 };
 export const money = (value: number) =>

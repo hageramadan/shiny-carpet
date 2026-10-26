@@ -1,10 +1,12 @@
 "use client";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { FiClock } from "react-icons/fi";
+import { useRouter } from "next/navigation";
+import { createOrder, type CouponQuote } from "@/lib/api/orders";
+import { authErrorMessage } from "@/lib/auth/contracts";
+import { readAuthSession } from "@/lib/auth/session";
 import { useStore } from "@/components/store";
 import EmptyCart from "@/components/cart/EmptyCart";
-import { earliestPickupDate } from "@/lib/checkout";
 import type { OrderPhoto } from "@/lib/data";
 import { useCart } from "@/components/cart/CartProvider";
 import AddressCard from "./AddressCard";
@@ -16,6 +18,13 @@ import CheckoutSummary from "./CheckoutSummary";
 
 export default function CheckoutPage() {
   const { state, ready } = useStore();
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+  const [couponBusy, setCouponBusy] = useState(false);
+  const lock = useRef(false);
+  const [coupon, setCoupon] = useState<{ cart: typeof cart; quote: CouponQuote } | null>(
+    null,
+  );
   const addressState = useAddresses();
   const { cart, status, reload, error: cartError } = useCart();
   const [selectedId, setSelectedId] = useState("");
@@ -29,18 +38,43 @@ export default function CheckoutPage() {
   const address =
     addressState.addresses.find((item) => item.id === selectedId) ||
     defaultAddress(addressState.addresses);
+  const quote = coupon?.cart === cart ? coupon?.quote : null;
   const pricing = {
-    subtotal: cart?.subtotal ?? 0,
-    tax: cart?.vat ?? 0,
-    total: cart?.total ?? 0,
+    subtotal: quote?.subtotal ?? cart?.subtotal ?? 0,
+    tax: quote?.vat ?? cart?.vat ?? 0,
+    total: quote?.total ?? cart?.total ?? 0,
     delivery: 0,
-    discount: 0,
+    discount: quote?.discount ?? 0,
   };
-  const minDate = earliestPickupDate();
-
-  function submit(event: FormEvent<HTMLFormElement>) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setError("إتمام الطلب غير متاح حاليًا. سلتك محفوظة في حسابك.");
+    if (lock.current || couponBusy || preparingPhotos) return;
+    if (!address || addressState.status !== "ready") {
+      setError("اختر عنوان استلام محفوظًا أولًا.");
+      return;
+    }
+    if (!cart?.items.length || status !== "ready") return;
+    const form = new FormData(event.currentTarget);
+    const token = readAuthSession()?.token;
+    lock.current = true;
+    setBusy(true);
+    setError("");
+    try {
+      const order = await createOrder({
+        addressId: Number(address.id),
+        phone: state.profile?.phone ?? "",
+        note: String(form.get("notes") ?? ""),
+        coupon: quote?.code,
+        images: photos.flatMap((photo) => (photo.file ? [photo.file] : [])),
+      });
+      if (token !== readAuthSession()?.token) return;
+      router.replace("/order-confirmation?order=" + encodeURIComponent(order.id));
+      void reload();
+    } catch (error) {
+      setError(authErrorMessage(error));
+      lock.current = false;
+      setBusy(false);
+    }
   }
 
   return (
@@ -92,7 +126,10 @@ export default function CheckoutPage() {
           <EmptyCart />
         ) : (
           <div className="grid items-start gap-4 *:min-w-0 sm:gap-6 lg:grid-cols-3">
-            <div className="space-y-4 sm:space-y-5 lg:col-span-2">
+            <fieldset
+              disabled={busy}
+              className="min-w-0 space-y-4 sm:space-y-5 lg:col-span-2"
+            >
               <AddressCard
                 addresses={addressState.addresses}
                 selected={address}
@@ -104,7 +141,11 @@ export default function CheckoutPage() {
                 error={addressState.error}
                 onRetry={() => void addressState.reload()}
               />
-              <PromoCode />
+              <PromoCode
+                key={cart ? JSON.stringify(cart) : "empty"}
+                onApplied={(quote) => setCoupon({ cart, quote })}
+                onBusyChange={setCouponBusy}
+              />
               <PhotoUpload
                 onChange={setPhotos}
                 onBusyChange={setPreparingPhotos}
@@ -125,36 +166,10 @@ export default function CheckoutPage() {
               <form
                 id="checkout-form"
                 onSubmit={submit}
-                className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 lg:p-6"
+                className={
+                  error ? "rounded-2xl border border-gray-200 bg-white p-4" : "contents"
+                }
               >
-                <h2 className="flex items-center gap-2 text-base font-bold text-ink">
-                  <FiClock className="text-primary" />
-                  موعد الاستلام
-                </h2>
-                <div className="mt-4 grid gap-4 *:min-w-0 sm:grid-cols-2">
-                  <label className="text-sm text-ink">
-                    اليوم
-                    <input
-                      name="date"
-                      type="date"
-                      required
-                      min={minDate}
-                      className="mt-2 min-h-12 min-w-0 max-w-full w-full rounded-xl border border-gray-200 bg-white px-3 text-base sm:text-sm"
-                    />
-                  </label>
-                  <label className="text-sm text-ink">
-                    الفترة
-                    <select
-                      name="slot"
-                      className="mt-2 min-h-12 min-w-0 max-w-full w-full rounded-xl border border-gray-200 bg-white px-3 text-base sm:text-sm"
-                    >
-                      <option>صباحًا — من ٩ لـ ١٢</option>
-                      <option>ظهرًا — من ١٢ لـ ٤</option>
-                      <option>مساءً — من ٤ لـ ٨</option>
-                    </select>
-                  </label>
-                </div>
-
                 {error && (
                   <p
                     role="alert"
@@ -164,12 +179,12 @@ export default function CheckoutPage() {
                   </p>
                 )}
               </form>
-            </div>
+            </fieldset>
             <CheckoutSummary
               items={cart.items}
               pricing={pricing}
-              busy={false}
-              unavailable
+              busy={busy || couponBusy}
+              unavailable={!address || addressState.status !== "ready"}
               preparingPhotos={preparingPhotos}
             />
           </div>

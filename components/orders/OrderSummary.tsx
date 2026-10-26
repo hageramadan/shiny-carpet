@@ -58,10 +58,12 @@ export function PriceBreakdown({
   pricing,
   currency = "EGP",
   deliveryPending = false,
+  orderTotals = false,
 }: {
   pricing: OrderPricing;
   currency?: Currency;
   deliveryPending?: boolean;
+  orderTotals?: boolean;
 }) {
   return (
     <dl className="space-y-3 text-sm sm:space-y-4">
@@ -71,21 +73,23 @@ export function PriceBreakdown({
           {money(pricing.subtotal)} {currencyLabel(currency)}
         </dd>
       </div>
-      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
-        <dt className="text-muted">التوصيل</dt>
-        <dd className="text-ink">
-          {deliveryPending
-            ? "يُحدد عند إتمام الطلب"
-            : `${money(pricing.delivery)} ${currencyLabel(currency)}`}
-        </dd>
-      </div>
+      {!orderTotals && (
+        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+          <dt className="text-muted">التوصيل</dt>
+          <dd className="text-ink">
+            {deliveryPending
+              ? "يُحدد عند إتمام الطلب"
+              : `${money(pricing.delivery)} ${currencyLabel(currency)}`}
+          </dd>
+        </div>
+      )}
       <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
         <dt className="text-muted">الضريبة</dt>
         <dd className="text-ink">
           {money(pricing.tax)} {currencyLabel(currency)}
         </dd>
       </div>
-      {(!deliveryPending || pricing.discount > 0) && (
+      {((!deliveryPending && !orderTotals) || pricing.discount > 0) && (
         <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
           <dt className="text-muted">الخصم</dt>
           <dd className={pricing.discount ? "text-red-500" : "text-muted"}>

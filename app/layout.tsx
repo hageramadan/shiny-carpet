@@ -6,6 +6,7 @@ import LoadingScreen from "@/components/layout/LoadingScreen";
 import AppToaster from "@/components/ui/AppToaster";
 import { CartProvider } from "@/components/cart/CartProvider";
 import { AddressesProvider } from "@/components/addresses/AddressesProvider";
+import { SettingsProvider } from "@/components/settings/SettingsProvider";
 import Footer from "@/components/layout/Footer";
 import { siteUrl } from "@/lib/data";
 import "./globals.css";
@@ -65,23 +66,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         id="top"
         className={`${cairo.variable} bg-white pt-16 font-sans text-sm leading-[1.9] text-ink antialiased md:pt-20`}
       >
-        <StoreProvider>
-          <CartProvider>
-            <AddressesProvider>
-              <AppToaster />
-              <LoadingScreen />
-              <a
-                href="#main"
-                className="fixed -top-20 right-5 bg-ink text-white z-100 focus:top-2.5 p-3"
-              >
-                تخطي إلى المحتوى
-              </a>
-              <Navbar />
-              <main id="main">{children}</main>
-              <Footer />
-            </AddressesProvider>
-          </CartProvider>
-        </StoreProvider>
+        <SettingsProvider>
+          <StoreProvider>
+            <CartProvider>
+              <AddressesProvider>
+                <AppToaster />
+                <LoadingScreen />
+                <a
+                  href="#main"
+                  className="fixed -top-20 right-5 bg-ink text-white z-100 focus:top-2.5 p-3"
+                >
+                  تخطي إلى المحتوى
+                </a>
+                <Navbar />
+                <main id="main">{children}</main>
+                <Footer />
+              </AddressesProvider>
+            </CartProvider>
+          </StoreProvider>
+        </SettingsProvider>
       </body>
     </html>
   );

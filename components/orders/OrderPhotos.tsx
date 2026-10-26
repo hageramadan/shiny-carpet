@@ -8,7 +8,7 @@ export default function OrderPhotos({ photos = [] }: { photos?: OrderPhoto[] }) 
       <h2 className="text-lg font-bold text-ink">الصور المضافة للطلب</h2>
       <p className="mt-3 text-xs leading-7 text-muted">
         {photos.length
-          ? photos.length + " صور محفوظة للمعاينة المحلية عند استكمال الطلب."
+          ? photos.length + " صور مرفقة بالطلب."
           : "لم تتم إضافة صور لهذا الطلب."}
       </p>
       {photos.length > 0 ? (
@@ -18,7 +18,7 @@ export default function OrderPhotos({ photos = [] }: { photos?: OrderPhoto[] }) 
               key={photo.name + index}
               className="min-w-0"
             >
-              {photo.preview?.startsWith("data:image/jpeg;base64,") ? (
+              {photo.preview ? (
                 <Image
                   src={photo.preview}
                   alt={photo.name}

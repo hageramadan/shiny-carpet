@@ -216,7 +216,7 @@ export default function ProfileDetails({
           )}
         </>
       )}
-      <div className="mt-6 border-t border-gray-100 pt-4">
+      {/* <div className="mt-6 border-t border-gray-100 pt-4">
         {confirmDelete ? (
           <div>
             <p className="text-sm text-red-700">
@@ -251,7 +251,7 @@ export default function ProfileDetails({
             حذف الحساب
           </button>
         )}
-      </div>
+      </div> */}
     </section>
   );
 }

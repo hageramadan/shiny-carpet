@@ -5,7 +5,7 @@ import { FiImage, FiUpload, FiX } from "react-icons/fi";
 import type { OrderPhoto } from "@/lib/data";
 import { createPhotoPreview } from "@/lib/photo-preview";
 
-type Preview = OrderPhoto & { id: string; url: string; modified: number };
+type Preview = OrderPhoto & { id: string; url: string; modified: number; file: File };
 
 export default function PhotoUpload({
   onChange,
@@ -35,7 +35,13 @@ export default function PhotoUpload({
     photoState.current = next;
     setPhotos(next);
     onChange(
-      next.map(({ name, type, size, preview }) => ({ name, type, size, preview })),
+      next.map(({ name, type, size, preview, file }) => ({
+        name,
+        type,
+        size,
+        preview,
+        file,
+      })),
     );
   }
 
@@ -73,6 +79,7 @@ export default function PhotoUpload({
         size: file.size,
         type: file.type,
         modified: file.lastModified,
+        file,
         url,
       });
       jobs.current += 1;

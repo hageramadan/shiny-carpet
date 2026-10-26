@@ -132,7 +132,26 @@ export default function AuthForm({
                 disabled={pending}
                 className="mt-1 size-3.5 shrink-0 accent-primary"
               />
-              أوافق على الشروط والأحكام وسياسة الخصوصية
+              <span>
+                أوافق على{" "}
+                <Link
+                  href="/terms-and-conditions"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >
+                  الشروط والأحكام
+                </Link>{" "}
+                و
+                <Link
+                  href="/privacy-policy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >
+                  سياسة الخصوصية
+                </Link>
+              </span>
             </label>
           </>
         )}

@@ -91,7 +91,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     };
   }, [reload]);
 
-  async function mutate(action: (signal: AbortSignal) => Promise<void>) {
+  async function mutate(
+    action: (signal: AbortSignal) => Promise<void>,
+    refreshInBackground = false,
+  ) {
     if (!token || readAuthSession()?.token !== token) throw new ApiError(401);
     if (request.current || status !== "ready")
       throw new ApiError(409, { message: "انتظر تحديث السلة ثم حاول مرة أخرى." });
@@ -102,7 +105,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     try {
       await action(controller.signal);
       controller.signal.throwIfAborted();
-      setStatus("loading");
+      if (!refreshInBackground) setStatus("loading");
       try {
         const snapshot = await fetchCart(controller.signal);
         controller.signal.throwIfAborted();
@@ -138,7 +141,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         reload,
         add: (input) => mutate((signal) => addCartItem(input, signal)),
         setQuantity: (id, quantity) =>
-          mutate((signal) => setCartQuantity(id, quantity, signal)),
+          mutate((signal) => setCartQuantity(id, quantity, signal), true),
         remove: (id) => mutate((signal) => removeCartItem(id, signal)),
         clear: () => mutate((signal) => clearRemoteCart(signal)),
       }}

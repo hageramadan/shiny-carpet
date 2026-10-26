@@ -44,6 +44,8 @@ async function main() {
       failQuantity = true,
       failCartRead = false,
       expire = false;
+    let releaseCartRefresh;
+    let cartRefreshStarted;
     const calls = [],
       errors = [];
     const totals = () => {
@@ -68,6 +70,7 @@ async function main() {
       const respond = (body, status = 200) =>
         route.fulfill({ status, json: body, headers });
       if (method === "OPTIONS") return route.fulfill({ status: 204, headers });
+      if (path === "/api/settings") return respond({ result: true, data: {} });
       calls.push({ path, method, body: request.postData() });
       if (path === "/api/categories") return respond({ success: true, data: [] });
       if (path === "/api/products/11") return respond({ success: true, data: product });
@@ -82,6 +85,11 @@ async function main() {
       if (path === "/api/count")
         return respond({ success: true, data: { item_count: items.length } });
       if (path === "/api/cart" && method === "GET") {
+        if (releaseCartRefresh) {
+          cartRefreshStarted();
+          await releaseCartRefresh;
+          releaseCartRefresh = null;
+        }
         if (expire) return respond({ message: "Unauthenticated" }, 401);
         if (failCartRead) {
           failCartRead = false;
@@ -173,14 +181,33 @@ async function main() {
     await page.getByRole("button", { name: "زيادة كمية سجاد الاختبار" }).click();
     await page.getByRole("alert").filter({ hasText: "تعذر تحديث الكمية" }).waitFor();
     assert.equal(items[0].quantity, 1);
+    let releaseRefresh;
+    const refreshStarted = new Promise((resolve) => {
+      cartRefreshStarted = resolve;
+    });
+    releaseCartRefresh = new Promise((resolve) => {
+      releaseRefresh = resolve;
+    });
     await page.getByRole("button", { name: "زيادة كمية سجاد الاختبار" }).click();
+    await refreshStarted;
+    assert.equal(await page.getByRole("article").count(), 1);
+    assert.equal(await page.getByText("جاري تحميل السلة…", { exact: true }).count(), 0);
+    assert.equal(
+      await page.getByRole("article").getByText("١٬٥٠٠ ر.س", { exact: true }).count(),
+      1,
+    );
+    assert.equal(
+      await page.getByRole("button", { name: "زيادة كمية سجاد الاختبار" }).isDisabled(),
+      true,
+    );
+    releaseRefresh();
     await page.getByRole("article").getByText("٣٬٠٠٠ ر.س", { exact: true }).waitFor();
     assert.equal(
       await page.getByRole("link", { name: "السلة، 1 قطع", exact: true }).count(),
       1,
     );
     await page.goto(base + "/checkout");
-    await page.getByRole("button", { name: "إتمام الطلب غير متاح حاليًا" }).waitFor();
+    await page.getByRole("button", { name: "اختر عنوان الاستلام أولًا" }).waitFor();
     assert.equal(await page.getByText("DEMO10", { exact: false }).count(), 0);
     await page.goto(base + "/products/11");
     await page.getByText("مقاس مخصص", { exact: true }).click();
@@ -223,9 +250,9 @@ async function main() {
     );
     assert.equal(
       await page.evaluate(
-        () => JSON.parse(localStorage.getItem("shiny-carpet-demo-v1")).cart,
+        () => JSON.parse(localStorage.getItem("shiny-carpet-demo-v1")).cart[0].quantity,
       ),
-      undefined,
+      9,
     );
     expire = true;
     await page.reload();

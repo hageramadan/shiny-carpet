@@ -1,11 +1,25 @@
+"use client";
+import Image from "next/image";
+import { useSettings } from "@/components/settings/SettingsProvider";
 import Link from "next/link";
 import { FiShoppingBag } from "react-icons/fi";
 
 export default function EmptyCart() {
+  const { data: settings } = useSettings();
   return (
     <div className="rounded-2xl border border-gray-200 bg-white px-6 py-14 text-center lg:py-16">
       <span className="mx-auto grid size-24 place-items-center rounded-full bg-primary/10 text-4xl text-primary">
-        <FiShoppingBag />
+        {settings?.noDataIcon ? (
+          <Image
+            src={settings.noDataIcon}
+            alt=""
+            width={64}
+            height={64}
+            className="size-16 object-contain"
+          />
+        ) : (
+          <FiShoppingBag />
+        )}
       </span>
       <h2 className="mt-7 text-2xl font-bold text-ink">سلتك فارغة</h2>
       <p className="mt-5 text-sm leading-8 text-muted">

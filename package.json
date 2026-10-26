@@ -18,7 +18,11 @@
     "test:profile:browser": "node tests/profile-browser.cjs",
     "test:auth:browser": "node tests/auth-browser.cjs",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "test:orders": "node --require ./tests/register-typescript.cjs --test tests/orders.test.cjs",
+    "test:orders:browser": "node tests/orders-browser.cjs",
+    "test:settings": "node --require ./tests/register-typescript.cjs --test tests/settings.test.cjs",
+    "test:settings:browser": "node tests/settings-browser.cjs"
   },
   "dependencies": {
     "@radix-ui/react-dropdown-menu": "^2.2.1",

@@ -5,11 +5,28 @@ async function main() {
   const browser = await chromium.launch({ channel: "msedge", headless: true });
   try {
     const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
-    await context.route("https://admin.shinycarpet-sa.com/api/addresses", (route) =>
+    let releaseProfile, releaseAddresses;
+    let profileGate = new Promise((resolve) => {
+      releaseProfile = resolve;
+    });
+    let addressesGate = new Promise((resolve) => {
+      releaseAddresses = resolve;
+    });
+    await context.route("https://admin.shinycarpet-sa.com/api/settings", (route) =>
       route.fulfill({
-        json: { result: true, data: { addresses: [] } },
+        json: { result: true, data: {} },
         headers: { "access-control-allow-origin": "*" },
       }),
+    );
+    await context.route(
+      "https://admin.shinycarpet-sa.com/api/addresses",
+      async (route) => {
+        await addressesGate;
+        return route.fulfill({
+          json: { result: true, data: { addresses: [] } },
+          headers: { "access-control-allow-origin": "*" },
+        });
+      },
     );
     await context.route("https://admin.shinycarpet-sa.com/api/cart", (route) =>
       route.fulfill({
@@ -67,11 +84,13 @@ async function main() {
         calls.push({ method, url: request.url() });
         assert.equal(headers.authorization, "Bearer fixture-profile-token");
         assert.equal(headers["accept-language"], "ar");
-        if (method === "GET")
+        if (method === "GET") {
+          await profileGate;
           return route.fulfill({
             json: { status: "success", data: user },
             headers: cors,
           });
+        }
         if (method === "DELETE")
           return route.fulfill({
             json: { status: "success", message: "تم الحذف" },
@@ -108,7 +127,41 @@ async function main() {
     );
     const page = await context.newPage();
     page.on("pageerror", (error) => errors.push(error.message));
+    await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto(base + "/profile");
+    const spinner = page.getByRole("status", {
+      name: "جاري تحميل بيانات الحساب",
+      exact: true,
+    });
+    await spinner.waitFor();
+    await page.getByRole("navigation", { name: "قائمة الحساب" }).waitFor();
+    assert.equal(await spinner.locator(".animate-spin").count(), 1);
+    assert.equal(await page.getByLabel("الاسم", { exact: true }).count(), 0);
+    await page.evaluate(() => {
+      window.sidebarBeforeLoad = document.querySelector("main aside");
+    });
+    assert.equal(
+      await page
+        .locator("main aside")
+        .evaluate((el) => getComputedStyle(el.parentElement).position),
+      "sticky",
+    );
+    releaseProfile();
+    await page
+      .getByText(
+        "أهلًا اسم من الخادم، يمكنك تحديث بياناتك وإدارة طلباتك وعناوينك من هنا.",
+      )
+      .waitFor();
+    assert.equal(await spinner.isVisible(), true);
+    releaseAddresses();
+    await spinner.waitFor({ state: "hidden" });
+    assert.equal(
+      await page.evaluate(
+        () => window.sidebarBeforeLoad === document.querySelector("main aside"),
+      ),
+      true,
+    );
+    await page.setViewportSize({ width: 390, height: 844 });
     await page.getByLabel("الاسم", { exact: true }).waitFor();
     assert.equal(
       await page.getByLabel("الاسم", { exact: true }).inputValue(),

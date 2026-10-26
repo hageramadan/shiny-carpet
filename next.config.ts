@@ -10,6 +10,13 @@ const config: NextConfig = {
         protocol: "https",
         hostname: "admin.shinycarpet-sa.com",
         port: "",
+        pathname: "/storage/images/upload/settings/**",
+        search: "",
+      },
+      {
+        protocol: "https",
+        hostname: "admin.shinycarpet-sa.com",
+        port: "",
         pathname: "/storage/profile/**",
         search: "",
       },

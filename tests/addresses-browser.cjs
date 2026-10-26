@@ -76,6 +76,7 @@ async function main() {
       const respond = (body, status = 200) =>
         route.fulfill({ status, json: body, headers });
       if (method === "OPTIONS") return route.fulfill({ status: 204, headers });
+      if (path === "/api/settings") return respond({ result: true, data: {} });
       if (path === "/api/categories") return respond({ success: true, data: [] });
       assert.equal(request.headers().authorization, "Bearer fixture-address-token");
       assert.equal(request.headers()["accept-language"], "ar");
