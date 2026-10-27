@@ -8,7 +8,6 @@ const {
   createAddress,
   updateAddress,
   deleteAddress,
-  TEMPORARY_ADDRESS_LOCATION_IDS,
 } = require("../lib/api/addresses.ts");
 const {
   saveAuthSession,
@@ -43,7 +42,9 @@ const draft = {
   city: "المعادي",
   location: { lat: 32.0444, lng: 35.2357 },
   notes: "افتح لما توصل",
-  ...TEMPORARY_ADDRESS_LOCATION_IDS,
+  governorateId: 37,
+  areaId: 22,
+  districtId: 105,
 };
 const ok = (data) => ({ result: true, errNum: 200, data });
 function setup(t) {
@@ -104,7 +105,7 @@ test("address parser preserves server IDs, notes, coordinates and actual default
     (error) => error instanceof ApiError && error.status === 422,
   );
 });
-test("creation uses explicitly requested temporary IDs and update uses names without inventing returned IDs", () => {
+test("creation and updates send the selected API location IDs", () => {
   assert.deepEqual(addressInput(draft, true), {
     title: "العمل",
     street: "شارع النصر",
@@ -115,17 +116,20 @@ test("creation uses explicitly requested temporary IDs and update uses names wit
     lat: 32.0444,
     lng: 35.2357,
     notes: "افتح لما توصل",
-    governorate_id: 1,
-    area_id: 1,
-    district_id: 10,
+    governorate_id: 37,
+    area_id: 22,
+    district_id: 105,
   });
   const update = addressInput({ ...draft, street: "", building: "", notes: "" }, false);
   assert.equal(update.street, "");
   assert.equal(update.building_number, "");
   assert.equal(update.notes, null);
-  assert.equal(update.governorate_name, "القاهرة");
-  assert.equal(update.city_name, "المعادي");
-  assert.equal(update.governorate_id, undefined);
+  assert.equal(update.governorate_name, undefined);
+  assert.equal(update.city_name, undefined);
+  assert.equal(update.governorate_id, 37);
+  assert.equal(update.area_id, 22);
+  assert.equal(update.district_id, 105);
+  assert.throws(() => addressInput({ ...draft, districtId: undefined }, false), ApiError);
   assert.throws(() => addressInput({ ...draft, districtId: undefined }, true), ApiError);
   assert.throws(() => addressInput({ ...draft, location: undefined }, true), ApiError);
 });
@@ -182,4 +186,72 @@ test("failed writes preserve the session, expired authentication clears it, and 
     "/addresses/5/edit?next=https://evil.example",
   ])
     assert.equal(authDestination(path), "/profile");
+});
+
+const { parseAreas, fetchAreas, selectedLocation } = require("../lib/api/areas.ts");
+const areaFixture = [
+  {
+    id: 22,
+    name: "منطقة الرياض",
+    governorates: [
+      { id: 37, name: "الرياض", districts: [{ id: 105, name: "حي الربيع" }] },
+    ],
+  },
+  {
+    id: 23,
+    name: "منطقة أخرى",
+    governorates: [{ id: 38, name: "محافظة أخرى", districts: [] }],
+  },
+];
+test("areas retain API IDs and reject malformed hierarchies and unrelated selections", () => {
+  const areas = parseAreas(ok(areaFixture));
+  assert.deepEqual(areas, areaFixture);
+  assert.deepEqual(
+    selectedLocation(areas, { areaId: 22, governorateId: 37, districtId: 105 }),
+    {
+      areaId: 22,
+      governorateId: 37,
+      districtId: 105,
+      region: "الرياض",
+      city: "حي الربيع",
+    },
+  );
+  assert.equal(
+    selectedLocation(areas, { areaId: 23, governorateId: 37, districtId: 105 }),
+    null,
+  );
+  assert.equal(
+    selectedLocation(areas, { areaId: 22, governorateId: 37, districtId: 999 }),
+    null,
+  );
+  assert.equal(selectedLocation(areas, {}), null);
+  assert.deepEqual(parseAreas(ok([])), []);
+  for (const data of [
+    null,
+    {},
+    [{ id: 1, name: "منطقة" }],
+    [...areaFixture, areaFixture[0]],
+    [
+      {
+        ...areaFixture[0],
+        governorates: [
+          { id: 37, name: "محافظة", districts: [{ id: "105", name: "حي" }] },
+        ],
+      },
+    ],
+  ])
+    assert.throws(() => parseAreas(ok(data)), ApiResponseError);
+  assert.throws(() => parseAreas({ result: false }), ApiError);
+});
+test("areas use GET with Arabic headers and propagate cancellation", async (t) => {
+  const controller = new AbortController();
+  t.mock.method(globalThis, "fetch", async (url, options) => {
+    assert.equal(url, "https://admin.shinycarpet-sa.com/api/areas");
+    assert.equal(options.method, "GET");
+    assert.equal(options.headers["Accept-Language"], "ar");
+    controller.abort();
+    assert.equal(options.signal.aborted, true);
+    return Response.json(ok(areaFixture));
+  });
+  assert.deepEqual(await fetchAreas(controller.signal), areaFixture);
 });

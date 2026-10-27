@@ -72,12 +72,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <AddressesProvider>
                 <AppToaster />
                 <LoadingScreen />
-                <a
+                {/* <a
                   href="#main"
                   className="fixed -top-20 right-5 bg-ink text-white z-100 focus:top-2.5 p-3"
                 >
                   تخطي إلى المحتوى
-                </a>
+                </a> */}
                 <Navbar />
                 <main id="main">{children}</main>
                 <Footer />

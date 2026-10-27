@@ -5,6 +5,7 @@ import { useStore } from "@/components/store";
 import { useAddresses } from "./AddressesProvider";
 import AddressesLayout from "./AddressesLayout";
 import AddressEditor from "./AddressEditor";
+import AddressEditorLoading from "./AddressEditorLoading";
 
 export default function AddressEditorPage({ id }: { id?: string }) {
   const { state, ready } = useStore();
@@ -20,12 +21,7 @@ export default function AddressEditorPage({ id }: { id?: string }) {
       }
     >
       {!ready ? (
-        <p
-          role="status"
-          className="rounded-xl border border-gray-200 bg-white p-8 text-center text-muted"
-        >
-          جاري تحميل العنوان…
-        </p>
+        <AddressEditorLoading />
       ) : !state.profile ? (
         <Link
           href={`/login?next=${encodeURIComponent(id ? `/addresses/${id}/edit` : "/addresses/new")}`}
@@ -44,7 +40,7 @@ export default function AddressEditorPage({ id }: { id?: string }) {
           </button>
         </div>
       ) : !loaded ? (
-        <p role="status">جاري تحميل العنوان…</p>
+        <AddressEditorLoading />
       ) : id && !address ? (
         <div className="rounded-xl border border-gray-200 bg-white p-8 text-center">
           <h2 className="text-xl font-bold text-[#17202A]">العنوان غير موجود</h2>

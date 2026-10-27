@@ -138,3 +138,18 @@ test("failed updates and deletion preserve the session; invalid uploads make no 
   await assert.rejects(getProfile(), ApiError);
   assert.equal(readAuthSession(), null);
 });
+
+
+test("profile saves wait beyond ten seconds for the server response", async (t) => {
+  setup(t);
+  t.mock.method(globalThis, "fetch", async (url, options) => {
+    assert.equal(options.method, "POST");
+    assert.equal(options.body.get("name"), "اسم جديد");
+    await require("node:timers/promises").setTimeout(10_100, undefined, {
+      signal: options.signal,
+    });
+    return Response.json(reply({ ...user, name: "اسم جديد" }));
+  });
+  const result = await updateProfile("اسم جديد", "+201012345678");
+  assert.equal(result.profile.name, "اسم جديد");
+});

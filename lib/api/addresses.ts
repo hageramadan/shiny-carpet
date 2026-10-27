@@ -5,12 +5,6 @@ import { validCoordinates } from "../addresses";
 import type { Address } from "../data";
 
 export type AddressDraft = Omit<Address, "id" | "isDefault" | "country" | "postalCode">;
-// Temporary IDs explicitly requested until the location lookup endpoints are available.
-export const TEMPORARY_ADDRESS_LOCATION_IDS = {
-  governorateId: 1,
-  areaId: 1,
-  districtId: 10,
-} as const;
 
 function success(body: unknown): Record<string, unknown> {
   if (!isRecord(body)) throw new ApiResponseError("Invalid address response");
@@ -124,12 +118,6 @@ export function addressInput(draft: AddressDraft, creating: boolean) {
     lng: draft.location.lng,
     notes: draft.notes?.trim() || null,
   };
-  if (!creating)
-    return {
-      ...common,
-      governorate_name: draft.region?.trim() ?? "",
-      city_name: draft.city.trim(),
-    };
   if (
     !isPositiveId(draft.governorateId) ||
     !isPositiveId(draft.areaId) ||

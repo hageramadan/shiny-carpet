@@ -71,6 +71,7 @@ export async function authenticatedApiRequest(
     method?: "GET" | "POST" | "PUT" | "DELETE";
     body?: unknown;
     signal?: AbortSignal;
+    timeoutMs?: number;
   } = {},
 ) {
   if (!path.startsWith("/") || path.startsWith("//"))

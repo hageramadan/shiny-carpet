@@ -22,7 +22,9 @@
     "test:orders": "node --require ./tests/register-typescript.cjs --test tests/orders.test.cjs",
     "test:orders:browser": "node tests/orders-browser.cjs",
     "test:settings": "node --require ./tests/register-typescript.cjs --test tests/settings.test.cjs",
-    "test:settings:browser": "node tests/settings-browser.cjs"
+    "test:settings:browser": "node tests/settings-browser.cjs",
+    "test:payments": "node --require ./tests/register-typescript.cjs --test tests/payments.test.cjs",
+    "test:payments:browser": "node tests/payments-browser.cjs"
   },
   "dependencies": {
     "@radix-ui/react-dropdown-menu": "^2.2.1",

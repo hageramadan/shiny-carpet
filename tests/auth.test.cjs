@@ -246,3 +246,11 @@ test("a failed logout keeps the session, while an expired token clears it", asyn
   );
   assert.equal(readAuthSession(), null);
 });
+
+
+test("request timeouts explain that saving may still have completed", () => {
+  assert.equal(
+    authErrorMessage(new DOMException("Request timed out", "TimeoutError")),
+    "انتهت مهلة انتظار رد الخادم. حدّث الصفحة للتحقق من حفظ التغييرات قبل المحاولة مجددًا.",
+  );
+});

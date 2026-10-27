@@ -48,6 +48,8 @@ export function authInput(
 }
 
 export function authErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.name === "TimeoutError")
+    return "انتهت مهلة انتظار رد الخادم. حدّث الصفحة للتحقق من حفظ التغييرات قبل المحاولة مجددًا.";
   if (error instanceof ApiError && isRecord(error.details) && !error.details.exception) {
     const fields = error.details.errors;
     if (isRecord(fields)) {

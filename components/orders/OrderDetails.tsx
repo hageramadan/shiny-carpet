@@ -8,6 +8,7 @@ import { authErrorMessage } from "@/lib/auth/contracts";
 import { OrderItems, PriceBreakdown } from "./OrderSummary";
 import OrderTimeline from "./OrderTimeline";
 import OrderPhotos from "./OrderPhotos";
+import OrderPayment from "./OrderPayment";
 export default function OrderDetails({
   id,
   confirmation = false,
@@ -21,6 +22,7 @@ export default function OrderDetails({
   const [cancelling, setCancelling] = useState(false),
     [cancelError, setCancelError] = useState("");
   const lock = useRef(false);
+  const [verifiedPaidId, setVerifiedPaidId] = useState("");
   const [cancelledId, setCancelledId] = useState("");
   async function cancel() {
     if (!order || order.status !== "confirmed" || lock.current) return;
@@ -99,6 +101,23 @@ export default function OrderDetails({
             <h2 className="mb-5 font-bold">منتجات الطلب</h2>
             <OrderItems items={order.items} />
           </section>
+          {verifiedPaidId === order.id && (
+            <p
+              role="status"
+              className="rounded-xl bg-primary/10 p-4 font-bold text-primary"
+            >
+              تم تأكيد الدفع بنجاح.
+            </p>
+          )}
+          <OrderPayment
+            key={order.id + order.status}
+            order={order}
+            paid={verifiedPaidId === order.id}
+            onPaid={() => {
+              setVerifiedPaidId(order.id);
+              reload();
+            }}
+          />
           <OrderPhotos photos={order.photos} />
           {order.phone && (
             <section className="rounded-2xl border border-gray-200 bg-white p-5">

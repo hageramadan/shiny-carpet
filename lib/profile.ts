@@ -112,6 +112,8 @@ export async function updateProfile(
     method: "POST",
     body: form,
     signal,
+    // Profile uploads and server-side image processing can exceed the default timeout.
+    timeoutMs: 60_000,
   });
   signal?.throwIfAborted();
   const profile = parseProfile(body);

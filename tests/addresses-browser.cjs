@@ -29,6 +29,9 @@ async function main() {
       floor: "3",
       apartment: "10",
       details: "بجوار المسجد",
+      area_id: 22,
+      governorate_id: 37,
+      district_id: 105,
       governorate_name: "القاهرة",
       city_name: "المعادي",
       lat: 32.0444,
@@ -36,6 +39,8 @@ async function main() {
       notes: "افتح لما توصل",
       is_default: false,
     };
+    let areasGate = Promise.resolve();
+    let failAreas = true;
     let rows = [row],
       failLoad = true,
       failDelete = true,
@@ -76,6 +81,32 @@ async function main() {
       const respond = (body, status = 200) =>
         route.fulfill({ status, json: body, headers });
       if (method === "OPTIONS") return route.fulfill({ status: 204, headers });
+      if (path === "/api/areas" && failAreas) {
+        failAreas = false;
+        return respond({ message: "تعذر تحميل المناطق" }, 503);
+      }
+      if (path === "/api/areas") {
+        await areasGate;
+        return respond({
+          result: true,
+          data: [
+            {
+              id: 22,
+              name: "منطقة الاختبار",
+              governorates: [
+                { id: 37, name: "القاهرة", districts: [{ id: 105, name: "المعادي" }] },
+              ],
+            },
+            {
+              id: 23,
+              name: "منطقة أخرى",
+              governorates: [
+                { id: 38, name: "محافظة أخرى", districts: [{ id: 106, name: "حي آخر" }] },
+              ],
+            },
+          ],
+        });
+      }
       if (path === "/api/settings") return respond({ result: true, data: {} });
       if (path === "/api/categories") return respond({ success: true, data: [] });
       assert.equal(request.headers().authorization, "Bearer fixture-address-token");
@@ -132,9 +163,10 @@ async function main() {
         assert.equal(request.headers()["content-type"], "application/json");
         const data = request.postDataJSON();
         assert.equal(data.floor, "4");
-        assert.equal(data.governorate_name, "القاهرة");
-        assert.equal(data.city_name, "المعادي");
-        assert.equal(data.governorate_id, undefined);
+        assert.equal(data.governorate_id, 37);
+        assert.equal(data.area_id, 22);
+        assert.equal(data.district_id, 105);
+        assert.equal(data.governorate_name, undefined);
         assert.equal(data.notes, "ملاحظة جديدة");
         rows = rows.map((row) =>
           row.id === 5 ? { ...row, title: data.title, notes: data.notes } : row,
@@ -144,9 +176,9 @@ async function main() {
       if (path === "/api/addresses" && method === "POST") {
         const data = request.postDataJSON();
         assert.equal(data.title, "البيت");
-        assert.equal(data.governorate_id, 1);
-        assert.equal(data.area_id, 1);
-        assert.equal(data.district_id, 10);
+        assert.equal(data.governorate_id, 37);
+        assert.equal(data.area_id, 22);
+        assert.equal(data.district_id, 105);
         assert.equal(data.lat, 32.0444);
         assert.equal(data.lng, 35.2357);
         assert.equal(data.building_number, "12");
@@ -168,6 +200,17 @@ async function main() {
       throw new Error("Unexpected fixture request " + method + " " + path);
     });
     const page = await context.newPage();
+    async function chooseLocation(label, id) {
+      const names = {
+        22: "منطقة الاختبار",
+        23: "منطقة أخرى",
+        37: "القاهرة",
+        38: "محافظة أخرى",
+        105: "المعادي",
+      };
+      await page.getByRole("button", { name: label, exact: true }).click();
+      await page.getByRole("menuitemradio", { name: names[id], exact: false }).click();
+    }
     page.on("pageerror", (error) => errors.push(error.message));
     await page.goto(base + "/addresses");
     await page.getByRole("link", { name: "سجّل الدخول لعرض عناوينك" }).waitFor();
@@ -188,6 +231,29 @@ async function main() {
     assert.equal(await page.getByText("عنوان قديم", { exact: true }).count(), 0);
     assert.equal(await page.getByText("العنوان الافتراضي", { exact: true }).count(), 0);
     await page.getByRole("link", { name: "تعديل عنوان العمل" }).click();
+    await page.getByRole("button", { name: "إعادة تحميل المناطق", exact: true }).click();
+    await chooseLocation("المدينة", "105");
+    assert.equal(await page.locator('input[name="areaId"]').inputValue(), "22");
+    assert.equal(await page.locator('input[name="governorateId"]').inputValue(), "37");
+    assert.deepEqual(
+      await page
+        .locator("form")
+        .first()
+        .locator("label")
+        .allTextContents()
+        .then((labels) => labels.map((label) => label.trim())),
+      [
+        "اسم العنوان",
+        "المحافظة / المنطقة",
+        "المدينة",
+        "اسم الشارع",
+        "رقم المبنى",
+        "الدور",
+        "الشقة",
+        "تفاصيل إضافية",
+        "ملاحظات",
+      ],
+    );
     await page.getByLabel("الدور", { exact: true }).fill("4");
     await page.getByLabel("اسم العنوان", { exact: true }).fill("عنوان محدث");
     await page.getByLabel("ملاحظات", { exact: true }).fill("ملاحظة جديدة");
@@ -199,9 +265,37 @@ async function main() {
       .getByText(/الدور 3/)
       .waitFor();
     await page.goto(base + "/checkout");
+    let releaseAreas;
+    areasGate = new Promise((resolve) => {
+      releaseAreas = resolve;
+    });
     await page.getByRole("link", { name: "+ إضافة عنوان", exact: true }).click();
+    const loading = page.getByRole("status", {
+      name: "جاري تحميل بيانات العنوان",
+      exact: true,
+    });
+    await loading.waitFor();
+    assert.equal(await loading.locator(".animate-spin").count(), 1);
+    assert.equal(await page.getByLabel("اسم العنوان", { exact: true }).count(), 0);
+    assert.equal(
+      await page.getByRole("button", { name: "استخدم موقعي الحالي" }).count(),
+      0,
+    );
+    releaseAreas();
+    await loading.waitFor({ state: "hidden" });
     await page.getByRole("button", { name: "استخدم موقعي الحالي" }).click();
     await page.getByText("موقع الاختبار", { exact: true }).waitFor();
+    await chooseLocation("المحافظة / المنطقة", "37");
+    await chooseLocation("المدينة", "105");
+    await chooseLocation("المحافظة / المنطقة", "38");
+    assert.equal(await page.locator('input[name="governorateId"]').inputValue(), "38");
+    assert.equal(await page.locator('input[name="districtId"]').inputValue(), "");
+    assert.equal(
+      await page.getByRole("button", { name: "حفظ العنوان", exact: true }).isDisabled(),
+      true,
+    );
+    await chooseLocation("المحافظة / المنطقة", "37");
+    await chooseLocation("المدينة", "105");
     await page.getByLabel("اسم العنوان", { exact: true }).fill("البيت");
     await page.getByLabel("ملاحظات", { exact: true }).fill("ملاحظات البيت");
     await page.getByRole("button", { name: "حفظ العنوان", exact: true }).click();
@@ -227,11 +321,11 @@ async function main() {
     assert.equal(calls.filter((call) => call.method === "DELETE").length, deletes);
     await page.goto(base + "/profile");
     await page.getByRole("heading", { name: "البيت", exact: true }).waitFor();
-    assert.equal(
+    assert.deepEqual(
       await page.evaluate(
         () => JSON.parse(localStorage.getItem("shiny-carpet-demo-v1")).addresses,
       ),
-      undefined,
+      [{ id: "legacy", label: "عنوان قديم" }],
     );
     expire = true;
     await page.goto(base + "/addresses");
@@ -242,7 +336,7 @@ async function main() {
     );
     assert.deepEqual(errors, []);
     console.log(
-      "PASS: addresses API list/retry, ignored local records, PUT server values, create with temporary IDs and coordinates, checkout selection, deletion cancel/failure/recovery, profile sync and expired session",
+      "PASS: addresses API list/retry, ignored local records, PUT server values, API location dropdowns, dependent selection resets, create with selected IDs and coordinates, checkout selection, deletion cancel/failure/recovery, profile sync and expired session",
     );
   } finally {
     await browser.close();

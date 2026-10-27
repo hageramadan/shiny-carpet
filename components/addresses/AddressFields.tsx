@@ -1,11 +1,9 @@
 "use client";
 
-import { useId } from "react";
+import { Fragment, useId, type ReactNode } from "react";
 
 export type AddressFieldsValue = {
   label: string;
-  region: string;
-  city: string;
   street: string;
   building: string;
   floor: string;
@@ -29,20 +27,6 @@ const fields: {
     required: true,
     wide: true,
     max: 50,
-  },
-  {
-    name: "region",
-    label: "المحافظة / المنطقة",
-    placeholder: "أدخل المنطقة",
-    required: true,
-    max: 100,
-  },
-  {
-    name: "city",
-    label: "المدينة",
-    placeholder: "أدخل المدينة",
-    required: true,
-    max: 100,
   },
   {
     name: "street",
@@ -80,35 +64,41 @@ export default function AddressFields({
   value,
   onChange,
   editing = false,
+  children,
 }: {
   value: AddressFieldsValue;
   onChange: (value: AddressFieldsValue) => void;
   editing?: boolean;
+  children?: ReactNode;
 }) {
   const id = useId();
   return (
     <div className="grid gap-x-3 gap-y-4 sm:grid-cols-2">
       {fields.map((field) => (
-        <label
-          key={field.name}
-          htmlFor={`${id}-${field.name}`}
-          className={`min-w-0 text-sm font-bold text-[#17202A] ${field.wide ? "sm:col-span-2" : ""}`}
-        >
-          {field.label}
-          <input
-            id={`${id}-${field.name}`}
-            name={field.name}
-            required={
-              field.required &&
-              !(editing && (field.name === "street" || field.name === "building"))
-            }
-            maxLength={field.max}
-            value={value[field.name]}
-            onChange={(event) => onChange({ ...value, [field.name]: event.target.value })}
-            placeholder={field.placeholder}
-            className="mt-2 min-h-11 w-full min-w-0 rounded-[9px] border border-gray-200 bg-white px-3 py-2 text-sm font-normal text-ink placeholder:text-muted"
-          />
-        </label>
+        <Fragment key={field.name}>
+          <label
+            htmlFor={`${id}-${field.name}`}
+            className={`min-w-0 text-sm font-bold text-[#17202A] ${field.wide ? "sm:col-span-2" : ""}`}
+          >
+            {field.label}
+            <input
+              id={`${id}-${field.name}`}
+              name={field.name}
+              required={
+                field.required &&
+                !(editing && (field.name === "street" || field.name === "building"))
+              }
+              maxLength={field.max}
+              value={value[field.name]}
+              onChange={(event) =>
+                onChange({ ...value, [field.name]: event.target.value })
+              }
+              placeholder={field.placeholder}
+              className="mt-2 min-h-11 w-full min-w-0 rounded-[9px] border border-gray-200 bg-white px-3 py-2 text-sm font-normal text-ink placeholder:text-muted"
+            />
+          </label>
+          {field.name === "label" && children}
+        </Fragment>
       ))}
     </div>
   );
