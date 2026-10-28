@@ -105,6 +105,43 @@ test("address parser preserves server IDs, notes, coordinates and actual default
     (error) => error instanceof ApiError && error.status === 422,
   );
 });
+test("addresses with incomplete coordinates do not block the saved address list", () => {
+  const addresses = parseAddresses(
+    ok({
+      addresses: [
+        { ...row, id: 68, lat: 24.562155354161, lng: 46.78312651813 },
+        {
+          ...row,
+          id: 58,
+          title: "adds adds",
+          lat: 37.785833935027,
+          lng: null,
+          details: null,
+          notes: null,
+          governorate_name: undefined,
+          city_name: undefined,
+        },
+      ],
+    }),
+  );
+  assert.deepEqual(
+    addresses.map((address) => address.id),
+    ["68", "58"],
+  );
+  assert.deepEqual(addresses[0].location, { lat: 24.562155354161, lng: 46.78312651813 });
+  assert.equal(addresses[1].label, "adds adds");
+  assert.equal(addresses[1].street, row.street);
+  assert.equal(addresses[1].location, undefined);
+  assert.equal(addresses[1].details, "");
+  for (const coordinates of [
+    { lat: null, lng: 46.78 },
+    { lat: 24.56, lng: undefined },
+    { lat: undefined, lng: 46.78 },
+  ]) {
+    assert.equal(parseAddress({ ...row, ...coordinates }).location, undefined);
+  }
+});
+
 test("creation and updates send the selected API location IDs", () => {
   assert.deepEqual(addressInput(draft, true), {
     title: "العمل",
@@ -131,7 +168,15 @@ test("creation and updates send the selected API location IDs", () => {
   assert.equal(update.district_id, 105);
   assert.throws(() => addressInput({ ...draft, districtId: undefined }, false), ApiError);
   assert.throws(() => addressInput({ ...draft, districtId: undefined }, true), ApiError);
-  assert.throws(() => addressInput({ ...draft, location: undefined }, true), ApiError);
+  for (const creating of [true, false]) {
+    const input = addressInput({ ...draft, location: undefined }, creating);
+    assert.equal(Object.hasOwn(input, "lat"), false);
+    assert.equal(Object.hasOwn(input, "lng"), false);
+  }
+  assert.throws(
+    () => addressInput({ ...draft, location: { lat: 300, lng: 46 } }, true),
+    ApiError,
+  );
 });
 test("CRUD requests send bearer and Arabic, serialize PUT JSON and trust returned address fields", async (t) => {
   setup(t);

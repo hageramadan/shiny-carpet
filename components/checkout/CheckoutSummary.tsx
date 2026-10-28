@@ -6,14 +6,12 @@ export default function CheckoutSummary({
   pricing,
   busy,
   preparingPhotos = false,
-  locationPending = false,
   unavailable = false,
 }: {
   items: CartItem[];
   pricing: OrderPricing;
   busy: boolean;
   preparingPhotos?: boolean;
-  locationPending?: boolean;
   unavailable?: boolean;
 }) {
   return (
@@ -30,25 +28,21 @@ export default function CheckoutSummary({
       <button
         type="submit"
         form="checkout-form"
-        disabled={busy || preparingPhotos || unavailable || locationPending}
+        disabled={busy || preparingPhotos || unavailable}
         className="mt-5 flex min-h-12 w-full items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-ink shadow-button"
       >
         {unavailable
           ? "اختر عنوان الاستلام أولًا"
-          : locationPending
-            ? "أكد موقع الاستلام أولًا"
-            : preparingPhotos
-              ? "جاري تجهيز الصور…"
-              : busy
-                ? "جاري إتمام الطلب…"
-                : "إتمام الطلب"}
+          : preparingPhotos
+            ? "جاري تجهيز الصور…"
+            : busy
+              ? "جاري إتمام الطلب…"
+              : "إتمام الطلب"}
       </button>
       <p className="mt-4 text-sm leading-7 text-[#6B7280] font-semibold text-center">
         {unavailable
           ? "أضف عنوانًا محفوظًا أو انتظر تحميل العناوين."
-          : locationPending
-            ? "انتظر انتهاء تحديد الموقع واحفظ تغييراتك قبل المتابعة."
-            : "راجع تفاصيل الطلب قبل الإتمام."}
+          : "راجع تفاصيل الطلب قبل الإتمام."}
       </p>
     </aside>
   );

@@ -34,7 +34,6 @@ export default function CheckoutPage() {
   }, []);
   const [photos, setPhotos] = useState<OrderPhoto[]>([]);
   const [preparingPhotos, setPreparingPhotos] = useState(false);
-  const [locationPending, setLocationPending] = useState(false);
   const [error, setError] = useState("");
   const address =
     addressState.addresses.find((item) => item.id === selectedId) ||
@@ -49,14 +48,7 @@ export default function CheckoutPage() {
   };
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (
-      lock.current ||
-      couponBusy ||
-      preparingPhotos ||
-      locationPending ||
-      addressState.busy
-    )
-      return;
+    if (lock.current || couponBusy || preparingPhotos || addressState.busy) return;
     if (!address || addressState.status !== "ready") {
       setError("اختر عنوان استلام محفوظًا أولًا.");
       return;
@@ -143,7 +135,6 @@ export default function CheckoutPage() {
                 selected={address}
                 phone={state.profile?.phone}
                 onSelect={setSelectedId}
-                onLocationPendingChange={setLocationPending}
                 loading={
                   !addressState.loaded &&
                   (addressState.status === "loading" || addressState.status === "idle")
@@ -197,7 +188,6 @@ export default function CheckoutPage() {
               unavailable={
                 !address || addressState.status !== "ready" || addressState.busy
               }
-              locationPending={locationPending}
               preparingPhotos={preparingPhotos}
             />
           </div>

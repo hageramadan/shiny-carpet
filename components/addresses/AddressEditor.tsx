@@ -19,8 +19,10 @@ import LocationPicker from "./LocationPicker";
 export default function AddressEditor({
   address,
   onSaved,
+  showMap = true,
 }: {
   address?: Address;
+  showMap?: boolean;
   onSaved?: (address: Address) => void;
 }) {
   const router = useRouter();
@@ -63,8 +65,8 @@ export default function AddressEditor({
       setError("اختر المنطقة والمحافظة والحي من القوائم المتاحة.");
       return;
     }
-    if (!location || !validCoordinates(location)) {
-      setError("حدد موقع العنوان على الخريطة أو باستخدام البحث أولًا.");
+    if (location && !validCoordinates(location)) {
+      setError("يرجى مراجعة إحداثيات الموقع.");
       return;
     }
     if (
@@ -114,8 +116,25 @@ export default function AddressEditor({
     );
 
   return (
-    <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.8fr)_minmax(300px,1fr)]">
-      <section className="min-w-0 rounded-xl border border-gray-200 bg-white p-4">
+    <div
+      className={
+        showMap
+          ? "grid items-start gap-6 lg:grid-cols-[minmax(0,1.8fr)_minmax(300px,1fr)]"
+          : "grid min-w-0 gap-6"
+      }
+    >
+      {showMap && (
+        <LocationPicker
+          value={location}
+          onChange={(value) => {
+            setLocation(value);
+            setError("");
+          }}
+          onPlace={placeSelected}
+          onBusyChange={setBusy}
+        />
+      )}
+      <section className="min-w-0 rounded-xl border border-gray-200 bg-white p-4 lg:-order-1">
         <h2 className="mb-4 text-xl font-bold text-[#17202A]">
           {address ? `تفاصيل عنوان ${address.label}` : "تفاصيل العنوان"}
         </h2>
@@ -183,15 +202,6 @@ export default function AddressEditor({
           </div>
         </form>
       </section>
-      <LocationPicker
-        value={location}
-        onChange={(value) => {
-          setLocation(value);
-          setError("");
-        }}
-        onPlace={placeSelected}
-        onBusyChange={setBusy}
-      />
     </div>
   );
 }

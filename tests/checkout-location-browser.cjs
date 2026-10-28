@@ -36,7 +36,7 @@ async function main() {
       is_default: true,
     };
     let rows = [
-      { ...original },
+      { ...original, lat: null, lng: null },
       { ...original, id: 98, title: "العمل", lat: 24.74, is_default: false },
     ];
     let failSave = true;
@@ -131,7 +131,10 @@ async function main() {
         return send({ result: true, data: { address: rows[0] } });
       }
       if (path === "/api/addresses" && method === "POST") {
-        const row = { ...original, ...request.postDataJSON(), id: 99 };
+        const body = request.postDataJSON();
+        assert.equal(Object.hasOwn(body, "lat"), false);
+        assert.equal(Object.hasOwn(body, "lng"), false);
+        const row = { ...original, ...body, lat: null, lng: null, id: 99 };
         rows = [row];
         return send({ result: true, data: { address: row } });
       }
@@ -139,63 +142,34 @@ async function main() {
     });
     const page = await context.newPage();
     page.on("pageerror", (error) => errors.push(error.message));
-    const map = page.getByLabel(
-      "خريطة اختيار الموقع. اضغط لتحديد نقطة، أو حرّك الخريطة ثم اختر مركزها.",
-      { exact: true },
-    );
     const submit = page.getByRole("button", { name: "إتمام الطلب", exact: true });
+    async function assertNoMap() {
+      assert.equal(await page.locator(".leaflet-container").count(), 0);
+      assert.equal(
+        await page
+          .getByRole("button", { name: "استخدم موقعي الحالي", exact: true })
+          .count(),
+        0,
+      );
+    }
     await page.goto(base + "/checkout");
-    await map.waitFor();
-    await page.locator('[aria-label="جاري تحميل الموقع"]').waitFor({ state: "hidden" });
-    await page.locator(".leaflet-marker-icon").waitFor();
+    await page.getByText("المنزل", { exact: true }).waitFor();
     assert.equal(await submit.isEnabled(), true);
-    await map.click({ position: { x: 65, y: 85 } });
-    await page.getByRole("button", { name: "حفظ موقع الاستلام", exact: true }).waitFor();
-    assert.equal(
-      await page
-        .getByRole("button", { name: "أكد موقع الاستلام أولًا", exact: true })
-        .isDisabled(),
-      true,
-    );
-    await page.getByRole("button", { name: "إلغاء تغيير الموقع", exact: true }).click();
-    assert.equal(await submit.isEnabled(), true);
-    await page.getByRole("button", { name: "استخدم موقعي الحالي", exact: true }).click();
-    await page.getByRole("button", { name: "حفظ موقع الاستلام", exact: true }).click();
-    await page
-      .getByRole("alert")
-      .filter({ hasText: "تعذر حفظ الموقع للاختبار" })
-      .waitFor();
-    assert.equal(
-      await page
-        .getByRole("button", { name: "أكد موقع الاستلام أولًا", exact: true })
-        .isDisabled(),
-      true,
-    );
-    await page.getByRole("button", { name: "حفظ موقع الاستلام", exact: true }).click();
-    await page.getByText("تم حفظ موقع الاستلام.", { exact: true }).waitFor();
-    assert.equal(await submit.isEnabled(), true);
-    assert.equal(writes.length, 2);
-    assert.equal(writes[1].lat, 24.72);
-    assert.equal(writes[1].lng, 46.68);
-    assert.equal(writes[1].street, original.street);
+    await assertNoMap();
     await page.getByRole("button", { name: "تغيير / تعديل", exact: true }).click();
     await page.getByRole("radio", { name: /العمل/ }).check();
-    await page.getByText("24.740000, 46.675300", { exact: true }).waitFor();
-    assert.equal(
-      await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
-      false,
-    );
-    if (process.env.CHECKOUT_MAP_SCREENSHOT)
-      await page.screenshot({
-        path: process.env.CHECKOUT_MAP_SCREENSHOT,
-        fullPage: true,
-      });
+    assert.equal(await submit.isEnabled(), true);
+    await assertNoMap();
     rows = [];
     await page.reload();
     await page.getByLabel("اسم العنوان", { exact: true }).waitFor();
-    await map.waitFor();
-    await page.getByRole("button", { name: "استخدم موقعي الحالي", exact: true }).click();
-    await page.getByText("موقع الاختبار", { exact: true }).waitFor();
+    assert.equal(
+      await page
+        .getByRole("button", { name: "اختر عنوان الاستلام أولًا", exact: true })
+        .isDisabled(),
+      true,
+    );
+    await assertNoMap();
     for (const [field, name] of [
       ["المحافظة / المنطقة", /الرياض/],
       ["المدينة", /العليا/],
@@ -203,34 +177,14 @@ async function main() {
       await page.getByRole("button", { name: field, exact: true }).click();
       await page.getByRole("menuitemradio", { name }).click();
     }
-    await page.getByLabel("اسم العنوان", { exact: true }).fill("عنوان من إتمام الطلب");
+    await page.getByLabel("اسم العنوان", { exact: true }).fill("عنوان بدون خريطة");
+    await page.getByLabel("اسم الشارع", { exact: true }).fill("شارع الاختبار");
+    await page.getByLabel("رقم المبنى", { exact: true }).fill("12");
     await page.getByRole("button", { name: "حفظ العنوان", exact: true }).click();
-    await page.getByText("عنوان من إتمام الطلب", { exact: true }).waitFor();
+    await page.getByText("عنوان بدون خريطة", { exact: true }).waitFor();
     assert.equal(page.url(), base + "/checkout");
     assert.equal(await submit.isEnabled(), true);
-    assert.equal(rows[0].lat, 24.72);
-    rows = [{ ...original, area_id: null, governorate_id: null, district_id: null }];
-    await page.reload();
-    await map.waitFor();
-    await page.getByRole("button", { name: "استخدم موقعي الحالي", exact: true }).click();
-    await page
-      .getByRole("button", { name: "استكمال بيانات العنوان لحفظ الموقع", exact: true })
-      .click();
-    await page.getByLabel("اسم العنوان", { exact: true }).waitFor();
-    await page.getByText("24.720000, 46.680000", { exact: true }).waitFor();
-    for (const [field, name] of [
-      ["المحافظة / المنطقة", /الرياض/],
-      ["المدينة", /العليا/],
-    ]) {
-      await page.getByRole("button", { name: field, exact: true }).click();
-      await page.getByRole("menuitemradio", { name }).click();
-    }
-    await page.getByRole("button", { name: "حفظ التغييرات", exact: true }).click();
-    await page.getByText("تم حفظ موقع الاستلام.", { exact: true }).waitFor();
-    assert.equal(rows[0].lat, 24.72);
-    assert.equal(rows[0].area_id, 22);
-    assert.equal(await submit.isEnabled(), true);
-    assert.equal(page.url(), base + "/checkout");
+    await assertNoMap();
     for (const width of [320, 1280]) {
       await page.setViewportSize({ width, height: 900 });
       assert.equal(
@@ -238,9 +192,31 @@ async function main() {
         false,
       );
     }
+    await page.goto(base + "/addresses/new?next=%2Fcheckout");
+    const mapHeading = page.getByRole("heading", { name: "تحديد الموقع", exact: true });
+    const detailsHeading = page.getByRole("heading", {
+      name: "تفاصيل العنوان",
+      exact: true,
+    });
+    await mapHeading.waitFor();
+    for (const width of [390, 1280]) {
+      await page.setViewportSize({ width, height: 900 });
+      const mapBox = await mapHeading.boundingBox();
+      const detailsBox = await detailsHeading.boundingBox();
+      if (width < 1024)
+        assert.ok(
+          mapBox.y < detailsBox.y,
+          "Map appears before address details on mobile",
+        );
+      else
+        assert.ok(
+          detailsBox.x > mapBox.x,
+          "Address details remain on the right on desktop",
+        );
+    }
     assert.deepEqual(errors, []);
     console.log(
-      "PASS: inline checkout map, point selection, cancel, geolocation, failed save and retry, persisted coordinates, address switching, mobile overflow, and inline address creation.",
+      "PASS: checkout has no map, accepts saved addresses without coordinates, switches addresses, and creates an address without selecting a location.",
     );
   } finally {
     await browser.close();

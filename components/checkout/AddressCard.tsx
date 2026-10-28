@@ -4,7 +4,6 @@ import Link from "next/link";
 import { FiMapPin } from "react-icons/fi";
 import type { Address } from "@/lib/data";
 import { addressLines } from "@/lib/addresses";
-import CheckoutLocation from "./CheckoutLocation";
 import AddressEditor from "@/components/addresses/AddressEditor";
 
 type Props = {
@@ -12,7 +11,6 @@ type Props = {
   selected?: Address;
   phone?: string;
   onSelect: (id: string) => void;
-  onLocationPendingChange: (pending: boolean) => void;
   loading?: boolean;
   error?: string;
   onRetry?: () => void;
@@ -22,7 +20,6 @@ export default function AddressCard({
   selected,
   phone,
   onSelect,
-  onLocationPendingChange,
   loading = false,
   error = "",
   onRetry,
@@ -121,15 +118,12 @@ export default function AddressCard({
               </Link>
             )}
           </div>
-          {selected ? (
-            <CheckoutLocation
-              key={selected.id}
-              address={selected}
-              onPendingChange={onLocationPendingChange}
-            />
-          ) : (
+          {!selected && (
             <div className="mt-5">
-              <AddressEditor onSaved={(address) => onSelect(address.id)} />
+              <AddressEditor
+                showMap={false}
+                onSaved={(address) => onSelect(address.id)}
+              />
             </div>
           )}
         </>

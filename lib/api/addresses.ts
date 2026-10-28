@@ -40,8 +40,9 @@ export function parseAddress(value: unknown): Address {
     !value.title.trim()
   )
     throw new ApiResponseError("Invalid address");
+  // Keep saved address details available when either coordinate is missing.
   const location =
-    value.lat == null && value.lng == null
+    value.lat == null || value.lng == null
       ? undefined
       : { lat: coordinate(value.lat), lng: coordinate(value.lng) };
   if (location && !validCoordinates(location))
@@ -84,8 +85,8 @@ function addressId(value: string): number {
   return Number(value);
 }
 export function addressInput(draft: AddressDraft, creating: boolean) {
-  if (!draft.location || !validCoordinates(draft.location))
-    throw new ApiError(422, { message: "حدد موقع العنوان على الخريطة أولًا." });
+  if (draft.location && !validCoordinates(draft.location))
+    throw new ApiError(422, { message: "يرجى مراجعة إحداثيات الموقع." });
   const limits = {
     label: 50,
     street: 300,
@@ -114,8 +115,7 @@ export function addressInput(draft: AddressDraft, creating: boolean) {
     floor: draft.floor?.trim() ?? "",
     apartment: draft.apartment?.trim() ?? "",
     details: draft.details?.trim() ?? "",
-    lat: draft.location.lat,
-    lng: draft.location.lng,
+    ...(draft.location ? { lat: draft.location.lat, lng: draft.location.lng } : {}),
     notes: draft.notes?.trim() || null,
   };
   if (
