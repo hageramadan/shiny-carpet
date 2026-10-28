@@ -16,7 +16,13 @@ import { validCoordinates } from "@/lib/addresses";
 import AddressFields, { type AddressFieldsValue } from "./AddressFields";
 import LocationPicker from "./LocationPicker";
 
-export default function AddressEditor({ address }: { address?: Address }) {
+export default function AddressEditor({
+  address,
+  onSaved,
+}: {
+  address?: Address;
+  onSaved?: (address: Address) => void;
+}) {
   const router = useRouter();
   const addresses = useAddresses();
   const action = useAuthAction();
@@ -76,6 +82,10 @@ export default function AddressEditor({ address }: { address?: Address }) {
         : await addresses.create(draft);
       signal.throwIfAborted();
       toast.success(address ? "تم تحديث العنوان بنجاح." : "تمت إضافة العنوان بنجاح.");
+      if (onSaved) {
+        onSaved(saved);
+        return;
+      }
       const next = new URLSearchParams(window.location.search).get("next");
       router.push(next === "/checkout" ? `/checkout?address=${saved.id}` : "/addresses");
     });

@@ -21,6 +21,7 @@
     "format:check": "prettier --check .",
     "test:orders": "node --require ./tests/register-typescript.cjs --test tests/orders.test.cjs",
     "test:orders:browser": "node tests/orders-browser.cjs",
+    "test:checkout-location:browser": "node tests/checkout-location-browser.cjs",
     "test:settings": "node --require ./tests/register-typescript.cjs --test tests/settings.test.cjs",
     "test:settings:browser": "node tests/settings-browser.cjs",
     "test:payments": "node --require ./tests/register-typescript.cjs --test tests/payments.test.cjs",

@@ -34,6 +34,7 @@ export default function CheckoutPage() {
   }, []);
   const [photos, setPhotos] = useState<OrderPhoto[]>([]);
   const [preparingPhotos, setPreparingPhotos] = useState(false);
+  const [locationPending, setLocationPending] = useState(false);
   const [error, setError] = useState("");
   const address =
     addressState.addresses.find((item) => item.id === selectedId) ||
@@ -48,7 +49,14 @@ export default function CheckoutPage() {
   };
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (lock.current || couponBusy || preparingPhotos) return;
+    if (
+      lock.current ||
+      couponBusy ||
+      preparingPhotos ||
+      locationPending ||
+      addressState.busy
+    )
+      return;
     if (!address || addressState.status !== "ready") {
       setError("اختر عنوان استلام محفوظًا أولًا.");
       return;
@@ -135,10 +143,12 @@ export default function CheckoutPage() {
                 selected={address}
                 phone={state.profile?.phone}
                 onSelect={setSelectedId}
+                onLocationPendingChange={setLocationPending}
                 loading={
-                  addressState.status === "loading" || addressState.status === "idle"
+                  !addressState.loaded &&
+                  (addressState.status === "loading" || addressState.status === "idle")
                 }
-                error={addressState.error}
+                error={addressState.status === "error" ? addressState.error : ""}
                 onRetry={() => void addressState.reload()}
               />
               <PromoCode
@@ -184,7 +194,10 @@ export default function CheckoutPage() {
               items={cart.items}
               pricing={pricing}
               busy={busy || couponBusy}
-              unavailable={!address || addressState.status !== "ready"}
+              unavailable={
+                !address || addressState.status !== "ready" || addressState.busy
+              }
+              locationPending={locationPending}
               preparingPhotos={preparingPhotos}
             />
           </div>
