@@ -11,8 +11,8 @@ export default function TrackingPage({ initialId = "" }: { initialId?: string })
   return (
     <section className="min-h-[70vh] bg-[#f7f9fa] py-7">
       <div className="container mx-auto space-y-6 px-4 sm:px-8">
-        <h1 className="text-3xl font-extrabold">تتبع الطلب</h1>
-        <form
+        <h1 className="text-3xl font-extrabold">تفاصيل الطلب</h1>
+        {/* <form
           onSubmit={search}
           className="flex gap-3"
         >
@@ -29,7 +29,7 @@ export default function TrackingPage({ initialId = "" }: { initialId?: string })
           <button className="self-end rounded-xl bg-primary px-5 py-3 text-white">
             عرض الطلب
           </button>
-        </form>
+        </form> */}
         {query && (
           <OrderDetails
             key={query}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { FiCreditCard, FiLock } from "react-icons/fi";
 import {
   createPaymentCheckout,
@@ -14,11 +15,11 @@ import { readAuthSession } from "@/lib/auth/session";
 import type { Order } from "@/lib/data";
 import PaymentDialog from "./PaymentDialog";
 
-const methods: { brand: PaymentBrand; label: string; style: string }[] = [
-  { brand: "MADA", label: "مدى", style: "font-bold text-[#087B82]" },
-  { brand: "APPLEPAY", label: "Apple Pay", style: "font-semibold text-black" },
-  { brand: "VISA", label: "Visa", style: "font-extrabold italic text-[#1A1F71]" },
-  { brand: "MASTER", label: "Mastercard", style: "font-bold text-[#B44918]" },
+const methods: { brand: PaymentBrand; label: string; image: string }[] = [
+  { brand: "MADA", label: "مدى", image: "/images/payment/mada.png" },
+  { brand: "APPLEPAY", label: "Apple Pay", image: "/images/payment/ApplePay.png" },
+  { brand: "VISA", label: "Visa", image: "/images/payment/Visa.png" },
+  { brand: "MASTER", label: "Mastercard", image: "/images/payment/Mastercard.png" },
 ];
 export default function OrderPayment({
   order,
@@ -97,7 +98,7 @@ export default function OrderPayment({
           {verification.error}
         </p>
       )}
-      <button
+      {/* <button
         type="button"
         disabled={verification.pending || now < nextCheckAt}
         onClick={() => void verify()}
@@ -108,7 +109,7 @@ export default function OrderPayment({
           : now < nextCheckAt
             ? "إعادة التحقق بعد قليل"
             : "تحقق من حالة الدفع"}
-      </button>
+      </button> */}
     </div>
   );
   async function start() {
@@ -181,11 +182,20 @@ export default function OrderPayment({
                 }}
                 className="size-4 shrink-0 accent-[#20A9B0]"
               />
-              <span
-                dir={method.brand === "MADA" ? "rtl" : "ltr"}
-                className={"min-w-0 text-sm " + method.style}
-              >
-                {method.label}
+              <span className="flex min-w-0 flex-1 flex-col items-center gap-1 sm:flex-row sm:gap-2">
+                <Image
+                  src={method.image}
+                  alt=""
+                  width={105}
+                  height={72}
+                  className="h-9 w-13 shrink-0 object-contain"
+                />
+                <span
+                  dir={method.brand === "MADA" ? "rtl" : "ltr"}
+                  className="text-sm font-semibold text-ink"
+                >
+                  {method.label}
+                </span>
               </span>
             </label>
           ))}

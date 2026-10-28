@@ -61,6 +61,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className="scroll-smooth scroll-pt-27.5 motion-reduce:scroll-auto selection:bg-[#c5eeeb]"
       lang="ar"
       dir="rtl"
+      data-scroll-behavior="smooth"
     >
       <body
         id="top"

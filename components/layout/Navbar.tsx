@@ -12,7 +12,7 @@ const links = [
   ["/#services", "خدماتنا"],
   ["/#why", "لماذا Shiny Carpet؟"],
   ["/orders", "طلباتي"],
-  ["/tracking", "تتبع الطلب"],
+  // ["/tracking", "تتبع الطلب"],
   ["/#faq", "الأسئلة الشائعة"],
 ];
 
