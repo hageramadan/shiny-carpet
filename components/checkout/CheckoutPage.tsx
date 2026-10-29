@@ -2,7 +2,8 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createOrder, type CouponQuote } from "@/lib/api/orders";
+import { createOrder, isOrderImageUploadError, type CouponQuote } from "@/lib/api/orders";
+import { ApiError, ApiResponseError } from "@/lib/api/client";
 import { authErrorMessage } from "@/lib/auth/contracts";
 import { readAuthSession } from "@/lib/auth/session";
 import { useStore } from "@/components/store";
@@ -35,6 +36,7 @@ export default function CheckoutPage() {
   const [photos, setPhotos] = useState<OrderPhoto[]>([]);
   const [preparingPhotos, setPreparingPhotos] = useState(false);
   const [error, setError] = useState("");
+  const [uploadRejected, setUploadRejected] = useState(false);
   const address =
     addressState.addresses.find((item) => item.id === selectedId) ||
     defaultAddress(addressState.addresses);
@@ -54,6 +56,11 @@ export default function CheckoutPage() {
       return;
     }
     if (!cart?.items.length || status !== "ready") return;
+    const submitter = (event.nativeEvent as SubmitEvent).submitter;
+    const withoutImages =
+      uploadRejected &&
+      submitter instanceof HTMLButtonElement &&
+      submitter.value === "without-images";
     const form = new FormData(event.currentTarget);
     const token = readAuthSession()?.token;
     lock.current = true;
@@ -65,13 +72,26 @@ export default function CheckoutPage() {
         phone: state.profile?.phone ?? "",
         note: String(form.get("notes") ?? ""),
         coupon: quote?.code,
-        images: photos.flatMap((photo) => (photo.file ? [photo.file] : [])),
+        images: withoutImages
+          ? []
+          : photos.flatMap((photo) => (photo.file ? [photo.file] : [])),
       });
       if (token !== readAuthSession()?.token) return;
       router.replace("/order-confirmation?order=" + encodeURIComponent(order.id));
       void reload();
     } catch (error) {
-      setError(authErrorMessage(error));
+      const rejected =
+        !withoutImages && photos.length > 0 && isOrderImageUploadError(error);
+      setUploadRejected(rejected);
+      setError(
+        rejected
+          ? "تعذر رفع صور الطلب. يمكنك حذف الصور أو اختيار صور أصغر، أو إتمام الطلب بدون صور."
+          : error instanceof ApiResponseError
+            ? "تعذر قراءة تأكيد الطلب. راجع طلباتي قبل إعادة الإرسال لتجنب تكرار الطلب."
+            : error instanceof ApiError && error.status >= 500
+              ? "حدث خطأ في خادم الطلبات. راجع طلباتي للتحقق من إنشاء الطلب قبل المحاولة مرة أخرى."
+              : authErrorMessage(error),
+      );
       lock.current = false;
       setBusy(false);
     }
@@ -178,6 +198,17 @@ export default function CheckoutPage() {
                   >
                     {error}
                   </p>
+                )}
+                {uploadRejected && (
+                  <button
+                    type="submit"
+                    name="image-mode"
+                    value="without-images"
+                    disabled={busy || couponBusy || preparingPhotos || addressState.busy}
+                    className="mt-3 min-h-11 rounded-xl bg-primary px-5 py-2 text-sm font-bold text-white disabled:opacity-50"
+                  >
+                    إتمام الطلب بدون صور
+                  </button>
                 )}
               </form>
             </fieldset>

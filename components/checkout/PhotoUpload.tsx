@@ -4,6 +4,7 @@ import Image from "next/image";
 import { FiImage, FiUpload, FiX } from "react-icons/fi";
 import type { OrderPhoto } from "@/lib/data";
 import { createPhotoPreview } from "@/lib/photo-preview";
+import { prepareOrderImage } from "@/lib/order-image";
 
 type Preview = OrderPhoto & { id: string; url: string; modified: number; file: File };
 
@@ -84,13 +85,13 @@ export default function PhotoUpload({
       });
       jobs.current += 1;
       onBusyChange?.(true);
-      void createPhotoPreview(url)
-        .then((preview) => {
+      void Promise.all([createPhotoPreview(url), prepareOrderImage(file, url)])
+        .then(([preview, uploadFile]) => {
           if (!mounted.current || !urls.current.has(url)) return;
           if (preview)
             update(
               photoState.current.map((photo) =>
-                photo.id === id ? { ...photo, preview } : photo,
+                photo.id === id ? { ...photo, preview, file: uploadFile } : photo,
               ),
             );
           else {
@@ -99,6 +100,13 @@ export default function PhotoUpload({
             update(photoState.current.filter((photo) => photo.id !== id));
             setError("تعذر تجهيز إحدى الصور. اختر صورة أخرى.");
           }
+        })
+        .catch(() => {
+          if (!mounted.current || !urls.current.has(url)) return;
+          URL.revokeObjectURL(url);
+          urls.current.delete(url);
+          update(photoState.current.filter((photo) => photo.id !== id));
+          setError("تعذر تجهيز إحدى الصور للرفع. اختر صورة أصغر أو أكمل بدون صور.");
         })
         .finally(() => {
           jobs.current -= 1;
@@ -198,8 +206,8 @@ export default function PhotoUpload({
         </ul>
       )}
       <p className="mt-3 text-xs leading-6 text-muted">
-        الصور بتتحفظ مصغرة للمعاينة المحلية مع الطلب التجريبي. الرفع الفعلي للخدمة عند
-        الربط.
+        الصور اختيارية. بحد أقصى ٣ صور، وحجم الصورة الواحدة لا يتجاوز ٥ ميجابايت. يتم
+        تقليل حجم الصور الكبيرة قبل إرسالها.
       </p>
     </section>
   );

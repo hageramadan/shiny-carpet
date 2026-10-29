@@ -1,4 +1,8 @@
-import { getJson, postJson } from "./client";
+import { requestJson, postJson } from "./client";
+
+// Keep catalog loaders visible on slow connections while awaiting the API.
+const catalogRequest = (path: string, signal?: AbortSignal): Promise<unknown> =>
+  requestJson(path, { method: "GET", signal, timeoutMs: 120_000 });
 import { assertPositiveId } from "./validation";
 
 export type CustomProductInput = { width: number; length: number; quantity: number };
@@ -34,14 +38,14 @@ export function getCustomProductPrice(
 }
 
 export const getCategories = (signal?: AbortSignal): Promise<unknown> =>
-  getJson("/categories", signal);
+  catalogRequest("/categories", signal);
 
 export const getProductsByCategory = (
   categoryId: number,
   signal?: AbortSignal,
 ): Promise<unknown> => {
   assertPositiveId(categoryId);
-  return getJson(`/products/category/${categoryId}`, signal);
+  return catalogRequest(`/products/category/${categoryId}`, signal);
 };
 
 export const getProductDetails = (
@@ -49,5 +53,5 @@ export const getProductDetails = (
   signal?: AbortSignal,
 ): Promise<unknown> => {
   assertPositiveId(productId);
-  return getJson(`/products/${productId}`, signal);
+  return catalogRequest(`/products/${productId}`, signal);
 };

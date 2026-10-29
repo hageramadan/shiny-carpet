@@ -8,6 +8,7 @@ const {
   createOrder,
   applyCoupon,
   orderImage,
+  isOrderImageUploadError,
 } = require("../lib/api/orders.ts");
 const { orderStages, isOrderDelivered } = require("../lib/order-status.ts");
 const { ApiError, ApiResponseError } = require("../lib/api/client.ts");
@@ -86,6 +87,15 @@ test("authenticated endpoints, multipart files, server coupon totals, failures a
     global.fetch = originalFetch;
   });
   const calls = [];
+  const timeoutDurations = [];
+  const originalTimeout = AbortSignal.timeout;
+  AbortSignal.timeout = (duration) => {
+    timeoutDurations.push(duration);
+    return originalTimeout(duration);
+  };
+  t.after(() => {
+    AbortSignal.timeout = originalTimeout;
+  });
   let response = ok(row);
   global.fetch = async (url, options) => {
     calls.push({ url, options });
@@ -107,6 +117,7 @@ test("authenticated endpoints, multipart files, server coupon totals, failures a
     note: " ملاحظة ",
     images: [new File(["image"], "rug.png", { type: "image/png" })],
   });
+  assert.equal(timeoutDurations.at(-1), 120_000);
   const body = calls.at(-1).options.body;
   assert.ok(body instanceof FormData);
   assert.equal(body.get("address_id"), "97");
@@ -116,6 +127,42 @@ test("authenticated endpoints, multipart files, server coupon totals, failures a
   assert.equal(body.get("coupon_code"), null);
   assert.equal(body.get("images[]").name, "rug.png");
   assert.equal(calls.at(-1).options.headers["Content-Type"], undefined);
+  // Successful creation may return an ID without the detail endpoint's fields.
+  response = ok({ id: 12 });
+  assert.deepEqual(
+    await createOrder({
+      addressId: 97,
+      phone: "+201012345678",
+      images: [],
+      note: "ملاحظة بدون صور",
+      coupon: "SERVER12",
+    }),
+    { id: "12" },
+  );
+  assert.equal(timeoutDurations.at(-1), 30_000);
+  const withoutImagesBody = calls.at(-1).options.body;
+  assert.deepEqual(withoutImagesBody.getAll("images[]"), []);
+  assert.equal(withoutImagesBody.get("address_id"), "97");
+  assert.equal(withoutImagesBody.get("phone"), "1012345678");
+  assert.equal(withoutImagesBody.get("note"), "ملاحظة بدون صور");
+  assert.equal(withoutImagesBody.get("coupon_code"), "SERVER12");
+  response = ok({ ...row, items: undefined });
+  assert.deepEqual(
+    await createOrder({ addressId: 97, phone: "+201012345678", images: [] }),
+    { id: "12" },
+  );
+  for (const data of [null, {}, { id: 0 }, { id: "12" }]) {
+    response = ok(data);
+    await assert.rejects(
+      createOrder({ addressId: 97, phone: "+201012345678", images: [] }),
+      ApiResponseError,
+    );
+  }
+  response = { success: false, data: { id: 12 }, message: "لم يتم قبول الطلب" };
+  await assert.rejects(
+    createOrder({ addressId: 97, phone: "+201012345678", images: [] }),
+    ApiError,
+  );
   response = ok({
     cart_subtotal: 5300,
     discount: 12,
@@ -149,4 +196,40 @@ test("all backend workflow statuses parse and map to the timeline", () => {
   }
   assert.equal(isOrderDelivered("delivered_to_customer"), true);
   assert.equal(isOrderDelivered("paid"), false);
+});
+
+test("image validation failures offer a fallback only after an explicit 422 rejection", () => {
+  assert.equal(
+    isOrderImageUploadError(
+      new ApiError(422, {
+        errors: { "images.0": ["The images.0 failed to upload."] },
+      }),
+    ),
+    true,
+  );
+  assert.equal(
+    isOrderImageUploadError(
+      new ApiError(422, {
+        message: "The images.0 failed to upload.",
+      }),
+    ),
+    true,
+  );
+  assert.equal(
+    isOrderImageUploadError(
+      new ApiError(422, {
+        errors: { address_id: ["Invalid address"] },
+      }),
+    ),
+    false,
+  );
+  assert.equal(
+    isOrderImageUploadError(
+      new ApiError(500, {
+        errors: { "images.0": ["Failed"] },
+      }),
+    ),
+    false,
+  );
+  assert.equal(isOrderImageUploadError(new TypeError("Failed to fetch")), false);
 });

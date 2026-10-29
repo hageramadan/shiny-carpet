@@ -144,6 +144,18 @@ export async function cancelOrder(id: number, signal?: AbortSignal) {
     throw new ApiResponseError("Unexpected cancellation response");
   return order;
 }
+export function isOrderImageUploadError(error: unknown): boolean {
+  if (!(error instanceof ApiError) || error.status !== 422 || !isRecord(error.details))
+    return false;
+  const fields = error.details.errors;
+  return (
+    (isRecord(fields) &&
+      Object.keys(fields).some((key) => /^images(?:\.\d+)?$/.test(key))) ||
+    (typeof error.details.message === "string" &&
+      /images(?:\.\d+)?\b.*(?:upload|file|image)/i.test(error.details.message))
+  );
+}
+
 export type CreateOrderInput = {
   addressId: number;
   phone: string;
@@ -170,12 +182,19 @@ export async function createOrder(input: CreateOrderInput, signal?: AbortSignal)
   if (input.note?.trim()) body.set("note", input.note.trim());
   if (input.coupon) body.set("coupon_code", input.coupon);
   input.images.forEach((file) => body.append("images[]", file));
-  return parseOrder(
-    cartSuccess(
-      await authenticatedApiRequest("/orders", { method: "POST", body, signal }),
-    ).data,
-    true,
-  );
+  const data = cartSuccess(
+    await authenticatedApiRequest("/orders", {
+      method: "POST",
+      body,
+      signal,
+      // Multipart uploads need time on mobile connections, beyond the default 10s.
+      timeoutMs: input.images.length ? 120_000 : 30_000,
+    }),
+  ).data;
+  // Creation only needs the ID; the confirmation page fetches full details.
+  if (!isRecord(data) || !isPositiveId(data.id))
+    throw new ApiResponseError("Missing created order ID");
+  return { id: String(data.id) };
 }
 export type CouponQuote = CartTotals & { discount: number; code: string };
 export async function applyCoupon(

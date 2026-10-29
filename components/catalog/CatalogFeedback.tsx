@@ -1,26 +1,13 @@
 "use client";
 
-export default function CatalogFeedback({
-  error = false,
-  onRetry,
-  message,
-}: {
-  error?: boolean;
-  onRetry?: () => void;
-  message?: string;
-}) {
+export default function CatalogFeedback({ onRetry }: { onRetry?: () => void }) {
   return (
     <div
-      role={error ? "alert" : "status"}
+      role="alert"
       className="rounded-2xl border border-gray-200 bg-white p-6 text-center sm:p-10"
     >
-      <p className="text-sm leading-7 text-muted">
-        {message ??
-          (error
-            ? "تعذر تحميل المنتجات. حاول مرة أخرى."
-            : "لا توجد منتجات متاحة في هذا التصنيف حاليًا.")}
-      </p>
-      {error && onRetry && (
+      <p className="text-sm leading-7 text-muted">تعذر تحميل المنتجات. حاول مرة أخرى.</p>
+      {onRetry && (
         <button
           type="button"
           onClick={onRetry}

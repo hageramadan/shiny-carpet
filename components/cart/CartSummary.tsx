@@ -25,10 +25,10 @@ export default function CartSummary({
           <dt className="text-muted">السعر</dt>
           <dd className="text-ink">{money(cart.subtotal)} ر.س</dd>
         </div>
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+        {/* <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
           <dt className="text-muted">التوصيل</dt>
           <dd className="text-ink">يُحدد عند إتمام الطلب</dd>
-        </div>
+        </div> */}
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
           <dt className="text-muted">الضريبة ({money(cart.vatPercentage)}٪)</dt>
           <dd className="text-ink">{money(cart.vat)} ر.س</dd>

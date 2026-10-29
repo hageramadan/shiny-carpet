@@ -6,7 +6,9 @@ export default function ProductsLoading() {
       className="min-h-[60vh] bg-soft py-6"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <span className="sr-only">جاري تحميل المنتجات…</span>
+        <p className="mb-5 text-center text-sm text-muted">
+          جاري تحميل المنتجات، يرجى الانتظار…
+        </p>
         <div
           aria-hidden="true"
           className="mb-6 h-8 w-36 animate-pulse rounded-lg bg-primary/10 motion-reduce:animate-none"

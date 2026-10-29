@@ -18,7 +18,9 @@ export default function Catalog({ categoryId }: { categoryId?: number }) {
   const failed =
     categoriesRequest.status === "error" || productsRequest.status === "error";
   const loading =
-    categoriesRequest.status === "loading" || productsRequest.status === "loading";
+    !failed &&
+    (categoriesRequest.status !== "success" ||
+      (selected !== undefined && productsRequest.status !== "success"));
   const retry =
     categoriesRequest.status === "error"
       ? categoriesRequest.reload
@@ -78,16 +80,13 @@ export default function Catalog({ categoryId }: { categoryId?: number }) {
                 className="h-80 animate-pulse rounded-2xl bg-primary/10 motion-reduce:animate-none"
               />
             ))}
-            <span className="sr-only">جاري تحميل المنتجات…</span>
+            <p className="col-span-full text-center text-sm text-muted">
+              جاري تحميل المنتجات، يرجى الانتظار…
+            </p>
           </div>
         ) : failed ? (
-          <CatalogFeedback
-            error
-            onRetry={retry}
-          />
-        ) : !products.length ? (
-          <CatalogFeedback />
-        ) : (
+          <CatalogFeedback onRetry={retry} />
+        ) : !products.length ? null : (
           <div className="grid gap-4 *:min-w-0 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3">
             {products.map((product) => (
               <ProductCard
