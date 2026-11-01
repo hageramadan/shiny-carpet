@@ -10,6 +10,7 @@ import EmptyOrders from "./orders/EmptyOrders";
 import OrdersSupport from "./orders/OrdersSupport";
 
 const tabs = [
+  { id: "all", label: "كل الطلبات" },
   { id: "ordered", label: "الطلبات الحالية" },
   { id: "delivered_to_customer", label: "الطلبات السابقة" },
   { id: "cancelled", label: "الطلبات الملغاة" },
@@ -18,7 +19,7 @@ const tabs = [
 type OrdersTab = (typeof tabs)[number]["id"];
 
 export function OrdersPage() {
-  const [activeTab, setActiveTab] = useState<OrdersTab>("ordered");
+  const [activeTab, setActiveTab] = useState<OrdersTab>("all");
   const load = useCallback(
     async (signal: AbortSignal) => {
       const orders = await fetchOrders(
@@ -65,7 +66,7 @@ export function OrdersPage() {
         </nav>
         <h1 className="text-[32px] font-extrabold leading-normal sm:text-4xl">طلباتي</h1>
         <p className="mt-3 text-sm leading-6 text-muted sm:text-base">
-          تابع طلباتك الحالية من الاستلام حتى وصولها إليك.
+          استعرض كل طلباتك، أو اختر التصنيف لمتابعة الطلبات الحالية والسابقة.
         </p>
 
         <div

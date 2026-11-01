@@ -30,19 +30,19 @@ export default function OrderCompletion({ order }: { order: Order }) {
           <h2 className="text-base font-extrabold text-ink sm:text-lg">
             تم إكمال طلبك بنجاح
           </h2>
-          <p className="mt-1 text-xs leading-7 text-muted sm:text-sm">
+          {/* <p className="mt-1 text-xs leading-7 text-muted sm:text-sm">
             يمكنك الآن عرض الفاتورة ومراجعة تفاصيل طلبك، ومشاركتنا تقييمك لتجربة الخدمة.
-          </p>
+          </p> */}
         </div>
       </div>
       <div className="flex shrink-0 flex-wrap items-center gap-2">
-        <button
+        {/* <button
           type="button"
           onClick={() => setInvoiceOpen(true)}
           className="min-h-11 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-ink"
         >
           عرض الفاتورة
-        </button>
+        </button> */}
         <OrderRating
           key={order.id}
           order={order}

@@ -275,6 +275,7 @@ async function main() {
       0,
     );
     await page.goto(base + "/orders");
+    await page.getByRole("button", { name: "الطلبات الحالية", exact: true }).click();
     await page.getByRole("link", { name: "عرض تفاصيل الطلب 13", exact: true }).waitFor();
     assert.equal(
       await page.getByRole("link", { name: "عرض تفاصيل الطلب 14", exact: true }).count(),

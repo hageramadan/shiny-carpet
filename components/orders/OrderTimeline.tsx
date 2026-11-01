@@ -1,3 +1,6 @@
+"use client";
+
+import { useEffect, useRef } from "react";
 import { FiCheck } from "react-icons/fi";
 import { orderStages, isOrderDelivered } from "@/lib/order-status";
 import type { Order } from "@/lib/data";
@@ -19,6 +22,27 @@ export default function OrderTimeline({ order }: { order: Order }) {
   const stage = orderStages.find((stage) => stage.id === order.status)!;
   const current = stage.step;
   const delivered = isOrderDelivered(order.status);
+  const regionRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const region = regionRef.current;
+    if (!region) return;
+    function revealCurrentStage() {
+      if (!region) return;
+      const step = region.querySelector<HTMLElement>('[aria-current="step"]');
+      if (!step) return;
+      const container = region.getBoundingClientRect();
+      const currentStep = step.getBoundingClientRect();
+      region.scrollBy({
+        left:
+          currentStep.left + currentStep.width / 2 - container.left - container.width / 2,
+        behavior: "instant",
+      });
+    }
+    revealCurrentStage();
+    const observer = new ResizeObserver(revealCurrentStage);
+    observer.observe(region);
+    return () => observer.disconnect();
+  }, [order.id, current]);
   const createdAt = new Intl.DateTimeFormat("ar-EG", {
     day: "2-digit",
     month: "long",
@@ -40,7 +64,7 @@ export default function OrderTimeline({ order }: { order: Order }) {
       {!cancelled && (
         <p
           role="status"
-          className="mt-2 text-xs text-primary"
+          className="mt-3 inline-flex rounded-full bg-primary/10 px-3 py-1 text-sm font-bold text-primary"
         >
           {stage.label}
         </p>
@@ -54,6 +78,7 @@ export default function OrderTimeline({ order }: { order: Order }) {
         </p>
       ) : (
         <div
+          ref={regionRef}
           role="region"
           aria-label="مراحل الطلب"
           tabIndex={0}
