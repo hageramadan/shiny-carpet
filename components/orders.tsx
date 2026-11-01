@@ -22,14 +22,16 @@ export function OrdersPage() {
   const load = useCallback(
     async (signal: AbortSignal) => {
       const orders = await fetchOrders(
-        activeTab === "ordered" ? undefined : activeTab,
+        activeTab === "cancelled" ? activeTab : undefined,
         signal,
       );
       return activeTab === "ordered"
         ? orders.filter(
             (order) => !isOrderDelivered(order.status) && order.status !== "cancelled",
           )
-        : orders;
+        : activeTab === "delivered_to_customer"
+          ? orders.filter((order) => isOrderDelivered(order.status))
+          : orders;
     },
     [activeTab],
   );

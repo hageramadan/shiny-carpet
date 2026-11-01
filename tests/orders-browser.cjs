@@ -105,13 +105,19 @@ async function main() {
         const body = request.postData();
         assert.ok(body.includes('name="address_id"'));
         assert.ok(body.includes("97"));
-        assert.ok(body.includes('name="images[]"; filename="rug.png"'));
+        assert.ok(body.includes('name="images[]"; filename="سجاد الاختبار.png"'));
         assert.ok(body.includes("SERVER12"));
         assert.ok(body.includes('name="note"'));
         assert.ok(!body.includes('name="date"'));
         if (failCreate) {
           failCreate = false;
-          return respond({ message: "تعذر إنشاء الطلب للاختبار" }, 422);
+          return respond(
+            {
+              message: "تعذر إنشاء الطلب للاختبار",
+              errors: { "images.0": ["Upload failed"] },
+            },
+            422,
+          );
         }
         created = true;
         return ok(order);
@@ -132,6 +138,7 @@ async function main() {
           { ...order, id: 14, status: "ready_for_delivery", items: undefined },
           { ...order, id: 15, status: "delivered_to_customer", items: undefined },
           { ...order, id: 16, status: "cancelled", items: undefined },
+          { ...order, id: 17, status: "paid", items: undefined },
         ]);
       if (path === "/api/orders")
         return ok(
@@ -158,6 +165,28 @@ async function main() {
     await page.getByRole("button", { name: "تفعيل", exact: true }).click();
     await page.getByText("تم تطبيق الكود: SERVER12").waitFor();
     await page.getByRole("textbox", { name: /ملاحظات/ }).fill("ملاحظة الاختبار");
+    await page.getByRole("heading", { name: "صور السجاد (إجباري)" }).waitFor();
+    assert.equal(await page.locator("input[type=file]").count(), 1);
+    await page.getByRole("button", { name: "إتمام الطلب", exact: true }).click();
+    await page.getByText("صور السجاد مطلوبة", { exact: true }).waitFor();
+    await page
+      .getByText("لإتمام طلبك، أضف صورة واضحة واحدة على الأقل للسجاد من زر «إضافة صور».")
+      .waitFor();
+    assert.equal(
+      await page.locator("#checkout-add-photos").getAttribute("aria-invalid"),
+      "true",
+    );
+    assert.equal(
+      await page
+        .locator("#checkout-add-photos")
+        .evaluate((button) => button === document.activeElement),
+      true,
+    );
+    assert.equal(
+      calls.filter((call) => call.path === "/api/orders" && call.method === "POST")
+        .length,
+      0,
+    );
     await page.locator("input[type=file]").setInputFiles({
       name: "rug.png",
       mimeType: "image/png",
@@ -166,8 +195,22 @@ async function main() {
         "base64",
       ),
     });
+    await page.locator("#checkout-photos-required").waitFor({ state: "hidden" });
+    assert.equal(
+      await page.locator("#checkout-add-photos").getAttribute("aria-invalid"),
+      "false",
+    );
     await page.getByRole("button", { name: "إتمام الطلب", exact: true }).click();
-    await page.getByText("تعذر إنشاء الطلب للاختبار", { exact: true }).waitFor();
+    await page
+      .getByText(
+        "تعذر رفع صور الطلب. اختر صورًا أصغر أو أعد المحاولة؛ الصور مطلوبة لإتمام الطلب.",
+        { exact: true },
+      )
+      .waitFor();
+    assert.equal(
+      await page.getByRole("button", { name: "إتمام الطلب بدون صور" }).count(),
+      0,
+    );
     await page.getByRole("button", { name: "إتمام الطلب", exact: true }).click();
     await page.waitForURL("**/order-confirmation?order=12");
     await page.getByText("تم استلام طلبك بنجاح", { exact: true }).waitFor();
@@ -187,7 +230,7 @@ async function main() {
       ["laundry_received", "جاري التنظيف"],
       ["ready_for_delivery", "جاهز للتوصيل"],
       ["on_way_to_customer_again", "في الطريق إليك"],
-      ["paid", "في الطريق إليك"],
+      ["paid", "تم التسليم"],
     ]) {
       detailStatus = status;
       await page.reload();
@@ -245,12 +288,25 @@ async function main() {
       await page.getByRole("link", { name: "عرض تفاصيل الطلب 16", exact: true }).count(),
       0,
     );
+    assert.equal(
+      await page.getByRole("link", { name: "عرض تفاصيل الطلب 17", exact: true }).count(),
+      0,
+    );
     await page.getByRole("button", { name: "الطلبات الملغاة", exact: true }).click();
     await page.getByRole("link", { name: "عرض تفاصيل الطلب 12" }).waitFor();
     assert.equal(await page.getByText("FAKE-ORDER").count(), 0);
     await page.getByRole("button", { name: "الطلبات السابقة", exact: true }).click();
     await page.getByText("جاري تحميل الطلبات…").waitFor({ state: "hidden" });
-    assert.ok(calls.some((call) => call.search === "?status=delivered_to_customer"));
+    await page.getByRole("link", { name: "عرض تفاصيل الطلب 17", exact: true }).waitFor();
+    await page.getByRole("link", { name: "عرض تفاصيل الطلب 15", exact: true }).waitFor();
+    assert.equal(
+      await page.getByRole("link", { name: "عرض تفاصيل الطلب 13", exact: true }).count(),
+      0,
+    );
+    assert.equal(
+      await page.getByRole("link", { name: "عرض تفاصيل الطلب 16", exact: true }).count(),
+      0,
+    );
     assert.equal(
       await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth),
       false,

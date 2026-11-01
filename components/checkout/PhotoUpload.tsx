@@ -1,17 +1,27 @@
 "use client";
 import { useEffect, useRef, useState, type ChangeEvent, type DragEvent } from "react";
 import Image from "next/image";
-import { FiImage, FiUpload, FiX } from "react-icons/fi";
+import { FiAlertCircle, FiImage, FiUpload, FiX } from "react-icons/fi";
 import type { OrderPhoto } from "@/lib/data";
 import { createPhotoPreview } from "@/lib/photo-preview";
 import { prepareOrderImage } from "@/lib/order-image";
 
-type Preview = OrderPhoto & { id: string; url: string; modified: number; file: File };
+type Preview = OrderPhoto & {
+  id: string;
+  url: string;
+  modified: number;
+  file: File;
+  originalName: string;
+};
 
 export default function PhotoUpload({
+  productName,
+  validationError = "",
   onChange,
   onBusyChange,
 }: {
+  productName: string;
+  validationError?: string;
   onChange: (photos: OrderPhoto[]) => void;
   onBusyChange?: (busy: boolean) => void;
 }) {
@@ -61,7 +71,7 @@ export default function PhotoUpload({
       if (
         next.some(
           (photo) =>
-            photo.name === file.name &&
+            photo.originalName === file.name &&
             photo.size === file.size &&
             photo.modified === file.lastModified,
         )
@@ -76,7 +86,8 @@ export default function PhotoUpload({
       const id = crypto.randomUUID();
       next.push({
         id,
-        name: file.name,
+        originalName: file.name,
+        name: productName,
         size: file.size,
         type: file.type,
         modified: file.lastModified,
@@ -91,7 +102,22 @@ export default function PhotoUpload({
           if (preview)
             update(
               photoState.current.map((photo) =>
-                photo.id === id ? { ...photo, preview, file: uploadFile } : photo,
+                photo.id === id
+                  ? {
+                      ...photo,
+                      preview,
+                      file: new File(
+                        [uploadFile],
+                        productName.replace(/[\\/:*?"<>|\x00-\x1f]/g, "-") +
+                          (uploadFile.type === "image/png"
+                            ? ".png"
+                            : uploadFile.type === "image/webp"
+                              ? ".webp"
+                              : ".jpg"),
+                        { type: uploadFile.type, lastModified: uploadFile.lastModified },
+                      ),
+                    }
+                  : photo,
               ),
             );
           else {
@@ -106,7 +132,7 @@ export default function PhotoUpload({
           URL.revokeObjectURL(url);
           urls.current.delete(url);
           update(photoState.current.filter((photo) => photo.id !== id));
-          setError("تعذر تجهيز إحدى الصور للرفع. اختر صورة أصغر أو أكمل بدون صور.");
+          setError("تعذر تجهيز إحدى الصور للرفع. اختر صورة أصغر وأعد المحاولة.");
         })
         .finally(() => {
           jobs.current -= 1;
@@ -135,13 +161,23 @@ export default function PhotoUpload({
   }
 
   return (
-    <section className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 lg:p-6">
-      <h2 className="flex flex-wrap items-center gap-2 text-base font-bold text-ink">
+    <section
+      aria-labelledby="checkout-photos-title"
+      className={
+        "rounded-2xl border bg-white p-4 sm:p-5 lg:p-6 " +
+        (validationError ? "border-red-400 ring-1 ring-red-200" : "border-gray-200")
+      }
+    >
+      <h2
+        id="checkout-photos-title"
+        className="flex flex-wrap items-center gap-2 text-base font-bold text-ink"
+      >
         <FiImage className="text-primary" />
-        صور السجاد <span className="text-xs font-normal text-muted">(اختياري)</span>
+        صور السجاد <span className="text-xs font-normal text-muted">(إجباري)</span>
       </h2>
       <p className="mt-3 text-xs leading-7 text-muted">
-        اختر صور القطع من الموبايل أو اسحبها هنا.
+        أضف صور السجاد من الموبايل أو اسحبها هنا. صورة واحدة على الأقل مطلوبة لإتمام
+        الطلب.
       </p>
       <input
         ref={inputRef}
@@ -151,12 +187,24 @@ export default function PhotoUpload({
         onChange={select}
         className="sr-only"
         tabIndex={-1}
-        aria-label="اختيار صور القطع"
+        aria-label="اختيار صور السجاد"
+        aria-required="true"
+        aria-invalid={Boolean(validationError || error)}
+        aria-describedby={
+          validationError
+            ? "checkout-photos-required"
+            : error
+              ? "checkout-photos-error"
+              : undefined
+        }
       />
       <div
         onDragOver={(event) => event.preventDefault()}
         onDrop={drop}
-        className="mt-4 rounded-2xl border border-dashed border-gray-200 bg-primary/10 p-4 text-center sm:p-6"
+        className={
+          "mt-4 rounded-2xl border border-dashed p-4 text-center sm:p-6 " +
+          (validationError ? "border-red-400 bg-red-50" : "border-gray-200 bg-primary/10")
+        }
       >
         <FiUpload className="mx-auto text-2xl text-primary" />
         <p className="mt-3 text-xs leading-7 text-primary">
@@ -164,14 +212,34 @@ export default function PhotoUpload({
         </p>
         <button
           type="button"
+          id="checkout-add-photos"
+          aria-invalid={Boolean(validationError)}
+          aria-describedby={validationError ? "checkout-photos-required" : undefined}
           onClick={() => inputRef.current?.click()}
-          className="mt-3 min-h-10 rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-bold text-primary"
+          className="mt-3 min-h-10 rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-bold text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         >
           إضافة صور
         </button>
       </div>
+      {validationError && (
+        <div
+          id="checkout-photos-required"
+          role="alert"
+          className="mt-4 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-3 text-red-700"
+        >
+          <FiAlertCircle
+            aria-hidden="true"
+            className="mt-1 size-5 shrink-0"
+          />
+          <div>
+            <p className="text-sm font-bold">صور السجاد مطلوبة</p>
+            <p className="mt-1 text-xs leading-7">{validationError}</p>
+          </div>
+        </div>
+      )}
       {error && (
         <p
+          id="checkout-photos-error"
           role="alert"
           className="mt-3 text-xs leading-7 text-red-600"
         >
@@ -193,6 +261,12 @@ export default function PhotoUpload({
                 unoptimized
                 className="aspect-square h-auto w-full rounded-xl object-cover sm:size-24"
               />
+              <p
+                className="mt-2 max-w-24 truncate text-xs text-ink"
+                title={productName}
+              >
+                {productName}
+              </p>
               <button
                 type="button"
                 onClick={() => remove(photo)}
@@ -206,8 +280,8 @@ export default function PhotoUpload({
         </ul>
       )}
       <p className="mt-3 text-xs leading-6 text-muted">
-        الصور اختيارية. بحد أقصى ٣ صور، وحجم الصورة الواحدة لا يتجاوز ٥ ميجابايت. يتم
-        تقليل حجم الصور الكبيرة قبل إرسالها.
+        أضف صورة واحدة على الأقل لإتمام الطلب. بحد أقصى ٣ صور للطلب، وحجم الصورة الواحدة
+        لا يتجاوز ٥ ميجابايت. يتم تقليل حجم الصور الكبيرة قبل إرسالها.
       </p>
     </section>
   );

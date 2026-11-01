@@ -43,6 +43,10 @@ function storageImage(
 export function orderImage(value: unknown) {
   return storageImage(value, "order_images");
 }
+function orderFlag(value: unknown): boolean | undefined {
+  if (value === true || value === 1 || value === "1") return true;
+  if (value === false || value === 0 || value === "0") return false;
+}
 export function parseOrder(value: unknown, requireItems = false): Order {
   if (
     !isRecord(value) ||
@@ -62,6 +66,8 @@ export function parseOrder(value: unknown, requireItems = false): Order {
   return {
     id: String(value.id),
     status: value.status as OrderStatus,
+    userPaid: orderFlag(value.user_paid),
+    isRated: orderFlag(value.is_rated),
     createdAt,
     total,
     items: Array.isArray(value.items)
@@ -167,7 +173,7 @@ export async function createOrder(input: CreateOrderInput, signal?: AbortSignal)
   assertPositiveId(input.addressId);
   const phone = apiPhone(input.phone);
   if (
-    input.images.length > 3 ||
+    input.images.length === 0 ||
     input.images.some(
       (file) =>
         !["image/jpeg", "image/png", "image/webp"].includes(file.type) ||

@@ -1,4 +1,4 @@
-// Keep optional order attachments small enough for mobile uploads.
+// Keep order attachments small enough for mobile uploads.
 const MAX_UPLOAD_BYTES = 500 * 1024;
 
 export function prepareOrderImage(file: File, url: string): Promise<File> {

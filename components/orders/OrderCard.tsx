@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Order } from "@/lib/data";
 import { money, cartProduct, cartCurrency, currencyLabel } from "@/lib/data";
+import OrderRating from "./OrderRating";
 import { orderStages } from "@/lib/order-status";
 
 const dateFormatter = new Intl.DateTimeFormat("ar-EG", {
@@ -47,7 +48,7 @@ export default function OrderCard({ order }: { order: Order }) {
           {pieces} قطع · {summary}
         </p>
       </div>
-      <div className="flex shrink-0 items-center justify-between gap-4 sm:flex-row-reverse">
+      <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 sm:flex-row-reverse">
         <Link
           href={`/tracking?order=${encodeURIComponent(order.id)}`}
           aria-label={`عرض تفاصيل الطلب ${order.id}`}
@@ -55,6 +56,11 @@ export default function OrderCard({ order }: { order: Order }) {
         >
           عرض التفاصيل
         </Link>
+        <OrderRating
+          key={order.id}
+          order={order}
+          compact
+        />
         <strong className="whitespace-nowrap text-sm text-primary">
           {money(order.total)} {currencyLabel(cartCurrency(order.items))}
         </strong>

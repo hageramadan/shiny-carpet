@@ -127,40 +127,56 @@ test("authenticated endpoints, multipart files, server coupon totals, failures a
   assert.equal(body.get("coupon_code"), null);
   assert.equal(body.get("images[]").name, "rug.png");
   assert.equal(calls.at(-1).options.headers["Content-Type"], undefined);
+  const beforeMissingImages = calls.length;
+  await assert.rejects(
+    createOrder({ addressId: 97, phone: "+201012345678", images: [] }),
+    RangeError,
+  );
+  assert.equal(calls.length, beforeMissingImages);
   // Successful creation may return an ID without the detail endpoint's fields.
   response = ok({ id: 12 });
   assert.deepEqual(
     await createOrder({
       addressId: 97,
       phone: "+201012345678",
-      images: [],
-      note: "ملاحظة بدون صور",
+      images: Array.from(
+        { length: 4 },
+        () => new File(["image"], "rug.png", { type: "image/png" }),
+      ),
+      note: "ملاحظة",
       coupon: "SERVER12",
     }),
     { id: "12" },
   );
-  assert.equal(timeoutDurations.at(-1), 30_000);
-  const withoutImagesBody = calls.at(-1).options.body;
-  assert.deepEqual(withoutImagesBody.getAll("images[]"), []);
-  assert.equal(withoutImagesBody.get("address_id"), "97");
-  assert.equal(withoutImagesBody.get("phone"), "1012345678");
-  assert.equal(withoutImagesBody.get("note"), "ملاحظة بدون صور");
-  assert.equal(withoutImagesBody.get("coupon_code"), "SERVER12");
+  assert.equal(timeoutDurations.at(-1), 120_000);
+  assert.equal(calls.at(-1).options.body.getAll("images[]").length, 4);
   response = ok({ ...row, items: undefined });
   assert.deepEqual(
-    await createOrder({ addressId: 97, phone: "+201012345678", images: [] }),
+    await createOrder({
+      addressId: 97,
+      phone: "+201012345678",
+      images: [new File(["image"], "rug.png", { type: "image/png" })],
+    }),
     { id: "12" },
   );
   for (const data of [null, {}, { id: 0 }, { id: "12" }]) {
     response = ok(data);
     await assert.rejects(
-      createOrder({ addressId: 97, phone: "+201012345678", images: [] }),
+      createOrder({
+        addressId: 97,
+        phone: "+201012345678",
+        images: [new File(["image"], "rug.png", { type: "image/png" })],
+      }),
       ApiResponseError,
     );
   }
   response = { success: false, data: { id: 12 }, message: "لم يتم قبول الطلب" };
   await assert.rejects(
-    createOrder({ addressId: 97, phone: "+201012345678", images: [] }),
+    createOrder({
+      addressId: 97,
+      phone: "+201012345678",
+      images: [new File(["image"], "rug.png", { type: "image/png" })],
+    }),
     ApiError,
   );
   response = ok({
@@ -195,10 +211,19 @@ test("all backend workflow statuses parse and map to the timeline", () => {
     assert.ok(stage.step >= -1 && stage.step <= 6);
   }
   assert.equal(isOrderDelivered("delivered_to_customer"), true);
-  assert.equal(isOrderDelivered("paid"), false);
+  assert.equal(isOrderDelivered("paid"), true);
+  const paid = parseOrder({
+    ...row,
+    status: "paid",
+    user_paid: true,
+    is_received: false,
+  });
+  assert.equal(paid.status, "paid");
+  assert.equal(orderStages.find((stage) => stage.id === paid.status).step, 6);
+  assert.equal(orderStages.find((stage) => stage.id === paid.status).label, "تم التسليم");
 });
 
-test("image validation failures offer a fallback only after an explicit 422 rejection", () => {
+test("detects image validation failures only after an explicit 422 rejection", () => {
   assert.equal(
     isOrderImageUploadError(
       new ApiError(422, {

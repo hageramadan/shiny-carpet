@@ -35,8 +35,20 @@ export default function CheckoutPage() {
   }, []);
   const [photos, setPhotos] = useState<OrderPhoto[]>([]);
   const [preparingPhotos, setPreparingPhotos] = useState(false);
+  const [photosTouched, setPhotosTouched] = useState(false);
+  const photosError =
+    photosTouched && !photos.some((photo) => photo.file && photo.preview)
+      ? "لإتمام طلبك، أضف صورة واضحة واحدة على الأقل للسجاد من زر «إضافة صور»."
+      : "";
+  const photoProductName =
+    Array.from(
+      new Set(
+        (cart?.items ?? []).flatMap((item) =>
+          item.product?.name ? [item.product.name] : [],
+        ),
+      ),
+    ).join(" - ") || "السجاد";
   const [error, setError] = useState("");
-  const [uploadRejected, setUploadRejected] = useState(false);
   const address =
     addressState.addresses.find((item) => item.id === selectedId) ||
     defaultAddress(addressState.addresses);
@@ -56,11 +68,15 @@ export default function CheckoutPage() {
       return;
     }
     if (!cart?.items.length || status !== "ready") return;
-    const submitter = (event.nativeEvent as SubmitEvent).submitter;
-    const withoutImages =
-      uploadRejected &&
-      submitter instanceof HTMLButtonElement &&
-      submitter.value === "without-images";
+    setPhotosTouched(true);
+    if (!photos.some((photo) => photo.file && photo.preview)) {
+      setError("");
+      document.getElementById("checkout-add-photos")?.focus({ preventScroll: true });
+      document
+        .getElementById("checkout-photos")
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
     const form = new FormData(event.currentTarget);
     const token = readAuthSession()?.token;
     lock.current = true;
@@ -72,20 +88,16 @@ export default function CheckoutPage() {
         phone: state.profile?.phone ?? "",
         note: String(form.get("notes") ?? ""),
         coupon: quote?.code,
-        images: withoutImages
-          ? []
-          : photos.flatMap((photo) => (photo.file ? [photo.file] : [])),
+        images: photos.flatMap((photo) => (photo.file ? [photo.file] : [])),
       });
       if (token !== readAuthSession()?.token) return;
       router.replace("/order-confirmation?order=" + encodeURIComponent(order.id));
       void reload();
     } catch (error) {
-      const rejected =
-        !withoutImages && photos.length > 0 && isOrderImageUploadError(error);
-      setUploadRejected(rejected);
+      const rejected = isOrderImageUploadError(error);
       setError(
         rejected
-          ? "تعذر رفع صور الطلب. يمكنك حذف الصور أو اختيار صور أصغر، أو إتمام الطلب بدون صور."
+          ? "تعذر رفع صور الطلب. اختر صورًا أصغر أو أعد المحاولة؛ الصور مطلوبة لإتمام الطلب."
           : error instanceof ApiResponseError
             ? "تعذر قراءة تأكيد الطلب. راجع طلباتي قبل إعادة الإرسال لتجنب تكرار الطلب."
             : error instanceof ApiError && error.status >= 500
@@ -167,10 +179,14 @@ export default function CheckoutPage() {
                 onApplied={(quote) => setCoupon({ cart, quote })}
                 onBusyChange={setCouponBusy}
               />
-              <PhotoUpload
-                onChange={setPhotos}
-                onBusyChange={setPreparingPhotos}
-              />
+              <div id="checkout-photos">
+                <PhotoUpload
+                  productName={photoProductName}
+                  validationError={photosError}
+                  onChange={setPhotos}
+                  onBusyChange={setPreparingPhotos}
+                />
+              </div>
               <section className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 lg:p-6">
                 <label className="block text-sm font-bold text-ink">
                   ملاحظات{" "}
@@ -198,17 +214,6 @@ export default function CheckoutPage() {
                   >
                     {error}
                   </p>
-                )}
-                {uploadRejected && (
-                  <button
-                    type="submit"
-                    name="image-mode"
-                    value="without-images"
-                    disabled={busy || couponBusy || preparingPhotos || addressState.busy}
-                    className="mt-3 min-h-11 rounded-xl bg-primary px-5 py-2 text-sm font-bold text-white disabled:opacity-50"
-                  >
-                    إتمام الطلب بدون صور
-                  </button>
                 )}
               </form>
             </fieldset>

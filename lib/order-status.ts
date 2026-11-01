@@ -15,7 +15,7 @@ export const orderStages = [
   { id: "deliver_to_customer", label: "جاري تجهيز التوصيل للعميل", step: 5 },
   { id: "on_way_to_customer_again", label: "المندوب في الطريق للتوصيل", step: 5 },
   { id: "arrived_to_customer_again", label: "وصل المندوب لتسليم القطع", step: 5 },
-  { id: "paid", label: "تم الدفع", step: 5 },
+  { id: "paid", label: "تم التسليم", step: 6 },
   { id: "delivered_to_customer", label: "تم التسليم للعميل", step: 6 },
   // Retain the cancellation response and older completed orders.
   { id: "cancelled", label: "ملغي", step: -1 },
@@ -26,5 +26,7 @@ export function isOrderStatus(value: unknown): value is OrderStatus {
   return typeof value === "string" && orderStages.some((stage) => stage.id === value);
 }
 export function isOrderDelivered(status: OrderStatus) {
-  return status === "delivered_to_customer" || status === "delivered";
+  return (
+    status === "paid" || status === "delivered_to_customer" || status === "delivered"
+  );
 }

@@ -89,6 +89,8 @@ export type Order = {
   coupon?: string;
   pricing?: OrderPricing;
   status: OrderStatus;
+  userPaid?: boolean;
+  isRated?: boolean;
   createdAt: string;
 };
 export const money = (value: number) =>

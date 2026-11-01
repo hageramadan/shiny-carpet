@@ -9,6 +9,7 @@ import { OrderItems, PriceBreakdown } from "./OrderSummary";
 import OrderTimeline from "./OrderTimeline";
 import OrderPhotos from "./OrderPhotos";
 import OrderPayment from "./OrderPayment";
+import OrderCompletion from "./OrderCompletion";
 export default function OrderDetails({
   id,
   confirmation = false,
@@ -94,6 +95,10 @@ export default function OrderDetails({
         رقم الطلب: <bdi>{order.id}</bdi> ·{" "}
         {new Date(order.createdAt).toLocaleDateString("ar-EG")}
       </p>
+      <OrderCompletion
+        key={order.id}
+        order={order}
+      />
       <OrderTimeline order={order} />
       <div className="grid items-start gap-5 lg:grid-cols-3">
         <div className="space-y-5 lg:col-span-2">
