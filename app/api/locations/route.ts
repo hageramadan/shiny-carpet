@@ -48,7 +48,7 @@ export async function GET(request: Request) {
         "User-Agent": "ShinyCarpetDemo/1.0 (address picker)",
         Accept: "application/json",
       },
-      signal: AbortSignal.timeout(10_000),
+      signal: request.signal,
       cache: "no-store",
     });
     if (!response.ok) throw new Error("Geocoder unavailable");

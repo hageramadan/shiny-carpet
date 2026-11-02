@@ -162,7 +162,7 @@ function RatingDialog({
         onClick={onClose}
         disabled={busy}
         aria-label="إغلاق نافذة التقييم"
-        className="mb-3 grid size-9 place-items-center rounded-full bg-gray-50 text-muted transition-colors hover:bg-primary/10 disabled:opacity-50"
+        className="mr-auto mb-3 grid size-9 place-items-center rounded-full bg-gray-50 text-muted transition-colors hover:bg-primary/10 disabled:opacity-50"
       >
         <FiX
           aria-hidden="true"

@@ -163,6 +163,28 @@ test("requests use Arabic JSON headers, no-store, and propagate cancellation", a
   await assert.rejects(pending, { name: "AbortError" });
 });
 
+test("requests wait for slow responses without an automatic cancellation deadline", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  t.mock.method(AbortSignal, "timeout", () => {
+    throw new Error("API requests must not create a cancellation deadline");
+  });
+  t.mock.method(globalThis, "fetch", async (url, options) => {
+    assert.equal(options.signal, undefined);
+    await new Promise((resolve) => setTimeout(resolve, 180_000));
+    return Response.json(response([]));
+  });
+  let completed = false;
+  const pending = getJson("/categories").then((result) => {
+    completed = true;
+    return result;
+  });
+  t.mock.timers.tick(120_000);
+  await Promise.resolve();
+  assert.equal(completed, false);
+  t.mock.timers.tick(60_000);
+  assert.deepEqual(await pending, response([]));
+});
+
 test("only a details 404 becomes a missing product; server failures stay errors", async (t) => {
   const fetchMock = t.mock.method(
     globalThis,

@@ -16,10 +16,9 @@ export class ApiResponseError extends Error {
   }
 }
 
-const API_BASE_URL = (
+export const API_BASE_URL = (
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "https://admin.shinycarpet-sa.com/api"
 ).replace(/\/+$/, "");
-const REQUEST_TIMEOUT_MS = 10_000;
 
 // Responses stay unknown until the catalog parsers validate the API payload.
 export async function requestJson(
@@ -30,13 +29,11 @@ export async function requestJson(
     signal?: AbortSignal;
     token?: string;
     baseUrl?: string;
-    timeoutMs?: number;
   },
 ): Promise<unknown> {
   const { method, body, signal } = options;
   const hasBody = method === "POST" || method === "PUT";
   const multipart = typeof FormData !== "undefined" && body instanceof FormData;
-  const timeout = AbortSignal.timeout(options.timeoutMs ?? REQUEST_TIMEOUT_MS);
   const response = await fetch(`${options.baseUrl ?? API_BASE_URL}${path}`, {
     method,
     headers: {
@@ -47,7 +44,7 @@ export async function requestJson(
     },
     body: hasBody ? (multipart ? (body as FormData) : JSON.stringify(body)) : undefined,
     cache: "no-store",
-    signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
+    signal,
   });
 
   let result: unknown;

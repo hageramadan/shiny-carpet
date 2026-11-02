@@ -63,7 +63,6 @@ export async function createPaymentCheckout(
     method: "POST",
     body: { order_id: orderId, payment_brand: brand },
     signal,
-    timeoutMs: 60_000,
   });
   signal?.throwIfAborted();
   return parsePaymentCheckout(body, orderId);
@@ -117,7 +116,6 @@ export async function fetchPaymentStatus(
       method: "POST",
       body: { order_id: orderId, checkout_id: checkoutId },
       signal,
-      timeoutMs: 60_000,
     });
   } catch (error) {
     if (

@@ -117,7 +117,7 @@ test("authenticated endpoints, multipart files, server coupon totals, failures a
     note: " ملاحظة ",
     images: [new File(["image"], "rug.png", { type: "image/png" })],
   });
-  assert.equal(timeoutDurations.at(-1), 120_000);
+  assert.deepEqual(timeoutDurations, []);
   const body = calls.at(-1).options.body;
   assert.ok(body instanceof FormData);
   assert.equal(body.get("address_id"), "97");
@@ -148,7 +148,7 @@ test("authenticated endpoints, multipart files, server coupon totals, failures a
     }),
     { id: "12" },
   );
-  assert.equal(timeoutDurations.at(-1), 120_000);
+  assert.deepEqual(timeoutDurations, []);
   assert.equal(calls.at(-1).options.body.getAll("images[]").length, 4);
   response = ok({ ...row, items: undefined });
   assert.deepEqual(

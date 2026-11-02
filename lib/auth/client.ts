@@ -31,7 +31,6 @@ export async function authRequest(
       method: "POST",
       body: input,
       signal,
-      timeoutMs: 20_000,
       token: action === "logout" ? readAuthSession()?.token : pending?.token,
     });
     signal?.throwIfAborted();
@@ -71,7 +70,6 @@ export async function authenticatedApiRequest(
     method?: "GET" | "POST" | "PUT" | "DELETE";
     body?: unknown;
     signal?: AbortSignal;
-    timeoutMs?: number;
   } = {},
 ) {
   if (!path.startsWith("/") || path.startsWith("//"))

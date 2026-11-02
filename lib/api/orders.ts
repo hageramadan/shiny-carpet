@@ -193,8 +193,6 @@ export async function createOrder(input: CreateOrderInput, signal?: AbortSignal)
       method: "POST",
       body,
       signal,
-      // Multipart uploads need time on mobile connections, beyond the default 10s.
-      timeoutMs: input.images.length ? 120_000 : 30_000,
     }),
   ).data;
   // Creation only needs the ID; the confirmation page fetches full details.

@@ -21,6 +21,7 @@ async function main() {
       rated = false,
       fail = true,
       release;
+    const invoiceRequests = [];
     const calls = [],
       errors = [];
     const order = () => ({
@@ -58,6 +59,12 @@ async function main() {
         route.fulfill({ status: code, headers, json });
       if (request.method() === "OPTIONS") return route.fulfill({ status: 204, headers });
       if (url.pathname === "/api/settings") return respond({ result: true, data: {} });
+      if (/\/orders\/541\/(invoice|view|download)$/.test(url.pathname)) {
+        invoiceRequests.push(url.pathname);
+        assert.equal(url.pathname, "/api/orders/541/invoice");
+        assert.equal(request.headers().authorization, "Bearer fixture-ratings-token");
+        return respond(require("./fixtures/invoice.cjs")(541));
+      }
       if (url.pathname === "/api/ratings") {
         assert.equal(request.headers().authorization, "Bearer fixture-ratings-token");
         const body = request.postDataJSON();
@@ -87,11 +94,19 @@ async function main() {
     const rateButton = () =>
       page.getByRole("button", { name: "تقييم الطلب", exact: true });
     await page.getByRole("heading", { name: "تم إكمال طلبك بنجاح" }).waitFor();
-    await page.getByRole("button", { name: "عرض الفاتورة" }).click();
-    await page.getByRole("dialog", { name: "فاتورة الطلب" }).waitFor();
-    await page.getByRole("dialog").getByText("الإجمالي", { exact: true }).waitFor();
-    await page.keyboard.press("Escape");
-    await page.getByRole("dialog").waitFor({ state: "hidden" });
+    assert.equal(invoiceRequests.length, 0);
+    const downloadEvent = page.waitForEvent("download");
+    await page.getByRole("button", { name: "تحميل الفاتورة", exact: true }).click();
+    const downloaded = await downloadEvent;
+    assert.equal(downloaded.suggestedFilename(), "invoice-541.pdf");
+    const pdfBytes = await fs.readFile(await downloaded.path());
+    assert.equal(pdfBytes.subarray(0, 5).toString(), "%PDF-");
+    assert.ok(pdfBytes.length > 10000);
+    assert.ok(invoiceRequests.length > 0);
+    assert.ok(invoiceRequests.every((url) => url === "/api/orders/541/invoice"));
+    if (process.env.INVOICE_PDF_PATH)
+      await downloaded.saveAs(process.env.INVOICE_PDF_PATH);
+    assert.equal(await page.getByRole("dialog", { name: "فاتورة الطلب" }).count(), 0);
     for (const scenario of [
       { status: "confirmed", paid: true, rated: false },
       { status: "delivered_to_customer", paid: false, rated: false },
@@ -103,6 +118,10 @@ async function main() {
       await page.reload();
       await page.getByRole("region", { name: "مراحل الطلب" }).waitFor();
       assert.equal(await rateButton().count(), 0);
+      assert.equal(
+        await page.getByRole("button", { name: "تحميل الفاتورة", exact: true }).count(),
+        scenario.status === "paid" ? 1 : 0,
+      );
     }
     status = "paid";
     paid = true;

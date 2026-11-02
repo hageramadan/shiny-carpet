@@ -2,7 +2,7 @@ import { requestJson, postJson } from "./client";
 
 // Keep catalog loaders visible on slow connections while awaiting the API.
 const catalogRequest = (path: string, signal?: AbortSignal): Promise<unknown> =>
-  requestJson(path, { method: "GET", signal, timeoutMs: 120_000 });
+  requestJson(path, { method: "GET", signal });
 import { assertPositiveId } from "./validation";
 
 export type CustomProductInput = { width: number; length: number; quantity: number };
