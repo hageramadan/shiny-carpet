@@ -60,7 +60,7 @@ export default function PhoneInput({
   const [internalValue, setInternalValue] = useState(defaultValue);
   const [country, setCountry] = useState<Country>(defaultCountry);
   const [touched, setTouched] = useState(false);
-  const phone = internationalPhone(value ?? internalValue, defaultCountry);
+  const phone = internationalPhone(value ?? internalValue, country);
   const errorId = `${inputId}-error`;
   const error = !phone
     ? required

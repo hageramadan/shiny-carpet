@@ -1,5 +1,4 @@
 "use client";
-import { useSettings } from "@/components/settings/SettingsProvider";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
@@ -17,17 +16,9 @@ export default function AuthLayout({
   description: string;
   children: ReactNode;
 }) {
-  const { data: settings } = useSettings();
   return (
     <section
-      className="min-h-[65vh] bg-[#f7f9fa] bg-cover bg-center pb-10 pt-6 text-ink"
-      style={
-        settings?.loginBackground
-          ? {
-              backgroundImage: `linear-gradient(#f7f9faf0, #f7f9faf0), url("${settings.loginBackground}")`,
-            }
-          : undefined
-      }
+      className="min-h-[65vh] bg-[#f7f9fa] pb-10 pt-6 text-ink"
     >
       <div className="container mx-auto px-5 sm:px-6 lg:px-8">
         <nav

@@ -55,7 +55,8 @@ async function main() {
     await context.route("**/api/auth/**", async (route) => {
       const request = route.request();
       const url = new URL(request.url());
-      assert.equal(url.origin, "https://admin.shinycarpet-sa.com");
+      const localOtp = url.pathname === "/api/auth/otp";
+      if (!localOtp) assert.equal(url.origin, "https://admin.shinycarpet-sa.com");
       const cors = {
         "access-control-allow-origin": "*",
         "access-control-allow-methods": "POST",
@@ -76,10 +77,17 @@ async function main() {
       const headers = {};
       for (const key of ["content-type", "authorization", "accept-language"])
         if (original[key]) headers[key] = original[key];
-      const response = await context.request.post(provider + url.pathname, {
-        data: request.postData(),
-        headers,
-      });
+      const input = request.postDataJSON();
+      const response = await context.request.post(
+        provider +
+          (localOtp
+            ? "/api/auth/" + (input.action === "send" ? "resend" : "verify")
+            : url.pathname),
+        {
+          data: localOtp ? JSON.stringify(input) : request.postData(),
+          headers,
+        },
+      );
       await route.fulfill({ response, headers: { ...response.headers(), ...cors } });
     });
     const page = await context.newPage();
@@ -93,9 +101,46 @@ async function main() {
     await page.getByRole("alert").filter({ hasText: "للدولة المختارة" }).waitFor();
     await phone.fill("abc");
     assert.equal(await phone.inputValue(), "");
+    await phone.fill("151234567");
+    await phone.blur();
+    await page.getByRole("alert").filter({ hasText: "للدولة المختارة" }).waitFor();
+    await page.getByRole("button", { name: "تسجيل الدخول", exact: true }).click();
+    await page.getByRole("button", { name: /الدولة/ }).click();
+    await page.getByRole("menuitemradio", { name: /مصر/ }).click();
+    await phone.fill("1312345678");
+    await phone.blur();
+    await page.getByRole("alert").filter({ hasText: "للدولة المختارة" }).waitFor();
+    await page.getByRole("button", { name: "تسجيل الدخول", exact: true }).click();
     assert.equal(urls.length, 0);
     console.log(
       "PASS: required, digits-only and country length validation block invalid requests",
+    );
+    await page.goto(base + "/register");
+    await page.getByLabel("الاسم", { exact: true }).fill("حساب موجود");
+    await page.getByRole("button", { name: /الدولة/ }).click();
+    await page.getByRole("menuitemradio", { name: /مصر/ }).click();
+    await page.getByLabel("رقم الهاتف", { exact: true }).fill("1012345678");
+    await page.getByRole("checkbox").check();
+    const beforeExisting = urls.length;
+    await page.getByRole("button", { name: "إنشاء حساب", exact: true }).click();
+    await page.getByText("رقم الهاتف موجود بالفعل", { exact: true }).waitFor();
+    assert.equal(new URL(page.url()).pathname, "/register");
+    assert.deepEqual(urls.slice(beforeExisting), [
+      "https://admin.shinycarpet-sa.com/api/auth/exist",
+    ]);
+    await page.goto(base + "/login");
+    await page.getByLabel("رقم الهاتف", { exact: true }).fill("551234567");
+    const beforeMissing = urls.length;
+    await page.getByRole("button", { name: "تسجيل الدخول", exact: true }).click();
+    await page.getByText("رقم الهاتف غير مسجل", { exact: true }).waitFor();
+    assert.equal(new URL(page.url()).pathname, "/login");
+    assert.deepEqual(urls.slice(beforeMissing), [
+      "https://admin.shinycarpet-sa.com/api/auth/exist",
+    ]);
+    assert.ok(
+      (await page.getByLabel("رقم الهاتف", { exact: true }).inputValue())
+        .replace(/\D/g, "")
+        .includes("551234567"),
     );
     await page.goto(base + "/register");
     await page.getByLabel("الاسم", { exact: true }).fill("حساب التسجيل");
@@ -182,8 +227,16 @@ async function main() {
     await page.getByRole("button", { name: "تسجيل الدخول", exact: true }).click();
     await page.waitForURL("**/verify-otp");
     const requests = await (await fetch(provider + "/__requests")).json();
-    for (const action of ["register", "login", "verify", "resend", "logout"])
+    assert.ok(
+      requests.findIndex((request) => request.action === "exist") <
+        requests.findIndex((request) => request.action === "register"),
+    );
+    for (const action of ["exist", "register", "login", "logout"])
       assert.ok(urls.includes("https://admin.shinycarpet-sa.com/api/auth/" + action));
+    assert.ok(urls.some((url) => new URL(url).pathname === "/api/auth/otp"));
+    assert.ok(
+      urls.every((url) => !/\/auth\/(verify|resend)$/.test(new URL(url).pathname)),
+    );
     assert.ok(requests.every((request) => request.arabic));
     assert.ok(
       requests.some((request) => request.action === "logout" && request.authorized),

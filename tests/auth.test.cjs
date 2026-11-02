@@ -12,6 +12,7 @@ const {
   authRequest,
   authenticatedApiRequest,
   fetchSession,
+  phoneExists,
 } = require("../lib/auth/client.ts");
 const {
   clearAuthSession,
@@ -189,14 +190,16 @@ test("safe validation errors remain useful without showing framework exception d
   );
 });
 
-test("browser auth calls the backend directly and saves a verified token for protected requests", async (t) => {
+test("browser auth delegates SMS verification to the server and saves only a verified session", async (t) => {
   const storage = browserSession(t);
   const calls = [];
   t.mock.method(globalThis, "fetch", async (url, options) => {
     calls.push({ url, options });
-    assert.ok(url.startsWith("https://admin.shinycarpet-sa.com/api/"));
+    assert.ok(
+      url.startsWith("https://admin.shinycarpet-sa.com/api/") || url === "/api/auth/otp",
+    );
     assert.equal(options.headers["Accept-Language"], "ar");
-    if (url.endsWith("/auth/verify"))
+    if (url === "/api/auth/otp" && JSON.parse(options.body).action === "verify")
       return Response.json(success({ user, token: "fixture-only-token" }));
     if (url.endsWith("/auth/login"))
       return Response.json({ status: "pending_verification", user });
@@ -219,7 +222,8 @@ test("browser auth calls the backend directly and saves a verified token for pro
   assert.equal(calls.at(-1).options.headers.Authorization, "Bearer fixture-only-token");
   assert.equal(readAuthSession(), null);
   assert.equal(storage.has(AUTH_SESSION_KEY), false);
-  assert.ok(calls.every((call) => !call.url.startsWith("/api/")));
+  assert.ok(calls.some((call) => call.url === "/api/auth/otp"));
+  assert.ok(calls.every((call) => !/\/auth\/(verify|resend)$/.test(call.url)));
 });
 
 test("a failed logout keeps the session, while an expired token clears it", async (t) => {
@@ -247,10 +251,38 @@ test("a failed logout keeps the session, while an expired token clears it", asyn
   assert.equal(readAuthSession(), null);
 });
 
-
 test("request timeouts explain that saving may still have completed", () => {
   assert.equal(
     authErrorMessage(new DOMException("Request timed out", "TimeoutError")),
     "انتهت مهلة انتظار رد الخادم. حدّث الصفحة للتحقق من حفظ التغييرات قبل المحاولة مجددًا.",
   );
+});
+
+test("phone existence validates the numeric flag and posts only the normalized phone", async (t) => {
+  browserSession(t);
+  const input = { phone: "1012345678", country_code: "+20" };
+  let exists = 0;
+  const mock = t.mock.method(globalThis, "fetch", async (url, options) => {
+    assert.ok(url.endsWith("/auth/exist"));
+    assert.equal(options.method, "POST");
+    assert.deepEqual(JSON.parse(options.body), input);
+    return Response.json(success({ exists }));
+  });
+  assert.equal(await phoneExists({ ...input, ignored: "never-send" }), false);
+  exists = 1;
+  assert.equal(await phoneExists(input), true);
+  exists = null;
+  await assert.rejects(phoneExists(input), ApiResponseError);
+  const count = mock.mock.callCount();
+  await assert.rejects(phoneExists({ phone: "x", country_code: "+20" }), ApiError);
+  assert.equal(mock.mock.callCount(), count);
+  for (const invalid of [
+    { phone: "1012345678", country_code: "+2" },
+    { phone: "012345678", country_code: "+201" },
+    { phone: "1012345678", country_code: "20" },
+    { phone: "01012345678", country_code: "+20" },
+    { phone: "1312345678", country_code: "+20" },
+  ])
+    await assert.rejects(phoneExists(invalid), ApiError);
+  assert.equal(mock.mock.callCount(), count);
 });

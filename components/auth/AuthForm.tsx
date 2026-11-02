@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, type FormEvent } from "react";
+import toast from "react-hot-toast";
 import AuthLayout, { authButtonClass, authInputClass } from "./AuthLayout";
 import PhoneInput from "@/components/forms/PhoneInput";
 import { useAuthAction } from "@/hooks/useAuthAction";
-import { authRequest } from "@/lib/auth/client";
+import { authRequest, phoneExists } from "@/lib/auth/client";
 import { apiPhone } from "@/lib/phone";
 import {
   authHref,
@@ -50,14 +51,24 @@ export default function AuthForm({
     }
     await run(register ? "register" : "login", async (signal) => {
       const credentials = apiPhone(phone);
+      const exists = await phoneExists(credentials, signal);
+      if (register && exists) {
+        toast.error("رقم الهاتف موجود بالفعل", { id: "auth-phone-exists" });
+        return;
+      }
+      if (!register && !exists) {
+        toast.error("رقم الهاتف غير مسجل", { id: "auth-phone-not-found" });
+        return;
+      }
+      const mode = register ? "register" : "login";
       await authRequest(
-        register ? "register" : "login",
-        { ...credentials, ...(register ? { name: name.trim() } : {}) },
+        mode,
+        { ...credentials, ...(mode === "register" ? { name: name.trim() } : {}) },
         signal,
       );
       signal.throwIfAborted();
       saveAuthDraft({
-        mode: register ? "register" : "login",
+        mode,
         name: name.trim(),
         phone: normalizePhone(phone),
         destination,

@@ -1,7 +1,7 @@
 import { isRecord } from "../api/validation";
 import { ApiError, ApiResponseError } from "../api/client";
 import type { Profile } from "../data";
-import { validPhone, type ApiPhone } from "../phone";
+import { validApiPhone, validCountryCallingCode, type ApiPhone } from "../phone";
 
 export const AUTH_ACTIONS = ["register", "login", "verify", "logout", "resend"] as const;
 export type AuthAction = (typeof AUTH_ACTIONS)[number];
@@ -17,13 +17,15 @@ export function authInput(
   value: unknown,
 ): AuthInput | Record<string, never> {
   if (action === "logout") return {};
+  if (!isRecord(value) || !validCountryCallingCode(value.country_code)) {
+    throw new ApiError(422, { message: "يرجى اختيار رمز دولة صحيح من الدول المتاحة." });
+  }
   if (
     !isRecord(value) ||
     typeof value.phone !== "string" ||
     typeof value.country_code !== "string" ||
     !/^\d{4,15}$/.test(value.phone) ||
-    !/^\+[1-9]\d{0,3}$/.test(value.country_code) ||
-    !validPhone(value.country_code + value.phone)
+    !validApiPhone(value.phone, value.country_code)
   ) {
     throw new ApiError(422, { message: "يرجى إدخال رقم هاتف صحيح ورمز الدولة." });
   }

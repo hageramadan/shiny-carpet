@@ -89,10 +89,8 @@ async function main() {
     );
     await page.goto(base + "/register");
     await page.getByRole("heading", { name: "إنشاء حساب", exact: true }).waitFor();
-    await page.waitForFunction(() =>
-      document
-        .querySelector("main section")
-        .style.backgroundImage.includes("login_background.png"),
+    await page.waitForFunction(
+      () => !document.querySelector("main section").style.backgroundImage,
     );
     assert.ok(
       (await page.getByRole("link", { name: "سياسة الخصوصية", exact: true }).count()) >=

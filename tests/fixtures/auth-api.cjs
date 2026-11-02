@@ -51,6 +51,8 @@ const server = http.createServer(async (request, response) => {
       arabic: request.headers["accept-language"] === "ar",
       authorized: tokens.has(request.headers.authorization?.replace(/^Bearer /, "")),
     });
+    if (action === "exist")
+      return json(response, 200, success({ exists: accounts.has(key) ? 1 : 0 }));
     if (action === "register") {
       if (accounts.has(key))
         return json(response, 422, {
