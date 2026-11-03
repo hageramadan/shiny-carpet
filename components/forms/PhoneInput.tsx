@@ -13,7 +13,6 @@ import ar from "react-phone-number-input/locale/ar";
 import { phoneFlags } from "./phone-flags";
 import {
   DEFAULT_PHONE_COUNTRY,
-  PHONE_COUNTRIES,
   internationalPhone,
   normalizePhone,
   validPhone,
@@ -109,8 +108,8 @@ export default function PhoneInput({
         defaultCountry={defaultCountry}
         international={false}
         addInternationalOption={false}
-        countries={PHONE_COUNTRIES}
-        countryOptionsOrder={PHONE_COUNTRIES}
+        countries={["SA"]}
+        countryOptionsOrder={["SA"]}
         countrySelectComponent={PhoneCountrySelect}
         flags={phoneFlags}
         labels={ar}

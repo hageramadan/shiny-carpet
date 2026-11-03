@@ -17,7 +17,7 @@ import PaymentDialog from "./PaymentDialog";
 
 const methods: { brand: PaymentBrand; label: string; image: string }[] = [
   { brand: "MADA", label: "مدى", image: "/images/payment/mada.png" },
-  { brand: "APPLEPAY", label: "Apple Pay", image: "/images/payment/ApplePay.png" },
+  // { brand: "APPLEPAY", label: "Apple Pay", image: "/images/payment/ApplePay.png" },
   { brand: "VISA", label: "Visa", image: "/images/payment/Visa.png" },
   { brand: "MASTER", label: "Mastercard", image: "/images/payment/Mastercard.png" },
 ];

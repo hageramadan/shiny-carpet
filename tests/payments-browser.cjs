@@ -147,7 +147,7 @@ async function main() {
       .waitFor();
     for (const [label, brand] of [
       ["مدى", "MADA"],
-      ["Apple Pay", "APPLEPAY"],
+      // ["Apple Pay", "APPLEPAY"],
       ["Visa", "VISA"],
       ["Mastercard", "MASTER"],
     ]) {
