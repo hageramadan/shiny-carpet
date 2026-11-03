@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Order } from "@/lib/data";
 import { money, cartProduct, cartCurrency, currencyLabel } from "@/lib/data";
 import OrderRating from "./OrderRating";
-import { orderStages } from "@/lib/order-status";
+import { orderStages, orderFulfillmentStatus } from "@/lib/order-status";
 
 const dateFormatter = new Intl.DateTimeFormat("ar-EG", {
   day: "2-digit",
@@ -12,7 +12,8 @@ const dateFormatter = new Intl.DateTimeFormat("ar-EG", {
 
 export default function OrderCard({ order }: { order: Order }) {
   const status =
-    orderStages.find((stage) => stage.id === order.status)?.label ?? "بانتظار الاستلام";
+    orderStages.find((stage) => stage.id === orderFulfillmentStatus(order))?.label ??
+    "بانتظار الاستلام";
   const pieces = order.items.reduce((total, item) => total + item.quantity, 0);
   const summary = order.items
     .map((item) => {
@@ -34,7 +35,11 @@ export default function OrderCard({ order }: { order: Order }) {
           <span className="rounded-full bg-[#e5f6f8] px-2.5 py-0.5 text-xs font-bold text-primary">
             {status}
           </span>
-          <span className="text-xs text-muted"></span>
+          {order.paymentStatusLabel && (
+            <span className="text-xs font-bold text-primary">
+              حالة الدفع: {order.paymentStatusLabel}
+            </span>
+          )}
         </div>
         <p className="mt-1 text-sm text-muted">
           <time dateTime={order.createdAt}>

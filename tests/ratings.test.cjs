@@ -21,6 +21,16 @@ const row = {
 test("rating requires a delivered and paid order with an explicit unrated flag", () => {
   assert.equal(canRateOrder(parseOrder(row, true)), true);
   assert.equal(
+    canRateOrder(parseOrder({ ...row, driver_task: "deliver_to_customer" }, true)),
+    true,
+  );
+  assert.equal(
+    canRateOrder(
+      parseOrder({ ...row, driver_task: "deliver_to_customer", is_rated: true }, true),
+    ),
+    false,
+  );
+  assert.equal(
     canRateOrder(parseOrder({ ...row, status: "delivered_to_customer" })),
     true,
   );
@@ -78,6 +88,15 @@ test("rating sends only the documented fields with auth, rejects invalid scores 
     await assert.rejects(submitRating(541, score), RangeError);
   await assert.rejects(submitRating(0, 4), RangeError);
   assert.equal(calls.length, 1);
+  status = 200;
+  reply = { result: true, errNum: 200, message: "تم إنشاء التقييم بنجاح", data: [] };
+  await submitRating(541, 4);
+  reply = { result: false, errNum: 200, message: "فشل التقييم", data: [] };
+  await assert.rejects(submitRating(541, 4), ApiError);
+  reply = { result: true, success: false, errNum: 200 };
+  await assert.rejects(submitRating(541, 4), ApiError);
+  reply = { result: true, errNum: 422 };
+  await assert.rejects(submitRating(541, 4), ApiError);
   reply = { success: false, message: "تم تقييم الطلب مسبقًا" };
   status = 422;
   await assert.rejects(
@@ -95,5 +114,5 @@ test("rating sends only the documented fields with auth, rejects invalid scores 
     submitRating(541, 4),
     (error) => error instanceof ApiError && error.status === 401,
   );
-  assert.equal(calls.length, 4);
+  assert.equal(calls.length, 8);
 });

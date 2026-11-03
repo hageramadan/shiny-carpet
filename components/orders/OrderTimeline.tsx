@@ -2,7 +2,11 @@
 
 import { useEffect, useRef } from "react";
 import { FiCheck } from "react-icons/fi";
-import { orderStages, isOrderDelivered } from "@/lib/order-status";
+import {
+  orderStages,
+  isOrderDelivered,
+  orderFulfillmentStatus,
+} from "@/lib/order-status";
 import type { Order } from "@/lib/data";
 
 const steps = [
@@ -18,10 +22,11 @@ const steps = [
 // Only advance using statuses supplied by the API; no simulated progress or dates.
 
 export default function OrderTimeline({ order }: { order: Order }) {
-  const cancelled = order.status === "cancelled";
-  const stage = orderStages.find((stage) => stage.id === order.status)!;
+  const fulfillmentStatus = orderFulfillmentStatus(order);
+  const cancelled = fulfillmentStatus === "cancelled";
+  const stage = orderStages.find((stage) => stage.id === fulfillmentStatus)!;
   const current = stage.step;
-  const delivered = isOrderDelivered(order.status);
+  const delivered = isOrderDelivered(fulfillmentStatus);
   const regionRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const region = regionRef.current;

@@ -258,3 +258,32 @@ test("detects image validation failures only after an explicit 422 rejection", (
   );
   assert.equal(isOrderImageUploadError(new TypeError("Failed to fetch")), false);
 });
+
+test("paid final-delivery orders reach delivery completion with a separate payment label", () => {
+  const { orderFulfillmentStatus } = require("../lib/order-status.ts");
+  const order = parseOrder({
+    ...row,
+    status: "paid",
+    driver_task: "deliver_to_customer",
+    user_paid: true,
+    status_label: "تم الدفع",
+  });
+  assert.equal(order.status, "paid");
+  assert.equal(order.driverTask, "deliver_to_customer");
+  assert.equal(order.paymentStatusLabel, "تم الدفع");
+  assert.equal(orderFulfillmentStatus(order), "delivered");
+  assert.equal(isOrderDelivered(orderFulfillmentStatus(order)), true);
+  assert.equal(
+    orderFulfillmentStatus(
+      parseOrder({ ...row, status: "paid", driver_task: "on_way_to_customer_again" }),
+    ),
+    "on_way_to_customer_again",
+  );
+  assert.equal(parseOrder(row).paymentStatusLabel, undefined);
+  assert.equal(
+    orderFulfillmentStatus(
+      parseOrder({ ...row, status: "cancelled", driver_task: "deliver_to_customer" }),
+    ),
+    "cancelled",
+  );
+});

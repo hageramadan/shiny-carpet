@@ -14,9 +14,13 @@ import { useAuthAction } from "@/hooks/useAuthAction";
 import { readAuthSession } from "@/lib/auth/session";
 import type { Order } from "@/lib/data";
 import PaymentDialog from "./PaymentDialog";
+import { createTamaraCheckout, fetchTamaraPaymentStatus } from "@/lib/api/tamara";
 
-const methods: { brand: PaymentBrand; label: string; image: string }[] = [
+type PaymentMethod = PaymentBrand | "TAMARA";
+
+const methods: { brand: PaymentMethod; label: string; image?: string }[] = [
   { brand: "MADA", label: "مدى", image: "/images/payment/mada.png" },
+  { brand: "TAMARA", label: "تمارا", image: "/images/payment/tamara.png" },
   // { brand: "APPLEPAY", label: "Apple Pay", image: "/images/payment/ApplePay.png" },
   { brand: "VISA", label: "Visa", image: "/images/payment/Visa.png" },
   { brand: "MASTER", label: "Mastercard", image: "/images/payment/Mastercard.png" },
@@ -30,7 +34,7 @@ export default function OrderPayment({
   paid?: boolean;
   onPaid: () => void;
 }) {
-  const [brand, setBrand] = useState<PaymentBrand>("MADA");
+  const [brand, setBrand] = useState<PaymentMethod>("MADA");
   const [checkout, setCheckout] = useState<PaymentCheckout | null>(null);
   const { pending, error, setError, run } = useAuthAction();
   const verification = useAuthAction();
@@ -38,6 +42,20 @@ export default function OrderPayment({
   const [status, setStatus] = useState<PaymentStatus | null>(null);
   const [nextCheckAt, setNextCheckAt] = useState(0);
   const [now, setNow] = useState(Date.now);
+  const [tamaraReference, setTamaraReference] = useState("");
+  const tamaraStorageKey = () =>
+    "shiny-tamara:" + (readAuthSession()?.profile.phone ?? "") + ":" + order.id;
+  useEffect(() => {
+    try {
+      const reference = window.sessionStorage.getItem(tamaraStorageKey()) ?? "";
+      if (/^[a-zA-Z0-9._-]{1,200}$/.test(reference)) {
+        setTamaraReference(reference);
+        setBrand("TAMARA");
+      }
+    } catch {
+      /* Manual verification remains available in the current page. */
+    }
+  }, [order.id]);
   const [returnedCheckoutId, setReturnedCheckoutId] = useState("");
   useEffect(() => {
     const query = new URLSearchParams(window.location.search);
@@ -52,16 +70,27 @@ export default function OrderPayment({
   }, [nextCheckAt, now]);
   const checkoutId = checkout?.checkoutId ?? returnedCheckoutId;
   async function verify(id = checkoutId) {
-    if (!id || verification.pending || Date.now() < nextCheckAt) return;
+    if ((!id && !tamaraReference) || verification.pending || Date.now() < nextCheckAt)
+      return;
     await verification.run("verify-payment", async (signal) => {
       setNow(Date.now());
       setNextCheckAt(Date.now() + 30_000);
       const token = readAuthSession()?.token;
-      const result = await fetchPaymentStatus(Number(order.id), id, signal);
+      const result = tamaraReference
+        ? await fetchTamaraPaymentStatus(Number(order.id), tamaraReference, signal)
+        : await fetchPaymentStatus(Number(order.id), id, signal);
       if (readAuthSession()?.token !== token) return;
       setStatus(result);
       if (result === "paid") {
         setOpen(false);
+        if (tamaraReference) {
+          try {
+            window.sessionStorage.removeItem(tamaraStorageKey());
+          } catch {
+            /* Storage may be unavailable. */
+          }
+          setTamaraReference("");
+        }
         onPaid();
       }
     });
@@ -98,29 +127,65 @@ export default function OrderPayment({
           {verification.error}
         </p>
       )}
-      {/* <button
-        type="button"
-        disabled={verification.pending || now < nextCheckAt}
-        onClick={() => void verify()}
-        className="min-h-11 rounded-xl border border-primary px-4 text-sm font-bold text-primary disabled:opacity-50"
-      >
-        {verification.pending
-          ? "جاري التحقق من الدفع…"
-          : now < nextCheckAt
-            ? "إعادة التحقق بعد قليل"
-            : "تحقق من حالة الدفع"}
-      </button> */}
+      {(tamaraReference || checkoutId) && (
+        <button
+          type="button"
+          disabled={verification.pending || now < nextCheckAt}
+          onClick={() => void verify()}
+          className="min-h-11 rounded-xl border border-primary px-4 text-sm font-bold text-primary disabled:opacity-50"
+        >
+          {verification.pending
+            ? "جاري التحقق من الدفع…"
+            : now < nextCheckAt
+              ? "إعادة التحقق بعد قليل"
+              : tamaraReference
+                ? "تحقق من دفع تمارا"
+                : "تحقق من حالة الدفع"}
+        </button>
+      )}
     </div>
   );
   async function start() {
-    if (pending || verification.pending || status === "pending" || status === "unknown")
+    if (
+      pending ||
+      verification.pending ||
+      tamaraReference ||
+      status === "pending" ||
+      status === "unknown"
+    )
       return;
     if (checkout && status !== "failed") {
       setOpen(true);
       return;
     }
     const token = readAuthSession()?.token;
+    // Open during the click so browsers do not block the tab after the API request.
+    const tamaraTab = brand === "TAMARA" ? window.open("about:blank", "_blank") : null;
+    if (brand === "TAMARA" && !tamaraTab) {
+      setError(
+        "تعذر فتح تبويب تمارا. يرجى السماح بفتح النوافذ المنبثقة والمحاولة مجددًا.",
+      );
+      return;
+    }
+    if (tamaraTab) tamaraTab.opener = null;
+    let tamaraOpened = false;
     await run("payment", async (signal) => {
+      if (brand === "TAMARA") {
+        const result = await createTamaraCheckout(Number(order.id), signal);
+        if (readAuthSession()?.token !== token) return;
+        if (!tamaraTab || tamaraTab.closed) throw new Error("Tamara tab was closed");
+        try {
+          window.sessionStorage.setItem(tamaraStorageKey(), result.orderReferenceId);
+        } catch {
+          throw new Error(
+            "تعذر حفظ مرجع تمارا. يرجى السماح بتخزين بيانات الموقع والمحاولة مجددًا.",
+          );
+        }
+        setTamaraReference(result.orderReferenceId);
+        tamaraTab.location.replace(result.checkoutUrl);
+        tamaraOpened = true;
+        return;
+      }
       const result = await createPaymentCheckout(Number(order.id), brand, signal);
       if (readAuthSession()?.token !== token) return;
       setCheckout(result);
@@ -128,6 +193,7 @@ export default function OrderPayment({
       setNextCheckAt(0);
       setOpen(true);
     });
+    if (tamaraTab && !tamaraOpened) tamaraTab.close();
   }
   return (
     <section
@@ -153,7 +219,11 @@ export default function OrderPayment({
       </div>
       <fieldset
         disabled={
-          pending || verification.pending || status === "pending" || status === "unknown"
+          pending ||
+          verification.pending ||
+          Boolean(tamaraReference) ||
+          status === "pending" ||
+          status === "unknown"
         }
         className="mt-5"
       >
@@ -183,15 +253,26 @@ export default function OrderPayment({
                 className="size-4 shrink-0 accent-[#20A9B0]"
               />
               <span className="flex min-w-0 flex-1 flex-col items-center gap-1 sm:flex-row sm:gap-2">
-                <Image
-                  src={method.image}
-                  alt=""
-                  width={105}
-                  height={72}
-                  className="h-9 w-13 shrink-0 object-contain"
-                />
+                {method.image ? (
+                  <Image
+                    src={method.image}
+                    alt=""
+                    width={105}
+                    height={72}
+                    className="h-9 w-13 shrink-0 object-contain"
+                  />
+                ) : (
+                  <span
+                    aria-hidden="true"
+                    className="rounded-lg bg-[#f5d9e8] px-2 py-1 text-sm font-bold text-ink"
+                  >
+                    تمارا
+                  </span>
+                )}
                 <span
-                  dir={method.brand === "MADA" ? "rtl" : "ltr"}
+                  dir={
+                    method.brand === "MADA" || method.brand === "TAMARA" ? "rtl" : "ltr"
+                  }
                   className="text-sm font-semibold text-ink"
                 >
                   {method.label}
@@ -201,6 +282,14 @@ export default function OrderPayment({
           ))}
         </div>
       </fieldset>
+      {tamaraReference && (
+        <p
+          role="status"
+          className="mt-4 text-sm text-muted"
+        >
+          لديك جلسة دفع تمارا لهذا الطلب. بعد إكمال الدفع، اضغط تحقق من دفع تمارا.
+        </p>
+      )}
       {error && (
         <p
           role="alert"
@@ -233,8 +322,10 @@ export default function OrderPayment({
           </>
         )}
       </button>
-      {checkoutId && !open && <div className="mt-4">{statusControls}</div>}
-      {checkout && open && (
+      {(checkoutId || tamaraReference) && !open && (
+        <div className="mt-4">{statusControls}</div>
+      )}
+      {checkout && open && brand !== "TAMARA" && (
         <PaymentDialog
           checkout={checkout}
           brand={brand}

@@ -12,7 +12,7 @@ export const orderStages = [
   { id: "laundry_received", label: "استلمت المغسلة القطع", step: 3 },
   { id: "ready_for_delivery", label: "جاهز للتوصيل", step: 4 },
   { id: "picked_up_from_laundry", label: "تم استلام القطع من المغسلة", step: 5 },
-  { id: "deliver_to_customer", label: "جاري تجهيز التوصيل للعميل", step: 5 },
+  { id: "deliver_to_customer", label: "تم الاستلام", step: 5 },
   { id: "on_way_to_customer_again", label: "المندوب في الطريق للتوصيل", step: 5 },
   { id: "arrived_to_customer_again", label: "وصل المندوب لتسليم القطع", step: 5 },
   { id: "paid", label: "تم التسليم", step: 6 },
@@ -29,4 +29,14 @@ export function isOrderDelivered(status: OrderStatus) {
   return (
     status === "paid" || status === "delivered_to_customer" || status === "delivered"
   );
+}
+
+// A paid order with the final delivery task is displayed as delivered.
+export function orderFulfillmentStatus(order: {
+  status: OrderStatus;
+  driverTask?: OrderStatus;
+}): OrderStatus {
+  if (order.status === "paid" && order.driverTask === "deliver_to_customer")
+    return "delivered";
+  return order.status === "paid" && order.driverTask ? order.driverTask : order.status;
 }

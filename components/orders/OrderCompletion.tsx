@@ -2,13 +2,13 @@
 
 import { FiCheckCircle } from "react-icons/fi";
 import type { Order } from "@/lib/data";
-import { isOrderDelivered } from "@/lib/order-status";
+import { isOrderDelivered, orderFulfillmentStatus } from "@/lib/order-status";
 import OrderRating from "./OrderRating";
 import OrderInvoice from "./OrderInvoice";
 
 export default function OrderCompletion({ order }: { order: Order }) {
   if (
-    !isOrderDelivered(order.status) ||
+    !isOrderDelivered(orderFulfillmentStatus(order)) ||
     (order.status !== "paid" && order.userPaid !== true)
   )
     return null;

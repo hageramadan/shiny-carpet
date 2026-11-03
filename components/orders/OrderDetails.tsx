@@ -100,6 +100,20 @@ export default function OrderDetails({
         order={order}
       />
       <OrderTimeline order={order} />
+      {(order.paymentStatusLabel || verifiedPaidId === order.id) && (
+        <section
+          aria-label="حالة الدفع"
+          className="rounded-xl border border-primary/20 bg-primary/5 p-5"
+        >
+          <h2 className="font-bold text-ink">حالة الدفع</h2>
+          <p
+            role="status"
+            className="mt-2 font-bold text-primary"
+          >
+            {order.paymentStatusLabel ?? "تم الدفع"}
+          </p>
+        </section>
+      )}
       <div className="grid items-start gap-5 lg:grid-cols-3">
         <div className="space-y-5 lg:col-span-2">
           <section className="rounded-2xl border border-gray-200 bg-white p-5">
@@ -117,7 +131,11 @@ export default function OrderDetails({
           <OrderPayment
             key={order.id + order.status}
             order={order}
-            paid={verifiedPaidId === order.id}
+            paid={
+              verifiedPaidId === order.id ||
+              order.userPaid === true ||
+              order.status === "paid"
+            }
             onPaid={() => {
               setVerifiedPaidId(order.id);
               reload();

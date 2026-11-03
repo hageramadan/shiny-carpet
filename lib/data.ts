@@ -89,6 +89,8 @@ export type Order = {
   coupon?: string;
   pricing?: OrderPricing;
   status: OrderStatus;
+  driverTask?: OrderStatus;
+  paymentStatusLabel?: string;
   userPaid?: boolean;
   isRated?: boolean;
   createdAt: string;

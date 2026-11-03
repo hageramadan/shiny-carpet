@@ -82,6 +82,46 @@ test("all four brands POST only order_id and payment_brand with bearer and Arabi
     });
   }
   mock.mock.mockImplementation(async (url, options) => {
+    assert.equal(url, "https://admin.shinycarpet-sa.com/api/payments/tamara/checkout");
+    assert.equal(options.method, "POST");
+    assert.equal(options.headers.Authorization, "Bearer fixture-payments-token");
+    assert.deepEqual(JSON.parse(options.body), { order_id: 533 });
+    return Response.json(tamaraReply());
+  });
+  assert.equal((await createTamaraCheckout(533)).orderReferenceId, "reference-533");
+  await assert.rejects(createTamaraCheckout(0), RangeError);
+  mock.mock.mockImplementation(async (url, options) => {
+    assert.equal(
+      url,
+      "https://admin.shinycarpet-sa.com/api/payment/tamara/success?order_reference_id=reference-544",
+    );
+    assert.equal(options.method, "GET");
+    assert.equal(options.body, undefined);
+    assert.equal(options.headers.Authorization, "Bearer fixture-payments-token");
+    return Response.json({
+      result: true,
+      errNum: 200,
+      message: "Payment successful",
+      data: { order_id: 544 },
+    });
+  });
+  assert.equal(await fetchTamaraPaymentStatus(544, "reference-544"), "paid");
+  await assert.rejects(fetchTamaraPaymentStatus(544, "../invalid"), RangeError);
+  const aborted = new AbortController();
+  mock.mock.mockImplementation(async () => {
+    aborted.abort();
+    return Response.json({
+      result: true,
+      errNum: 200,
+      message: "Payment successful",
+      data: { order_id: 544 },
+    });
+  });
+  await assert.rejects(
+    fetchTamaraPaymentStatus(544, "reference-544", aborted.signal),
+    (e) => e.name === "AbortError",
+  );
+  mock.mock.mockImplementation(async (url, options) => {
     assert.equal(url, "https://admin.shinycarpet-sa.com/api/payments/status");
     assert.equal(options.method, "POST");
     assert.deepEqual(JSON.parse(options.body), {
@@ -215,4 +255,77 @@ test("payment return only signals verification and rejects malformed order or ch
       GET(new Request("http://localhost:3000/payment-result?" + query)).status,
       400,
     );
+});
+
+const { createTamaraCheckout, parseTamaraCheckout } = require("../lib/api/tamara.ts");
+const tamaraReply = (patch = {}) => ({
+  result: true,
+  errNum: 200,
+  data: {
+    order_id: 533,
+    order_reference_id: "reference-533",
+    checkout_url: "https://checkout-sandbox.tamara.co/checkout/session-533?locale=ar_SA",
+    checkout_response: {
+      order_id: "reference-533",
+      checkout_id: "session-533",
+      status: "new",
+      checkout_url:
+        "https://checkout-sandbox.tamara.co/checkout/session-533?locale=ar_SA",
+    },
+    ...patch,
+  },
+});
+
+test("Tamara validates order identity, references and hosted checkout URLs", () => {
+  assert.equal(parseTamaraCheckout(tamaraReply(), 533).checkoutId, "session-533");
+  for (const patch of [
+    { order_id: 25 },
+    { order_reference_id: "other" },
+    { checkout_response: null },
+    { checkout_url: "javascript:alert(1)" },
+    {
+      checkout_url: "https://evil.example/checkout/session-533",
+      checkout_response: {
+        ...tamaraReply().data.checkout_response,
+        checkout_url: "https://evil.example/checkout/session-533",
+      },
+    },
+    {
+      checkout_url: "https://checkout-sandbox.tamara.co/checkout/other",
+      checkout_response: {
+        ...tamaraReply().data.checkout_response,
+        checkout_url: "https://checkout-sandbox.tamara.co/checkout/other",
+      },
+    },
+  ])
+    assert.throws(() => parseTamaraCheckout(tamaraReply(patch), 533), ApiResponseError);
+  assert.throws(() => parseTamaraCheckout({ result: false }, 533), ApiError);
+});
+
+const {
+  fetchTamaraPaymentStatus,
+  parseTamaraPaymentStatus,
+} = require("../lib/api/tamara.ts");
+test("Tamara confirms only explicit backend success for the expected order", () => {
+  const reply = {
+    result: true,
+    errNum: 200,
+    message: "Payment successful",
+    data: { order_id: 544 },
+  };
+  assert.equal(parseTamaraPaymentStatus(reply, 544), "paid");
+  assert.throws(() => parseTamaraPaymentStatus(reply, 533), ApiResponseError);
+  assert.throws(
+    () => parseTamaraPaymentStatus({ ...reply, result: false }, 544),
+    ApiError,
+  );
+  assert.throws(
+    () => parseTamaraPaymentStatus({ ...reply, data: {} }, 544),
+    ApiResponseError,
+  );
+  assert.equal(
+    parseTamaraPaymentStatus({ ...reply, message: "Pending" }, 544),
+    "unknown",
+  );
+  assert.equal(parseTamaraPaymentStatus({ ...reply, errNum: 202 }, 544), "unknown");
 });

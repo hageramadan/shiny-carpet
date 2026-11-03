@@ -1,7 +1,6 @@
 import { authenticatedApiRequest } from "../auth/client";
-import { ApiResponseError } from "./client";
+import { ApiError, ApiResponseError } from "./client";
 import { assertPositiveId, isRecord } from "./validation";
-import { cartSuccess } from "./cart";
 
 export async function submitRating(orderId: number, rating: number) {
   assertPositiveId(orderId);
@@ -11,7 +10,15 @@ export async function submitRating(orderId: number, rating: number) {
     method: "POST",
     body: { order_id: orderId, rating },
   });
-  if (!isRecord(response) || typeof response.success !== "boolean")
+  if (
+    !isRecord(response) ||
+    (typeof response.result !== "boolean" && typeof response.success !== "boolean")
+  )
     throw new ApiResponseError("Invalid rating response");
-  cartSuccess(response);
+  if (
+    response.result === false ||
+    response.success === false ||
+    (response.errNum !== undefined && response.errNum !== 200)
+  )
+    throw new ApiError(400, response);
 }

@@ -66,6 +66,13 @@ export function parseOrder(value: unknown, requireItems = false): Order {
   return {
     id: String(value.id),
     status: value.status as OrderStatus,
+    driverTask: isOrderStatus(value.driver_task) ? value.driver_task : undefined,
+    paymentStatusLabel:
+      value.status === "paid" || orderFlag(value.user_paid) === true
+        ? typeof value.status_label === "string" && value.status_label.trim()
+          ? value.status_label
+          : "تم الدفع"
+        : undefined,
     userPaid: orderFlag(value.user_paid),
     isRated: orderFlag(value.is_rated),
     createdAt,
