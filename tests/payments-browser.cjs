@@ -19,6 +19,8 @@ async function main() {
       releaseCheckout;
     let checkoutGate = Promise.resolve();
     let verificationResult = "pending";
+    let tamaraPaid = false;
+    const tamaraCalls = [];
     const statusCalls = [];
     const calls = [],
       errors = [];
@@ -34,6 +36,21 @@ async function main() {
       if (request.method() === "OPTIONS") return route.fulfill({ status: 204, headers });
       if (path === "/api/settings") return send({ result: true, data: {} });
       assert.equal(request.headers().authorization, "Bearer fixture-payment-token");
+      if (path === "/api/payment/tamara/success") {
+        tamaraCalls.push(request.url());
+        assert.equal(request.method(), "GET");
+        assert.equal(
+          new URL(request.url()).searchParams.get("order_reference_id"),
+          "reference-532",
+        );
+        if (tamaraPaid) status = "paid";
+        return send({
+          result: true,
+          errNum: 200,
+          message: tamaraPaid ? "Payment successful" : "Pending",
+          data: { order_id: 532 },
+        });
+      }
       if (path === "/api/orders/532")
         return send({
           success: true,
@@ -275,9 +292,39 @@ async function main() {
     await page.waitForURL(base + "/tracking?order=532&checkout_id=fixture.prod01");
     await payment.getByRole("status").filter({ hasText: "الدفع قيد المعالجة" }).waitFor();
     assert.equal(statusCalls.length, 4);
+    // The approved query alone cannot mark an unpaid order as paid.
+    await page.goto(base + "/tracking?order=532&payment_status=approved");
+    await page.getByRole("status").filter({ hasText: "في انتظار تأكيد الدفع" }).waitFor();
+    await payment.waitFor();
+    assert.equal(tamaraCalls.length, 0);
+    assert.equal(statusCalls.length, 4);
+    status = "paid";
+    await page.getByRole("button", { name: "تحديث حالة الطلب", exact: true }).click();
+    await page.getByRole("region", { name: "حالة الدفع", exact: true }).waitFor();
+    assert.equal(await payment.count(), 0);
+    // A saved Tamara reference triggers verification; pending stays unpaid.
+    status = "arrived_to_customer_again";
+    await page.evaluate(() =>
+      sessionStorage.setItem("shiny-tamara:+201012345678:532", "reference-532"),
+    );
+    await page.goto(base + "/tracking?order=532&payment_status=approved");
+    await payment
+      .getByRole("status")
+      .filter({ hasText: "لم يتم تأكيد نتيجة الدفع" })
+      .waitFor();
+    assert.equal(tamaraCalls.length, 1);
+    await page.clock.fastForward(31_000);
+    tamaraPaid = true;
+    await payment.getByRole("button", { name: "تحقق من دفع تمارا", exact: true }).click();
+    await page.getByRole("status").filter({ hasText: "تم تأكيد الدفع بنجاح" }).waitFor();
+    assert.equal(tamaraCalls.length, 2);
+    assert.equal(
+      await page.evaluate(() => sessionStorage.getItem("shiny-tamara:+201012345678:532")),
+      null,
+    );
     assert.deepEqual(errors, []);
     console.log(
-      "PASS: payment eligibility, all four POST brands, error retry, pending lock, payment popup, Escape and close button, unchanged URL, adjacent cards, details/tracking and server verification, pending 422, cooldown, failure retry and confirmed paid status.",
+      "PASS: payment flows, Tamara approved return with and without a saved reference, pending verification, manual refresh and backend-confirmed paid status.",
     );
   } finally {
     await browser.close();

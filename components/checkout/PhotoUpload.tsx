@@ -173,7 +173,7 @@ export default function PhotoUpload({
         className="flex flex-wrap items-center gap-2 text-base font-bold text-ink"
       >
         <FiImage className="text-primary" />
-        صور السجاد <span className="text-xs font-normal text-muted">(إجباري)</span>
+        صور  <span className="text-xs font-normal text-muted">(إجباري)</span>
       </h2>
       <p className="mt-3 text-xs leading-7 text-muted">
         أضف صور السجاد من الموبايل أو اسحبها هنا. صورة واحدة على الأقل مطلوبة لإتمام

@@ -85,7 +85,10 @@ test("all four brands POST only order_id and payment_brand with bearer and Arabi
     assert.equal(url, "https://admin.shinycarpet-sa.com/api/payments/tamara/checkout");
     assert.equal(options.method, "POST");
     assert.equal(options.headers.Authorization, "Bearer fixture-payments-token");
-    assert.deepEqual(JSON.parse(options.body), { order_id: 533 });
+    assert.deepEqual(JSON.parse(options.body), {
+      order_id: 533,
+      redirect_url: "https://shiny-carpet.vercel.app/tracking",
+    });
     return Response.json(tamaraReply());
   });
   assert.equal((await createTamaraCheckout(533)).orderReferenceId, "reference-533");
@@ -257,7 +260,23 @@ test("payment return only signals verification and rejects malformed order or ch
     );
 });
 
-const { createTamaraCheckout, parseTamaraCheckout } = require("../lib/api/tamara.ts");
+const {
+  createTamaraCheckout,
+  parseTamaraCheckout,
+  isTamaraApprovedReturn,
+} = require("../lib/api/tamara.ts");
+test("Tamara approved return matches a single valid order and only signals verification", () => {
+  assert.equal(isTamaraApprovedReturn("?order=546&payment_status=approved", "546"), true);
+  for (const search of [
+    "?order=545&payment_status=approved",
+    "?order=546",
+    "?order=546&payment_status=failed",
+    "?order=546&order=545&payment_status=approved",
+    "?order=546&payment_status=approved&payment_status=failed",
+  ])
+    assert.equal(isTamaraApprovedReturn(search, "546"), false);
+  assert.equal(isTamaraApprovedReturn("?order=0&payment_status=approved", "0"), false);
+});
 const tamaraReply = (patch = {}) => ({
   result: true,
   errNum: 200,

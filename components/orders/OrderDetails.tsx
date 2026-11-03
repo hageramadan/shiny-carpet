@@ -1,8 +1,9 @@
 "use client";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useOrdersApi } from "@/hooks/useOrdersApi";
 import { fetchOrder, cancelOrder } from "@/lib/api/orders";
+import { isTamaraApprovedReturn } from "@/lib/api/tamara";
 import { readAuthSession } from "@/lib/auth/session";
 import { authErrorMessage } from "@/lib/auth/contracts";
 import { OrderItems, PriceBreakdown } from "./OrderSummary";
@@ -24,6 +25,10 @@ export default function OrderDetails({
     [cancelError, setCancelError] = useState("");
   const lock = useRef(false);
   const [verifiedPaidId, setVerifiedPaidId] = useState("");
+  const [tamaraReturnId, setTamaraReturnId] = useState("");
+  useEffect(() => {
+    setTamaraReturnId(isTamaraApprovedReturn(window.location.search, id) ? id : "");
+  }, [id]);
   const [cancelledId, setCancelledId] = useState("");
   async function cancel() {
     if (!order || order.status !== "confirmed" || lock.current) return;
@@ -95,6 +100,24 @@ export default function OrderDetails({
         رقم الطلب: <bdi>{order.id}</bdi> ·{" "}
         {new Date(order.createdAt).toLocaleDateString("ar-EG")}
       </p>
+      {tamaraReturnId === order.id &&
+        verifiedPaidId !== order.id &&
+        order.userPaid !== true &&
+        order.status !== "paid" && (
+          <div className="rounded-xl bg-primary/10 p-5 text-ink">
+            <p role="status">
+              تمت العودة من تمارا. في انتظار تأكيد الدفع. يمكنك تحديث حالة الطلب للتحقق من
+              النتيجة.
+            </p>
+            <button
+              type="button"
+              className="mt-3 min-h-11 font-bold text-primary"
+              onClick={reload}
+            >
+              تحديث حالة الطلب
+            </button>
+          </div>
+        )}
       <OrderCompletion
         key={order.id}
         order={order}
@@ -131,6 +154,7 @@ export default function OrderDetails({
           <OrderPayment
             key={order.id + order.status}
             order={order}
+            returnedFromTamara={tamaraReturnId === order.id}
             paid={
               verifiedPaidId === order.id ||
               order.userPaid === true ||

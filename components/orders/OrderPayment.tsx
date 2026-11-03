@@ -28,10 +28,12 @@ const methods: { brand: PaymentMethod; label: string; image?: string }[] = [
 export default function OrderPayment({
   order,
   paid = false,
+  returnedFromTamara = false,
   onPaid,
 }: {
   order: Order;
   paid?: boolean;
+  returnedFromTamara?: boolean;
   onPaid: () => void;
 }) {
   const [brand, setBrand] = useState<PaymentMethod>("MADA");
@@ -96,10 +98,14 @@ export default function OrderPayment({
     });
   }
   useEffect(() => {
-    if (returnedCheckoutId && !paid && order.status === "arrived_to_customer_again")
+    if (
+      (returnedCheckoutId || (returnedFromTamara && tamaraReference)) &&
+      !paid &&
+      order.status === "arrived_to_customer_again"
+    )
       void verify(returnedCheckoutId);
     // A callback query only triggers once; later checks are explicit user actions.
-  }, [returnedCheckoutId]);
+  }, [returnedCheckoutId, returnedFromTamara, tamaraReference]);
   if (order.status !== "arrived_to_customer_again" || paid) return null;
   const statusMessage =
     status === "pending"

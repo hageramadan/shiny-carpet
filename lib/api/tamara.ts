@@ -9,6 +9,18 @@ export type TamaraCheckout = {
   checkoutUrl: string;
 };
 
+export function isTamaraApprovedReturn(search: string, orderId: string): boolean {
+  const query = new URLSearchParams(search);
+  return (
+    /^[1-9]\d*$/.test(orderId) &&
+    Number.isSafeInteger(Number(orderId)) &&
+    query.getAll("order").length === 1 &&
+    query.get("order") === orderId &&
+    query.getAll("payment_status").length === 1 &&
+    query.get("payment_status") === "approved"
+  );
+}
+
 export function parseTamaraCheckout(body: unknown, orderId: number): TamaraCheckout {
   if (!isRecord(body)) throw new ApiResponseError("Invalid Tamara response");
   if (body.result !== true) throw new ApiError(400, body);
@@ -54,7 +66,10 @@ export async function createTamaraCheckout(orderId: number, signal?: AbortSignal
   assertPositiveId(orderId);
   const body = await authenticatedApiRequest("/payments/tamara/checkout", {
     method: "POST",
-    body: { order_id: orderId },
+    body: {
+      order_id: orderId,
+      redirect_url: "https://shiny-carpet.vercel.app/tracking",
+    },
     signal,
   });
   signal?.throwIfAborted();
