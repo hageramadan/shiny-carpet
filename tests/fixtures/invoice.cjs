@@ -2,7 +2,7 @@ module.exports = (id = 533) => ({
   success: true,
   data: {
     invoice_meta: {
-      title: "فاتورة ضريبية مبسطة",
+      title: "فاتورة ضريبية ",
       invoice_number: `INV-2026-${String(id).padStart(5, "0")}`,
       order_number: `SC-${id}`,
       order_date_formatted: "26 أكتوبر 2026",
