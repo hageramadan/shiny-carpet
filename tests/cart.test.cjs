@@ -79,7 +79,7 @@ test("cart keeps server totals and row IDs, and a line price already includes qu
     }),
   ).items[0];
   assert.equal(custom.sizeId, undefined);
-  assert.equal(custom.sizeLabel, "2 × 2 متر");
+  assert.equal(custom.sizeLabel, "2 × 2");
   assert.equal(itemPrice(custom), 400);
   const blanket = parseCart(
     success({

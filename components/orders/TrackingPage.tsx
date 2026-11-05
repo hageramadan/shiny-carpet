@@ -1,18 +1,33 @@
 "use client";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
+import toast from "react-hot-toast";
+import { useStore } from "@/components/store";
+import { readAuthSession } from "@/lib/auth/session";
 import OrderDetails from "./OrderDetails";
 export default function TrackingPage({ initialId = "" }: { initialId?: string }) {
+  const { state, ready } = useStore();
   const [input, setInput] = useState(initialId),
     [query, setQuery] = useState(initialId);
+  useEffect(() => {
+    if (ready && query && !state.profile) {
+      toast.error("يجب تسجيل الدخول", { id: "tracking-login-required" });
+      setQuery("");
+    }
+  }, [ready, query, state.profile]);
   function search(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!readAuthSession()) {
+      toast.error("يجب تسجيل الدخول", { id: "tracking-login-required" });
+      setQuery("");
+      return;
+    }
     setQuery(input.trim().replace(/^#/, ""));
   }
   return (
     <section className="min-h-[70vh] bg-[#f7f9fa] py-7">
       <div className="container mx-auto space-y-6 px-4 sm:px-8">
         <h1 className="text-3xl font-extrabold">تفاصيل الطلب</h1>
-        {/* <form
+        <form
           onSubmit={search}
           className="flex gap-3"
         >
@@ -29,8 +44,8 @@ export default function TrackingPage({ initialId = "" }: { initialId?: string })
           <button className="self-end rounded-xl bg-primary px-5 py-3 text-white">
             عرض الطلب
           </button>
-        </form> */}
-        {query && (
+        </form>
+        {query && ready && state.profile && (
           <OrderDetails
             key={query}
             id={query}

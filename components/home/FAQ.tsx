@@ -1,4 +1,6 @@
-import Link from "next/link";
+"use client";
+
+import { useSettings } from "@/components/settings/SettingsProvider";
 import { FiArrowLeft, FiChevronDown, FiShoppingBag } from "react-icons/fi";
 import { SlPhone } from "react-icons/sl";
 const questions = [
@@ -30,6 +32,9 @@ const questions = [
 ];
 
 export default function FAQ() {
+  const { data: settings } = useSettings();
+  const whatsappNumber = settings?.phone?.replace(/\D/g, "").replace(/^00/, "");
+  const whatsappHref = whatsappNumber ? `https://wa.me/${whatsappNumber}` : undefined;
   return (
     <section
       id="faq"
@@ -51,8 +56,11 @@ export default function FAQ() {
           <p className="mt-4 text-sm leading-8 text-muted max-sm:mt-3 max-sm:text-xs max-sm:leading-6">
             جمعنالك أهم الأسئلة اللي ممكن تحتاج إجابتها قبل ما تبدأ طلبك.
           </p>
-          <Link
-            href="/"
+          <a
+            href={whatsappHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-disabled={!whatsappHref}
             className="mt-7 flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-5 text-ink max-sm:mt-4 max-sm:p-4"
           >
             <span className="grid size-11 shrink-0 place-items-center rounded-full bg-primary/10 text-xl text-primary max-sm:text-lg">
@@ -67,7 +75,7 @@ export default function FAQ() {
               </strong>
             </span>
             <FiArrowLeft />
-          </Link>
+          </a>
         </div>
         <div className="border-t border-gray-200">
           {questions.map((item, index) => (

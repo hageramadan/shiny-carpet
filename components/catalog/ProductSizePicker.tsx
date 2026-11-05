@@ -30,12 +30,12 @@ export default function ProductSizePicker({
         disabled={disabled}
         className="min-w-0"
       >
-        <legend className="mb-3 text-sm font-bold text-[#17202A]">المقاس</legend>
-        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+        <legend className="mb-3 text-base font-bold text-[#17202A]">المقاسات</legend>
+        <div className="grid grid-cols-4 gap-x-3 gap-y-2 sm:gap-x-6 sm:gap-y-3">
           {options.map((option) => (
             <label
               key={option.value}
-              className="min-w-0 cursor-pointer"
+              className="min-w-0 cursor-pointer has-[input[value=custom]]:col-start-1"
             >
               <input
                 type="radio"
@@ -45,7 +45,10 @@ export default function ProductSizePicker({
                 onChange={() => onChoice(option.value)}
                 className="peer sr-only"
               />
-              <span className="inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm text-ink peer-checked:bg-primary/10 peer-checked:text-primary peer-checked:ring-1 peer-checked:ring-primary peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary sm:w-auto sm:min-w-16">
+              <span
+                dir={option.label.includes("×") ? "ltr" : undefined}
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-sm border border-transparent bg-[#f3f4f5] px-1 py-2 text-xs font-bold text-[#242424] peer-checked:border-[#242424] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary sm:text-sm"
+              >
                 {option.label}
               </span>
             </label>

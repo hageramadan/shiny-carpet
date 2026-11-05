@@ -102,7 +102,7 @@ function mapProductSize(size: unknown, hasDiscount: boolean): ProductSize {
   const width = amount(size.width);
   const dimensions = length && width ? { length, width } : undefined;
   const label = dimensions
-    ? `${length} × ${width} متر`
+    ? `${length} × ${width}`
     : typeof size.name === "string" && size.name.trim()
       ? size.name.trim()
       : typeof size.size_type === "string" && size.size_type.trim()

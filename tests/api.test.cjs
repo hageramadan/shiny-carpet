@@ -106,7 +106,7 @@ test("fixed-size prices are used directly without multiplying by the area", () =
   assert.equal(detail.originalPrice, 40);
   assert.deepEqual(detail.sizes[0], {
     id: 677,
-    label: "2 × 2 متر",
+    label: "2 × 2",
     price: 30,
     originalPrice: 40,
     dimensions: { length: 2, width: 2 },
@@ -313,4 +313,21 @@ test("custom pricing validates backend totals and preserves backend failures", a
     calculateCustomProductPrice(11, input),
     (error) => error instanceof ApiError && error.status === 422,
   );
+});
+
+test("other-size input is restricted to carpets while other categories keep their fixed sizes", () => {
+  for (const name of ["البطانيات", "الزل", "ستاير", "لباد"]) {
+    const detail = parseProduct(
+      response(
+        product({
+          category: { id: 17, name },
+          sizes: [{ id: 678, name: "شخصين", price_before_discount: 20 }],
+        }),
+      ),
+      11,
+    );
+    assert.deepEqual(productSizeOptions(detail), [{ value: "678", label: "شخصين" }]);
+    assert.equal(resolveProductSize(detail, "custom", "2", "3"), null);
+    assert.equal(resolveProductSize(detail, "678").unitPrice, 20);
+  }
 });

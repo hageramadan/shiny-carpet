@@ -39,6 +39,17 @@ async function main() {
         },
       ],
     };
+    const otherProducts = ["البطانيات", "الزل", "ستاير", "لباد"].map((name, i) => ({
+      id: 12 + i,
+      name,
+      description: name,
+      category: { id: 17 + i, name },
+      has_sizes: i === 0 ? 1 : 0,
+      price: 20,
+      min_price_before_discount: 20,
+      images: [],
+      sizes: i === 0 ? [{ id: 678, name: "شخصين", price_before_discount: 20 }] : [],
+    }));
     let items = [],
       id = 24,
       failQuantity = true,
@@ -70,15 +81,50 @@ async function main() {
       const respond = (body, status = 200) =>
         route.fulfill({ status, json: body, headers });
       if (method === "OPTIONS") return route.fulfill({ status: 204, headers });
+      if (path === "/api/areas") return respond({ result: true, data: [] });
       if (path === "/api/settings") return respond({ result: true, data: {} });
       calls.push({ path, method, body: request.postData() });
       if (path === "/api/categories") return respond({ success: true, data: [] });
+      const otherProduct = otherProducts.find((p) => path === "/api/products/" + p.id);
+      if (otherProduct) return respond({ success: true, data: otherProduct });
+      if (otherProducts.some((p) => path === "/api/products/category/" + p.category.id))
+        return respond({ success: true, data: [] });
+      if (path === "/api/cart/add" && request.postDataJSON().product_id !== 11) {
+        const input = request.postDataJSON();
+        const p = otherProducts.find((p) => p.id === input.product_id);
+        assert.ok(p);
+        assert.equal(input.length, undefined);
+        assert.equal(input.width, undefined);
+        const row = {
+          id: id++,
+          quantity: input.quantity,
+          price: 20 * input.quantity,
+          length: null,
+          width: null,
+          number_of_person: p.id === 12 ? 2 : null,
+          product: { id: p.id, name: p.name, images: [] },
+          product_size: input.product_size_id ? { id: input.product_size_id } : null,
+        };
+        items.push(row);
+        return respond({ success: true, data: { ...totals(), added_item: row } });
+      }
       if (path === "/api/products/11") return respond({ success: true, data: product });
       if (path === "/api/products/category/16")
-        return respond({ success: true, data: [product] });
+        return respond({
+          success: true,
+          data: [
+            product,
+            {
+              ...product,
+              id: 99,
+              name: "سجاد مشابه",
+              description: "وصف المنتج القادم من API",
+            },
+          ],
+        });
       if (path === "/api/products/11/custom")
         return respond({ success: true, data: { price: 400 } });
-      assert.equal(request.headers().authorization, "Bearer fixture-cart-token");
+      assert.equal(request.headers().authorization, "Bearer fixture-cart-token", path);
       assert.equal(request.headers()["accept-language"], "ar");
       if (path === "/api/addresses")
         return respond({ result: true, data: { addresses: [] } });
@@ -145,8 +191,9 @@ async function main() {
         );
         return respond({ success: true, data: { ...totals(), updated_item: items[0] } });
       }
-      if (path === "/api/cart/24" && method === "DELETE") {
-        items = items.filter((item) => item.id !== 24);
+      if (/^\/api\/cart\/\d+$/.test(path) && method === "DELETE") {
+        const rowId = Number(path.split("/").pop());
+        items = items.filter((item) => item.id !== rowId);
         return respond({ success: true });
       }
       if (path === "/api/cart" && method === "DELETE") {
@@ -175,8 +222,17 @@ async function main() {
     await page.getByRole("heading", { name: "سلتك فارغة" }).waitFor();
     assert.equal(await page.getByText("سجاد يدوي", { exact: true }).count(), 0);
     await page.goto(base + "/products/11");
+    await page.getByRole("heading", { name: product.name, exact: true }).waitFor();
+    await page.locator("main p").filter({ hasText: product.description }).waitFor();
+    assert.equal(
+      await page.getByRole("heading", { name: "منتجات من نفس الخدمة" }).count(),
+      0,
+    );
+    assert.equal(await page.getByRole("contentinfo").count(), 0);
     await page.getByRole("button", { name: "أضف إلى السلة", exact: true }).click();
     await page.getByRole("status").filter({ hasText: "تمت إضافة القطعة" }).waitFor();
+    await page.getByRole("button", { name: "تمت الإضافة — أضف منتج آخر" }).waitFor();
+    assert.equal(await page.getByText("3 × 5 متر", { exact: true }).count(), 0);
     await page.goto(base + "/cart");
     await page.getByRole("button", { name: "زيادة كمية سجاد الاختبار" }).click();
     await page.getByRole("alert").filter({ hasText: "تعذر تحديث الكمية" }).waitFor();
@@ -210,7 +266,7 @@ async function main() {
     await page.getByRole("button", { name: "اختر عنوان الاستلام أولًا" }).waitFor();
     assert.equal(await page.getByText("DEMO10", { exact: false }).count(), 0);
     await page.goto(base + "/products/11");
-    await page.getByText("مقاس مخصص", { exact: true }).click();
+    await page.getByText("مقاس آخر", { exact: true }).click();
     await page.getByLabel("الطول", { exact: true }).fill("2");
     await page.getByLabel("العرض", { exact: true }).fill("2");
     await page
@@ -222,7 +278,7 @@ async function main() {
       .getByRole("status")
       .filter({ hasText: "تمت إضافة القطعة" })
       .getByRole("link", { name: "عرض السلة", exact: true })
-      .click();
+      .press("Enter");
     await page.getByRole("alert").filter({ hasText: "تم تنفيذ العملية" }).waitFor();
     await page.getByRole("button", { name: "إعادة المحاولة" }).click();
     await page
@@ -242,7 +298,7 @@ async function main() {
     assert.equal(items.length, 1);
     assert.equal(items[0].id, 25);
     await page.reload();
-    await page.getByRole("button", { name: "إفراغ السلة" }).click();
+    await page.getByRole("button", { name: "حذف سجاد الاختبار من السلة" }).click();
     await page.getByRole("heading", { name: "سلتك فارغة" }).waitFor();
     assert.equal(
       await page.getByRole("link", { name: "السلة، 0 قطع", exact: true }).count(),
@@ -254,8 +310,30 @@ async function main() {
       ),
       9,
     );
+    for (const p of otherProducts) {
+      await page.goto(base + "/products/" + p.id);
+      await page.getByRole("heading", { name: p.name, exact: true }).waitFor();
+      assert.equal(await page.getByText("مقاس آخر", { exact: true }).count(), 0);
+      if (p.has_sizes) await page.getByText("شخصين", { exact: true }).waitFor();
+      await page.getByRole("button", { name: "أضف إلى السلة", exact: true }).click();
+      await page.getByRole("status").filter({ hasText: "يمكنك زيادة العدد" }).waitFor();
+      assert.equal(
+        await page.getByRole("button", { name: "زيادة الكمية", exact: true }).count(),
+        0,
+      );
+      assert.equal(
+        await page.getByRole("button", { name: "أضف إلى السلة", exact: true }).count(),
+        0,
+      );
+      await page.reload();
+      await page.getByRole("status").filter({ hasText: "يمكنك زيادة العدد" }).waitFor();
+      assert.equal(
+        await page.getByRole("button", { name: "أضف إلى السلة", exact: true }).count(),
+        0,
+      );
+    }
     expire = true;
-    await page.reload();
+    await page.goto(base + "/cart");
     await page
       .getByText("سجّل الدخول لعرض سلتك وإضافة المنتجات.", { exact: true })
       .waitFor();
@@ -265,7 +343,7 @@ async function main() {
     );
     assert.deepEqual(errors, []);
     console.log(
-      "PASS: guest gating, ignored legacy cart, fixed/custom API adds, authoritative line prices, quantity failure/retry, row IDs, clear, count, refresh-only recovery and expired-session cleanup",
+      "PASS: guest gating, ignored legacy cart, fixed/custom API adds, authoritative line prices, quantity failure/retry, row IDs, removal, count, refresh-only recovery and expired-session cleanup, minimal product details and single-add controls in other categories",
     );
   } finally {
     await browser.close();

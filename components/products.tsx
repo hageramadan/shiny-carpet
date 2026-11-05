@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { FiPlus } from "react-icons/fi";
 import {
   money,
   currencyLabel,
@@ -30,8 +29,7 @@ export function ProductCard({ product }: { product: Product }) {
           <Link href={productHref(product)}>{product.name}</Link>
         </h2>
         <p className="mt-1.5 text-xs leading-6 sm:mt-2 sm:text-sm text-[#6B7280]">
-          {product.category} ·{" "}
-          {product.hasSizes ? "اختر المقاس لعرض الإجمالي" : "السعر للقطعة"}
+          {product.description}
         </p>
         <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-3 sm:gap-4">
           <span className="text-base font-bold text-primary">
@@ -43,13 +41,6 @@ export function ProductCard({ product }: { product: Product }) {
               </del>
             )}
           </span>
-          <Link
-            href={productHref(product)}
-            aria-label={"عرض تفاصيل " + product.name}
-            className="grid size-11 shrink-0 sm:size-10 place-items-center rounded-full bg-primary text-xl text-white transition-colors hover:bg-ink"
-          >
-            <FiPlus />
-          </Link>
         </div>
       </div>
     </article>

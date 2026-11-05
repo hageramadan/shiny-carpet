@@ -1,6 +1,7 @@
 "use client";
 import { useSettings } from "@/components/settings/SettingsProvider";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { FiPhone, FiMail, FiMapPin } from "react-icons/fi";
 import {
   FaFacebookF,
@@ -8,6 +9,7 @@ import {
   FaSnapchatGhost,
   FaTiktok,
   FaPinterestP,
+  FaWhatsapp,
 } from "react-icons/fa";
 import Logo from "./Logo";
 
@@ -17,17 +19,19 @@ const quickLinks = [
   { href: "/orders", label: "طلباتي" },
   { href: "/tracking", label: "تتبع الطلب" },
 ];
-const serviceLinks = [
-  { href: "/products?category=16", label: "غسيل السجاد" },
-  { href: "/products?category=18", label: "غسيل البطاطين" },
-  { href: "/products", label: "المقاسات والأسعار" },
-  { href: "/#download", label: "حمل التطبيق" },
-];
 export default function Footer() {
   const { data: settings, status, reload } = useSettings();
+  const pathname = usePathname();
+  if (/^\/products\/[^/]+\/?$/.test(pathname)) return null;
   const phone = settings?.phone;
   const email = settings?.email;
+  const whatsappNumber = phone?.replace(/\D/g, "").replace(/^00/, "");
   const socialLinks = [
+    {
+      name: "واتساب",
+      icon: FaWhatsapp,
+      href: whatsappNumber ? `https://wa.me/${whatsappNumber}` : undefined,
+    },
     { name: "Facebook", icon: FaFacebookF, href: settings?.facebook },
     { name: "Instagram", icon: FaInstagram, href: settings?.instagram },
     { name: "Snapchat", icon: FaSnapchatGhost, href: settings?.snapchat },
@@ -48,9 +52,9 @@ export default function Footer() {
               <Logo />
             </Link>
             <p className="mt-5 max-w-sm text-sm leading-8 text-slate-300">
-              بنخلي نظافة سجادك وبطاطينك أسهل، بعناية متخصصة وخدمة توصلك لحد باب البيت.
+              تابعونا على مواقع التواصل الاجتماعي
             </p>
-            <div className="mt-5 flex gap-3">
+            <div className="mt-5 flex flex-wrap gap-3">
               {socialLinks.map(({ name, icon: Icon, href }) =>
                 href ? (
                   <a
@@ -82,21 +86,18 @@ export default function Footer() {
               ))}
             </ul>
           </nav>
-          <nav aria-label="خدمات Shiny Carpet">
-            <h2 className="mb-5 text-base font-normal text-white">خدماتنا</h2>
-            <ul className="space-y-3 text-sm text-slate-300">
-              {serviceLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="transition-colors hover:text-primary"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+          <section aria-labelledby="footer-about-title">
+            <h2
+              id="footer-about-title"
+              className="mb-5 text-base font-normal text-white"
+            >
+              نبذة عنا
+            </h2>
+            {/* <p className="text-sm leading-8 text-slate-300">
+              في Shiny Carpet، نهتم بنظافة السجاد والبطانيات والستائر والمفروشات، بعناية
+              تناسب كل قطعة لتبقى نظيفة وتمنح منزلك إحساسًا بالراحة والانتعاش.
+            </p> */}
+          </section>
           <div>
             <h2 className="mb-5 text-base font-normal text-white">تواصل معنا</h2>
             <div className="space-y-4 text-sm text-slate-300">

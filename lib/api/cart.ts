@@ -106,7 +106,7 @@ export function parseCartItem(value: unknown): CartItem {
     sizeId: isRecord(size) ? (size.id as number) : undefined,
     dimensions,
     sizeLabel: dimensions
-      ? `${length} × ${width} متر`
+      ? `${length} × ${width}`
       : persons
         ? `${persons} أشخاص`
         : "قطعة",

@@ -22,7 +22,7 @@ export function resolveCustomSize(length = "", width = ""): ResolvedSize | null 
     return null;
   return {
     size: Math.round(l * w * 100) / 100,
-    sizeLabel: l + " × " + w + " متر",
+    sizeLabel: l + " × " + w,
     dimensions: { length: l, width: w },
   };
 }

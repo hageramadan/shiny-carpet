@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
-import { useCategoryProducts, useProduct } from "@/hooks/useCatalogApi";
+import { useProduct } from "@/hooks/useCatalogApi";
 import ProductDetails from "./ProductDetails";
 import ProductsLoading from "./ProductsLoading";
 import CatalogFeedback from "./CatalogFeedback";
@@ -16,10 +16,6 @@ export default function ClientProductPage({
 }) {
   const request = useProduct(id);
   const product = request.data;
-  const relatedRequest = useCategoryProducts(product?.categoryId);
-  const related = (relatedRequest.data ?? [])
-    .filter((item) => item.id !== String(id))
-    .slice(0, 3);
 
   useEffect(() => {
     if (product) document.title = product.name + " | Shiny Carpet";
@@ -50,7 +46,6 @@ export default function ClientProductPage({
     <ProductDetails
       key={product.id}
       product={product}
-      related={related}
     />
   );
 }

@@ -1,6 +1,10 @@
 import type { Product } from "./data";
 import { resolveCustomSize, type ResolvedSize } from "./product-options";
 
+export function isCarpetProduct(product: Product): boolean {
+  return product.category.includes("سجاد");
+}
+
 export function productSizeOptions(product: Product): { value: string; label: string }[] {
   if (product.apiId !== undefined) {
     if (!product.hasSizes) return [];
@@ -9,7 +13,7 @@ export function productSizeOptions(product: Product): { value: string; label: st
         value: String(size.id),
         label: size.label,
       })),
-      { value: "custom", label: "مقاس مخصص" },
+      ...(isCarpetProduct(product) ? [{ value: "custom", label: "مقاس آخر" }] : []),
     ];
   }
   return [];
@@ -32,7 +36,7 @@ export function resolveProductSize(
       unitPrice: size.price,
       dimensions: size.dimensions,
     };
-  if (choice !== "custom") return null;
+  if (choice !== "custom" || !isCarpetProduct(product)) return null;
   const dimensions = resolveCustomSize(length, width);
   return dimensions
     ? {
