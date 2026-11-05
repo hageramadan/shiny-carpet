@@ -37,6 +37,14 @@ test("invoice fetches only JSON for the selected order and preserves invoice fie
   });
   const result = await fetchInvoice(533);
   assert.equal(result.number, "INV-2026-00533");
+  assert.equal(result.orderNumber, "SC-533");
+  assert.equal(result.customer.name, "hager");
+  assert.equal(result.items[0].unitPrice, "10.000 ر.س");
+  assert.equal(result.total, "40.250 ر.س");
+  assert.equal(
+    result.summary.find((row) => row.label.includes("ضريبة")).value,
+    "5.250 ر.س",
+  );
   const lines = result.sections.flatMap((section) => section.lines).join("\n");
   for (const value of [
     "hager",

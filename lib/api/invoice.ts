@@ -6,6 +6,22 @@ export type OrderInvoice = {
   title: string;
   number: string;
   sections: { title: string; lines: string[] }[];
+  orderNumber: string;
+  orderDate: string;
+  issuedAt: string;
+  company: { name: string; taxNumber: string };
+  customer: { name: string; phone: string; address: string };
+  items: {
+    name: string;
+    specifications: string;
+    quantity: number;
+    unitPrice: string;
+    total: string;
+  }[];
+  summary: { label: string; value: string }[];
+  total: string;
+  thankYou: string;
+  notices: string[];
 };
 const text = (value: unknown) => (typeof value === "string" ? value.trim() : "");
 function required(value: unknown): string {
@@ -66,6 +82,7 @@ export async function fetchInvoice(
     ["تاريخ الدفع", payment.paid_at_formatted],
     ["رقم العملية", payment.transaction_id],
   ]);
+  const items: OrderInvoice["items"] = [];
   data.items.forEach((item, index) => {
     if (
       !isRecord(item) ||
@@ -73,6 +90,13 @@ export async function fetchInvoice(
       Number(item.quantity) < 1
     )
       throw new ApiResponseError("Invalid invoice item");
+    items.push({
+      name: required(item.product_name),
+      specifications: text(item.specifications),
+      quantity: Number(item.quantity),
+      unitPrice: required(item.unit_price_formatted),
+      total: required(item.total_price_formatted),
+    });
     section(`${index + 1}. ${required(item.product_name)}`, [
       ["", item.specifications],
       ["الكمية", String(item.quantity)],
@@ -102,5 +126,50 @@ export async function fetchInvoice(
     ["", footer.share_notice],
     ["", footer.special_notes],
   ]);
-  return { title: required(meta.title), number: required(meta.invoice_number), sections };
+  const summaryRows = [
+    { label: "المجموع الفرعي", value: required(summary.subtotal_formatted) },
+    { label: "رسوم التوصيل", value: text(summary.delivery_fee_formatted) },
+    {
+      label: text(summary.discount_label) || "الخصم",
+      value: text(summary.discount_formatted),
+    },
+    { label: "كود الخصم", value: text(summary.coupon_code) },
+    {
+      label: `ضريبة القيمة المضافة${typeof summary.vat_percentage === "number" ? ` (${summary.vat_percentage}%)` : ""}`,
+      value: text(summary.vat_amount_formatted),
+    },
+  ].filter((row) => row.value);
+  return {
+    title: required(meta.title),
+    number: required(meta.invoice_number),
+    sections,
+    orderNumber: text(meta.order_number),
+    orderDate: text(meta.order_date_formatted) || text(meta.order_date),
+    issuedAt: text(meta.invoice_date_formatted) || text(meta.invoice_date),
+    company: {
+      name: text(company.name) || text(company.name_en),
+      taxNumber: text(company.tax_number),
+    },
+    customer: {
+      name: text(customer.name),
+      phone: text(customer.phone),
+      address: [
+        text(address.full_address),
+        text(address.floor) && `الدور: ${text(address.floor)}`,
+        text(address.apartment) && `الشقة: ${text(address.apartment)}`,
+        text(address.details),
+      ]
+        .filter(Boolean)
+        .join("، "),
+    },
+    items,
+    summary: summaryRows,
+    total: required(summary.total_formatted),
+    thankYou: text(footer.thank_you_message),
+    notices: [
+      text(footer.legal_notice),
+      text(footer.share_notice),
+      text(footer.special_notes),
+    ].filter(Boolean),
+  };
 }

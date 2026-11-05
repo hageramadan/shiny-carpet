@@ -95,8 +95,49 @@ async function main() {
       page.getByRole("button", { name: "تقييم الطلب", exact: true });
     await page.getByRole("heading", { name: "تم إكمال طلبك بنجاح" }).waitFor();
     assert.equal(invoiceRequests.length, 0);
+    await page.getByRole("link", { name: "عرض الفاتورة", exact: true }).click();
+    await page.waitForURL("**/orders/541/invoice");
+    await page.getByRole("heading", { name: "الفاتورة", exact: true }).waitFor();
+    await page.getByText("INV-2026-00541", { exact: true }).waitFor();
+    await page.getByText("hager", { exact: true }).waitFor();
+    assert.ok(
+      await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+    );
+    if (process.env.RATING_SCREENSHOT_DIR) {
+      await fs.mkdir(process.env.RATING_SCREENSHOT_DIR, { recursive: true });
+      await page.screenshot({
+        path: require("node:path").join(
+          process.env.RATING_SCREENSHOT_DIR,
+          "invoice-mobile.png",
+        ),
+        fullPage: true,
+      });
+      await page.setViewportSize({ width: 1440, height: 1000 });
+      await page.screenshot({
+        path: require("node:path").join(
+          process.env.RATING_SCREENSHOT_DIR,
+          "invoice-desktop.png",
+        ),
+        fullPage: true,
+      });
+      await page.setViewportSize({ width: 390, height: 844 });
+    }
+    await page.evaluate(() => {
+      Object.defineProperty(navigator, "share", {
+        configurable: true,
+        value: async (data) => {
+          window.sharedInvoice = data;
+        },
+      });
+    });
+    await page.getByRole("button", { name: "مشاركة الفاتورة", exact: true }).click();
+    assert.ok(
+      (await page.evaluate(() => window.sharedInvoice.url)).endsWith(
+        "/orders/541/invoice",
+      ),
+    );
     const downloadEvent = page.waitForEvent("download");
-    await page.getByRole("button", { name: "تحميل الفاتورة", exact: true }).click();
+    await page.getByRole("button", { name: "تحميل الفاتورة PDF", exact: true }).click();
     const downloaded = await downloadEvent;
     assert.equal(downloaded.suggestedFilename(), "invoice-541.pdf");
     const pdfBytes = await fs.readFile(await downloaded.path());
@@ -107,6 +148,10 @@ async function main() {
     if (process.env.INVOICE_PDF_PATH)
       await downloaded.saveAs(process.env.INVOICE_PDF_PATH);
     assert.equal(await page.getByRole("dialog", { name: "فاتورة الطلب" }).count(), 0);
+    await page
+      .getByRole("link", { name: "العودة إلى تفاصيل الطلب", exact: true })
+      .click();
+    await page.waitForURL("**/tracking?order=541");
     for (const scenario of [
       { status: "confirmed", paid: true, rated: false },
       { status: "delivered_to_customer", paid: false, rated: false },
@@ -119,7 +164,7 @@ async function main() {
       await page.getByRole("region", { name: "مراحل الطلب" }).waitFor();
       assert.equal(await rateButton().count(), 0);
       assert.equal(
-        await page.getByRole("button", { name: "تحميل الفاتورة", exact: true }).count(),
+        await page.getByRole("link", { name: "عرض الفاتورة", exact: true }).count(),
         scenario.status === "paid" ? 1 : 0,
       );
     }
