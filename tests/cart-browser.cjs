@@ -231,7 +231,7 @@ async function main() {
     assert.equal(await page.getByRole("contentinfo").count(), 0);
     await page.getByRole("button", { name: "أضف إلى السلة", exact: true }).click();
     await page.getByRole("status").filter({ hasText: "تمت إضافة القطعة" }).waitFor();
-    await page.getByRole("button", { name: "تمت الإضافة — أضف منتج آخر" }).waitFor();
+    await page.getByRole("button", { name: "تمت الإضافة - أضف منتج آخر" }).waitFor();
     assert.equal(await page.getByText("3 × 5 متر", { exact: true }).count(), 0);
     await page.goto(base + "/cart");
     await page.getByRole("button", { name: "زيادة كمية سجاد الاختبار" }).click();

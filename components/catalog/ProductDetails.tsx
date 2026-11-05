@@ -202,7 +202,7 @@ export default function ProductDetails({ product }: { product: Product }) {
                 pending
                   ? "جاري الإضافة…"
                   : added
-                    ? "تمت الإضافة — أضف منتج آخر"
+                    ? "تمت الإضافة - أضف منتج آخر"
                     : isApiCustom
                       ? "احسب السعر وأضف إلى السلة"
                       : "أضف إلى السلة"
@@ -210,7 +210,11 @@ export default function ProductDetails({ product }: { product: Product }) {
               className="flex min-h-14 w-full flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-2xl bg-primary px-4 py-3 text-base font-bold text-white transition-colors hover:bg-ink disabled:cursor-not-allowed sm:min-h-16 sm:px-5 sm:text-lg"
             >
               <span>
-                {pending ? "جاري الإضافة…" : added ? "أضف منتج آخر" : "أضف إلى السلة"}
+                {pending
+                  ? "جاري الإضافة…"
+                  : added
+                    ? "تمت الإضافة - أضف منتج آخر"
+                    : "أضف إلى السلة"}
               </span>
               {total !== null && (
                 <span>
