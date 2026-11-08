@@ -6,7 +6,8 @@ import { useTranslation } from "@/components/i18n/LanguageProvider";
 import { useOrdersApi } from "@/hooks/useOrdersApi";
 import { useOrderEditor } from "@/hooks/useOrderEditor";
 import { fetchOrder, cancelOrder } from "@/lib/api/orders";
-import { canEditOrder } from "@/lib/order-status";
+import { canEditOrder, canCancelOrder } from "@/lib/order-status";
+import { ApiError } from "@/lib/api/client";
 import type { Order, CartItem } from "@/lib/data";
 import { PriceBreakdown } from "./OrderSummary";
 import OrderEditItem from "./OrderEditItem";
@@ -78,6 +79,10 @@ function Editor({ initialOrder }: { initialOrder: Order }) {
   const disabled = editor.pending || editor.needsRefresh;
   async function cancel() {
     const result = await editor.mutate(async (fresh, signal) => {
+      if (!canCancelOrder(fresh))
+        throw new ApiError(409, {
+          message: "يمكن إلغاء الطلب فقط عندما تكون حالته «تم تأكيد الطلب».",
+        });
       await cancelOrder(Number(fresh.id), signal);
     });
     if (result) router.push("/tracking?order=" + editor.order.id);
@@ -205,15 +210,17 @@ function Editor({ initialOrder }: { initialOrder: Order }) {
               {t("التالي")}
             </button>
           )}
-          <button
-            type="button"
-            disabled={disabled}
-            onClick={() => setConfirmCancel(true)}
-            className="min-h-11 w-full rounded-xl border border-red-200 px-4 py-2 text-red-600 disabled:opacity-50"
-          >
-            {t("إلغاء الطلب")}
-          </button>
-          {confirmCancel && (
+          {canCancelOrder(editor.order) && (
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => setConfirmCancel(true)}
+              className="min-h-11 w-full rounded-xl border border-red-200 px-4 py-2 text-red-600 disabled:opacity-50"
+            >
+              {t("إلغاء الطلب")}
+            </button>
+          )}
+          {confirmCancel && canCancelOrder(editor.order) && (
             <div
               role="alertdialog"
               aria-label={t("تأكيد إلغاء الطلب")}

@@ -43,19 +43,22 @@ export async function addOrderItem(
   assertPositiveId(orderId);
   assertPositiveId(input.product_id);
   quantity(input.quantity);
-  dimensions(input);
+  if (input.product_size_id === undefined) dimensions(input);
   if (input.product_size_id !== undefined) assertPositiveId(input.product_size_id);
   const body = {
+    _method: "put",
     product_id: input.product_id,
     quantity: input.quantity,
     ...(input.product_size_id !== undefined
       ? { product_size_id: input.product_size_id }
       : {}),
-    ...(input.length !== undefined ? { length: input.length, width: input.width } : {}),
+    ...(input.product_size_id === undefined && input.length !== undefined
+      ? { length: input.length, width: input.width }
+      : {}),
   };
   cartSuccess(
     await authenticatedApiRequest(`/orders/${orderId}/items`, {
-      method: "PUT",
+      method: "POST",
       body,
       signal,
     }),
@@ -70,21 +73,22 @@ export async function updateOrderItem(
   assertPositiveId(orderId);
   assertPositiveId(itemId);
   quantity(input.quantity);
-  dimensions(input);
+  if (input.product_size_id === undefined) dimensions(input);
   if (input.product_size_id !== undefined) assertPositiveId(input.product_size_id);
   images(input.images ?? []);
   const body = new FormData();
+  body.set("_method", "put");
   body.set("quantity", String(input.quantity));
   if (input.product_size_id !== undefined)
     body.set("product_size_id", String(input.product_size_id));
-  if (input.length !== undefined) {
+  else if (input.length !== undefined) {
     body.set("length", String(input.length));
     body.set("width", String(input.width));
   }
   input.images?.forEach((file) => body.append("images[]", file));
   cartSuccess(
     await authenticatedApiRequest(`/orders/${orderId}/items/${itemId}`, {
-      method: "PUT",
+      method: "POST",
       body,
       signal,
     }),
@@ -112,11 +116,12 @@ export async function updateOrderImages(
   assertPositiveId(orderId);
   images(input.images);
   const body = new FormData();
+  body.set("_method", "put");
   body.set("note", input.note);
   input.images.forEach((file) => body.append("images[]", file));
   cartSuccess(
     await authenticatedApiRequest(`/orders/${orderId}/images`, {
-      method: "PUT",
+      method: "POST",
       body,
       signal,
     }),

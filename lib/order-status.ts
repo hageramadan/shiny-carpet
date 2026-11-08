@@ -64,3 +64,6 @@ export function canEditOrder(order: {
     (!order.driverTask || beforePickup.has(order.driverTask))
   );
 }
+export function canCancelOrder(order: Parameters<typeof canEditOrder>[0]): boolean {
+  return order.status === "confirmed" && canEditOrder(order);
+}

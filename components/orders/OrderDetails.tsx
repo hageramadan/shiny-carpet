@@ -1,5 +1,5 @@
 "use client";
-import { canEditOrder } from "@/lib/order-status";
+import { canEditOrder, canCancelOrder } from "@/lib/order-status";
 import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -35,7 +35,7 @@ export default function OrderDetails({
   }, [id]);
   const [cancelledId, setCancelledId] = useState("");
   async function cancel() {
-    if (!order || !canEditOrder(order) || lock.current) return;
+    if (!order || !canCancelOrder(order) || lock.current) return;
     lock.current = true;
     setCancelling(true);
     setCancelError("");
@@ -43,7 +43,8 @@ export default function OrderDetails({
     try {
       const latest = await fetchOrder(Number(order.id));
       if (!token || token !== readAuthSession()?.token) return;
-      if (!canEditOrder(latest)) {
+      if (!canCancelOrder(latest)) {
+        setCancelError("يمكن إلغاء الطلب فقط عندما تكون حالته «تم تأكيد الطلب».");
         reload();
         return;
       }
@@ -238,7 +239,7 @@ export default function OrderDetails({
               </p>
             ),
           )}
-          {canEditOrder(order) && cancelledId !== order.id && (
+          {canCancelOrder(order) && cancelledId !== order.id && (
             <button
               disabled={cancelling}
               onClick={() => void cancel()}

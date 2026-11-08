@@ -186,18 +186,35 @@ export async function fetchOrder(id: number, signal?: AbortSignal) {
 }
 export async function cancelOrder(id: number, signal?: AbortSignal) {
   assertPositiveId(id);
-  const order = parseOrder(
-    cartSuccess(
-      await authenticatedApiRequest("/orders/" + id + "/cancel", {
-        method: "POST",
-        body: {},
-        signal,
-      }),
-    ).data,
-  );
-  if (order.id !== String(id) || order.status !== "cancelled")
-    throw new ApiResponseError("Unexpected cancellation response");
-  return order;
+  try {
+    const order = parseOrder(
+      cartSuccess(
+        await authenticatedApiRequest("/orders/" + id + "/cancel", {
+          method: "POST",
+          body: {},
+          signal,
+        }),
+      ).data,
+    );
+    if (order.id !== String(id) || order.status !== "cancelled")
+      throw new ApiResponseError("Unexpected cancellation response");
+    return order;
+  } catch (error) {
+    if (
+      error instanceof ApiError &&
+      isRecord(error.details) &&
+      error.details.message === 'Only orders in "confirmed" status can be cancelled.'
+    )
+      throw new ApiError(
+        error.status,
+        {
+          ...error.details,
+          message: "يمكن إلغاء الطلب فقط عندما تكون حالته «تم تأكيد الطلب».",
+        },
+        error.retryAfter,
+      );
+    throw error;
+  }
 }
 export function isOrderImageUploadError(error: unknown): boolean {
   if (!(error instanceof ApiError) || error.status !== 422 || !isRecord(error.details))

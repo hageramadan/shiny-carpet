@@ -7,6 +7,7 @@ import { type CartItem, type Order, itemPrice, money } from "@/lib/data";
 import { ApiError } from "@/lib/api/client";
 import { updateOrderItem, removeOrderItem } from "@/lib/api/order-edit";
 import type { OrderEditorState } from "@/hooks/useOrderEditor";
+import DeleteOrderItemDialog from "./DeleteOrderItemDialog";
 
 export default function OrderEditItem({
   item,
@@ -89,38 +90,23 @@ export default function OrderEditItem({
         <button
           type="button"
           disabled={disabled || editor.order.items.length <= 1}
-          onClick={() => setConfirmDelete(true)}
+          onClick={() => {
+            editor.clearError();
+            setConfirmDelete(true);
+          }}
           className="min-h-11 text-sm text-red-600 disabled:opacity-40"
         >
           {t("حذف")}
         </button>
       </div>
       {confirmDelete && (
-        <div
-          role="alertdialog"
-          aria-label={t("تأكيد حذف المنتج")}
-          className="mt-3 rounded-xl border border-red-200 bg-red-50 p-4"
-        >
-          <p className="text-sm">{t("هل تريد حذف هذا المنتج من الطلب؟")}</p>
-          <div className="mt-2 flex gap-4">
-            <button
-              type="button"
-              disabled={disabled}
-              onClick={() => void remove()}
-              className="min-h-11 font-bold text-red-600"
-            >
-              {t("تأكيد الحذف")}
-            </button>
-            <button
-              type="button"
-              disabled={disabled}
-              onClick={() => setConfirmDelete(false)}
-              className="min-h-11"
-            >
-              {t("إلغاء")}
-            </button>
-          </div>
-        </div>
+        <DeleteOrderItemDialog
+          pending={editor.pending}
+          disabled={disabled}
+          error={editor.error}
+          onConfirm={() => void remove()}
+          onCancel={() => setConfirmDelete(false)}
+        />
       )}
     </article>
   );

@@ -760,5 +760,7 @@
   "لم يعد تعديل هذا الطلب متاحًا. راجع حالته من صفحة التفاصيل.": "This order can no longer be edited. Check its current status on the details page.",
   "تم إلغاء الطلب.": "The order has been cancelled.",
   "تم الإرجاع للمغسلة": "Returned to the laundry",
-  "حالة الطلب غير متاحة": "Order status unavailable"
+  "حالة الطلب غير متاحة": "Order status unavailable",
+  "هل تريد الحذف؟": "Do you want to delete this item?",
+  "يمكن إلغاء الطلب فقط عندما تكون حالته «تم تأكيد الطلب».": "Only confirmed orders can be cancelled."
 }

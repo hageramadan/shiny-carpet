@@ -125,7 +125,10 @@ async function main() {
       if (path === "/api/orders/12/cancel") {
         if (failCancel) {
           failCancel = false;
-          return respond({ message: "تعذر الإلغاء للاختبار" }, 422);
+          return respond(
+            { message: 'Only orders in "confirmed" status can be cancelled.' },
+            422,
+          );
         }
         cancelled = true;
         return ok({ ...order, status: "cancelled", items: undefined });
@@ -244,7 +247,7 @@ async function main() {
     await page.getByText("تم استلام طلبك بنجاح", { exact: true }).waitFor();
     assert.equal(
       await page.getByRole("button", { name: "إلغاء الطلب", exact: true }).count(),
-      1,
+      0,
     );
     detailStatus = "delivered_to_customer";
     await page.reload();
@@ -266,7 +269,7 @@ async function main() {
       assert.equal(await page.locator('[aria-current="step"] h3').innerText(), label);
       assert.equal(
         await page.getByRole("button", { name: "إلغاء الطلب", exact: true }).count(),
-        status === "processing" ? 1 : 0,
+        0,
       );
     }
     detailStatus = "confirmed";
@@ -295,7 +298,11 @@ async function main() {
       await page.setViewportSize({ width: 390, height: 844 });
     }
     await page.getByRole("button", { name: "إلغاء الطلب", exact: true }).click();
-    await page.getByText("تعذر الإلغاء للاختبار", { exact: true }).waitFor();
+    await page
+      .getByText("يمكن إلغاء الطلب فقط عندما تكون حالته «تم تأكيد الطلب».", {
+        exact: true,
+      })
+      .waitFor();
     await page.getByRole("button", { name: "إلغاء الطلب", exact: true }).click();
     await page.getByText("ملغي", { exact: true }).waitFor();
     assert.equal(

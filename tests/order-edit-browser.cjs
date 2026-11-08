@@ -171,10 +171,13 @@ const money = (value) =>
         }
         return respond(snapshot());
       }
-      if (p === "/api/orders/369/items" && m === "PUT") {
+      if (p === "/api/orders/369/items" && m === "POST") {
         const input = req.postDataJSON();
+        assert.equal(input._method, "put");
         assert.equal(input.product_id, 71);
         assert.equal(input.product_size_id, 174);
+        assert.equal(input.length, undefined);
+        assert.equal(input.width, undefined);
         assert.equal(input.quantity, 1);
         order.items.push({
           id: rowId++,
@@ -197,7 +200,13 @@ const money = (value) =>
           order.items = order.items.filter((item) => item.id !== id);
           return respond({});
         }
-        assert.equal(m, "PUT");
+        assert.equal(m, "POST");
+        assert.equal(field(req, "_method"), "put");
+        if (field(req, "product_size_id")) {
+          assert.ok(!field(req, "length"));
+          assert.ok(!field(req, "width"));
+        }
+        if (field(req, "length")) assert.ok(!field(req, "product_size_id"));
         assert.ok(
           req.headers()["content-type"].startsWith("multipart/form-data; boundary="),
         );
@@ -226,7 +235,8 @@ const money = (value) =>
         return respond({});
       }
       if (p === "/api/orders/369/images") {
-        assert.equal(m, "PUT");
+        assert.equal(m, "POST");
+        assert.equal(field(req, "_method"), "put");
         photoWrites++;
         assert.ok(req.postData().includes('name="images[]"'));
         assert.equal(field(req, "note"), "ملاحظة التعديل");
@@ -303,6 +313,11 @@ const money = (value) =>
     await line("سجاد الاختبار")
       .getByRole("button", { name: "تعديل المنتج", exact: true })
       .click();
+    await page.getByRole("button", { name: "حفظ تعديل المنتج", exact: true }).click();
+    await line("سجاد الاختبار").waitFor();
+    await line("سجاد الاختبار")
+      .getByRole("button", { name: "تعديل المنتج", exact: true })
+      .click();
     await page.getByText("مقاس آخر", { exact: true }).click();
     await page.getByLabel("الطول", { exact: true }).fill("3");
     await page.getByLabel("العرض", { exact: true }).fill("4");
@@ -314,6 +329,20 @@ const money = (value) =>
     await page.getByRole("button", { name: "إضافة إلى الطلب", exact: true }).click();
     await line("سجاد إضافي").waitFor();
     assert.equal(order.items.length, 3);
+    await line("لباد الاختبار").getByRole("button", { name: "حذف", exact: true }).click();
+    const deleteDialog = page.getByRole("alertdialog", { name: "تأكيد حذف المنتج" });
+    await deleteDialog
+      .getByRole("heading", { name: "هل تريد الحذف؟", exact: true })
+      .waitFor();
+    assert.equal(await deleteDialog.evaluate((dialog) => dialog.matches(":modal")), true);
+    const deletesBeforeCancel = calls.filter((call) => call.m === "DELETE").length;
+    await deleteDialog.getByRole("button", { name: "إلغاء", exact: true }).click();
+    await deleteDialog.waitFor({ state: "detached" });
+    assert.equal(calls.filter((call) => call.m === "DELETE").length, deletesBeforeCancel);
+    await line("لباد الاختبار").getByRole("button", { name: "حذف", exact: true }).click();
+    await deleteDialog.waitFor();
+    await page.keyboard.press("Escape");
+    await deleteDialog.waitFor({ state: "detached" });
     await line("لباد الاختبار").getByRole("button", { name: "حذف", exact: true }).click();
     await page
       .getByRole("alertdialog", { name: "تأكيد حذف المنتج" })

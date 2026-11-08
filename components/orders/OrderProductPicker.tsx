@@ -226,7 +226,12 @@ function ProductSelection({
         await updateOrderItem(
           Number(fresh.id),
           itemId,
-          { quantity, product_size_id: resolved.sizeId, ...resolved.dimensions },
+          {
+            quantity,
+            ...(resolved.sizeId !== undefined
+              ? { product_size_id: resolved.sizeId }
+              : resolved.dimensions),
+          },
           signal,
         );
       } else

@@ -1,6 +1,6 @@
 const assert = require("node:assert/strict");
 const { test } = require("node:test");
-const { canEditOrder, orderStages } = require("../lib/order-status.ts");
+const { canEditOrder, canCancelOrder, orderStages } = require("../lib/order-status.ts");
 const { parseOrder } = require("../lib/api/orders.ts");
 const {
   addOrderItem,
@@ -22,6 +22,10 @@ const early = [
 test("editing stops at pickup and respects server permission, driver progress and receipt flags", () => {
   for (const { id } of orderStages)
     assert.equal(canEditOrder({ status: id }), early.includes(id), id);
+  for (const { id } of orderStages)
+    assert.equal(canCancelOrder({ status: id }), id === "confirmed", id);
+  assert.equal(canCancelOrder({ status: "confirmed", isReceived: true }), false);
+  assert.equal(canCancelOrder({ status: "paid", driverTask: "confirmed" }), false);
   assert.equal(
     canEditOrder({ status: "confirmed", driverTask: "picked_up_from_customer" }),
     false,
@@ -102,17 +106,24 @@ function session(t) {
     }
   });
 }
-test("order edit transports use exact order/line paths, PUT multipart, append images, and selected language", async (t) => {
+test("order edit transports use POST with lowercase put override, append images, and selected language", async (t) => {
   session(t);
   const calls = [];
   t.mock.method(globalThis, "fetch", async (url, options) => {
     calls.push({ url, options });
     return Response.json({ success: true, data: {} });
   });
-  await addOrderItem(369, { product_id: 71, product_size_id: 74, quantity: 1 });
+  await addOrderItem(369, {
+    product_id: 71,
+    product_size_id: 74,
+    quantity: 1,
+    length: 5,
+    width: 4,
+  });
   assert.ok(calls[0].url.endsWith("/orders/369/items"));
-  assert.equal(calls[0].options.method, "PUT");
+  assert.equal(calls[0].options.method, "POST");
   assert.deepEqual(JSON.parse(calls[0].options.body), {
+    _method: "put",
     product_id: 71,
     quantity: 1,
     product_size_id: 74,
@@ -121,11 +132,13 @@ test("order edit transports use exact order/line paths, PUT multipart, append im
   await updateOrderItem(369, 524, { quantity: 2, length: 8, width: 10, images: [file] });
   const update = calls[1];
   assert.ok(update.url.endsWith("/orders/369/items/524"));
-  assert.equal(update.options.method, "PUT");
+  assert.equal(update.options.method, "POST");
   assert.ok(update.options.body instanceof FormData);
+  assert.equal(update.options.body.get("_method"), "put");
   assert.equal(update.options.body.get("quantity"), "2");
   assert.equal(update.options.body.get("width"), "10");
   assert.equal(update.options.body.get("length"), "8");
+  assert.equal(update.options.body.has("product_size_id"), false);
   assert.equal(update.options.body.getAll("images[]").length, 1);
   assert.equal(update.options.headers["Content-Type"], undefined);
   await removeOrderItem(25, 825);
@@ -134,13 +147,32 @@ test("order edit transports use exact order/line paths, PUT multipart, append im
   assert.equal(calls[2].options.body, undefined);
   await updateOrderImages(369, { images: [file], note: "ملاحظة" });
   assert.ok(calls[3].url.endsWith("/orders/369/images"));
-  assert.equal(calls[3].options.method, "PUT");
+  assert.equal(calls[3].options.method, "POST");
+  assert.equal(calls[3].options.body.get("_method"), "put");
   assert.equal(calls[3].options.body.get("note"), "ملاحظة");
   assert.equal(calls[3].options.body.has("existing_images"), false);
   await updateOrderCoupon(369, " CODE ");
   assert.ok(calls[4].url.endsWith("/orders/369/update-coupon"));
   assert.equal(calls[4].options.method, "POST");
   assert.deepEqual(JSON.parse(calls[4].options.body), { coupon_code: "CODE" });
+  await updateOrderItem(549, 837, {
+    quantity: 3,
+    product_size_id: 792,
+    length: 5,
+    width: 4,
+  });
+  const readySize = calls.at(-1).options.body;
+  assert.equal(readySize.get("product_size_id"), "792");
+  assert.equal(readySize.has("length"), false);
+  assert.equal(readySize.has("width"), false);
+  await addOrderItem(369, { product_id: 71, quantity: 1, length: 5, width: 4 });
+  assert.deepEqual(JSON.parse(calls.at(-1).options.body), {
+    _method: "put",
+    product_id: 71,
+    quantity: 1,
+    length: 5,
+    width: 4,
+  });
   assert.ok(
     calls.every(
       (call) =>

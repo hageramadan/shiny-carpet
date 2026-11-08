@@ -193,6 +193,16 @@ test("authenticated endpoints, multipart files, server coupon totals, failures a
   assert.equal(calls.at(-1).options.body.get("coupon_code"), "SHINY20");
   response = { success: false, message: "كود غير صحيح" };
   await assert.rejects(applyCoupon("INVALID"), ApiError);
+  response = {
+    success: false,
+    message: 'Only orders in "confirmed" status can be cancelled.',
+  };
+  await assert.rejects(
+    cancelOrder(12),
+    (error) =>
+      error instanceof ApiError &&
+      error.details.message === "يمكن إلغاء الطلب فقط عندما تكون حالته «تم تأكيد الطلب».",
+  );
   response = ok({ ...row, status: "cancelled", items: undefined });
   assert.equal((await cancelOrder(12)).status, "cancelled");
   assert.ok(calls.at(-1).url.endsWith("/orders/12/cancel"));
