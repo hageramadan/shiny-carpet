@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -12,6 +13,7 @@ import { defaultAddress } from "@/lib/addresses";
 import { useAddresses } from "@/components/addresses/AddressesProvider";
 
 export default function ProfilePage() {
+  const t = useTranslation();
   const { state, ready, update } = useStore();
   const addressState = useAddresses();
   const profile = state.profile;
@@ -49,7 +51,7 @@ export default function ProfilePage() {
     <section className="min-h-[65vh] bg-[#f7f9fa] pb-10 pt-6 text-ink">
       <div className="container mx-auto px-5 sm:px-6 lg:px-8">
         <nav
-          aria-label="مسار التصفح"
+          aria-label={t("مسار التصفح")}
           className="mb-3 text-xs text-muted"
         >
           <ol className="flex items-center gap-1">
@@ -58,30 +60,36 @@ export default function ProfilePage() {
                 href="/"
                 className="transition-colors hover:text-primary"
               >
-                الرئيسية
+                {t("الرئيسية")}
               </Link>
             </li>
-            <li aria-hidden="true">/</li>
-            <li aria-current="page">حسابي</li>
+            <li aria-hidden="true">{t("/")}</li>
+            <li aria-current="page">{t("حسابي")}</li>
           </ol>
         </nav>
         <h1 className="text-[30px] font-extrabold leading-normal text-[#17202A] sm:text-4xl">
-          حسابي
+          {t("حسابي")}
         </h1>
         <p className="mt-3 text-sm md:text-base  text-[#607779]">
-          {profile
-            ? `أهلًا ${profile.name}، يمكنك تحديث بياناتك وإدارة طلباتك وعناوينك من هنا.`
-            : "يمكنك تحديث بياناتك وإدارة طلباتك وعناوينك من هنا."}
+          {t(
+            profile
+              ? `أهلًا ${profile.name}، يمكنك تحديث بياناتك وإدارة طلباتك وعناوينك من هنا.`
+              : "يمكنك تحديث بياناتك وإدارة طلباتك وعناوينك من هنا.",
+          )}
         </p>
         {ready && !profile ? (
           <div className="mt-6 rounded-xl border border-gray-200 bg-white px-5 py-12 text-center">
-            <h2 className="text-xl font-bold text-[#17202A]">مرحبًا بك في حسابك</h2>
-            <p className="mt-3 text-sm text-muted">سجّل الدخول لعرض بيانات حسابك.</p>
+            <h2 className="text-xl font-bold text-[#17202A]">
+              {t("مرحبًا بك في حسابك")}
+            </h2>
+            <p className="mt-3 text-sm text-muted">
+              {t("سجّل الدخول لعرض بيانات حسابك.")}
+            </p>
             <Link
               href="/login?next=%2Fprofile"
               className="mt-5 inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-6 py-2 text-sm font-bold text-white transition-colors hover:bg-ink shadow-button"
             >
-              تسجيل الدخول
+              {t("تسجيل الدخول")}
             </Link>
           </div>
         ) : (
@@ -101,14 +109,14 @@ export default function ProfilePage() {
               {contentLoading ? (
                 <div
                   role="status"
-                  aria-label="جاري تحميل بيانات الحساب"
+                  aria-label={t("جاري تحميل بيانات الحساب")}
                   className="grid min-h-[420px] place-items-center rounded-xl border border-gray-200 bg-white"
                 >
                   <span
                     aria-hidden="true"
                     className="size-10 animate-spin rounded-full border-4 border-primary/20 border-t-primary motion-reduce:animate-none"
                   />
-                  <span className="sr-only">جاري تحميل بيانات الحساب…</span>
+                  <span className="sr-only">{t("جاري تحميل بيانات الحساب…")}</span>
                 </div>
               ) : (
                 <>
@@ -118,14 +126,14 @@ export default function ProfilePage() {
                         role="alert"
                         className="text-sm text-red-700"
                       >
-                        {error}
+                        {t(error)}
                       </p>
                       <button
                         type="button"
                         onClick={() => setAttempt((value) => value + 1)}
                         className="mt-3 text-sm text-primary"
                       >
-                        إعادة المحاولة
+                        {t("إعادة المحاولة")}
                       </button>
                     </div>
                   ) : (

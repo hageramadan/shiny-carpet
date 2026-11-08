@@ -56,7 +56,7 @@ test("parses numeric strings, nullable fields and summary responses without inve
   assert.equal(parseOrder({ ...row, items: undefined }).items.length, 0);
   for (const patch of [
     { total: "bad" },
-    { status: "cleaning" },
+    { status: 12 },
     { created_at: "bad" },
     { id: 0 },
   ])
@@ -221,6 +221,34 @@ test("all backend workflow statuses parse and map to the timeline", () => {
   assert.equal(paid.status, "paid");
   assert.equal(orderStages.find((stage) => stage.id === paid.status).step, 6);
   assert.equal(orderStages.find((stage) => stage.id === paid.status).label, "تم التسليم");
+});
+
+test("returned and new API statuses preserve orders without inventing edit permissions", () => {
+  const { canEditOrder } = require("../lib/order-status.ts");
+  const returned = parseOrder({
+    ...row,
+    status: "returned_to_laundry",
+    status_label: "تم الإرجاع للمغسلة",
+    driver_task: null,
+  });
+  assert.equal(returned.status, "returned_to_laundry");
+  assert.equal(returned.statusLabel, "تم الإرجاع للمغسلة");
+  assert.equal(canEditOrder(returned), false);
+  const future = parseOrder({
+    ...row,
+    status: "new_backend_stage",
+    status_label: "مراجعة الطلب",
+  });
+  assert.equal(future.status, "unknown");
+  assert.equal(future.rawStatus, "new_backend_stage");
+  assert.equal(future.statusLabel, "مراجعة الطلب");
+  assert.equal(canEditOrder(future), false);
+  assert.equal(
+    canEditOrder(parseOrder({ ...row, driver_task: "new_driver_stage" })),
+    false,
+  );
+  assert.throws(() => parseOrder({ ...row, status: null }), ApiResponseError);
+  assert.throws(() => parseOrder({ ...row, status: "" }), ApiResponseError);
 });
 
 test("detects image validation failures only after an explicit 422 rejection", () => {

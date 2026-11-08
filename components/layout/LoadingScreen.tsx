@@ -1,9 +1,11 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
 export default function LoadingScreen() {
+  const t = useTranslation();
   const [isLoading, setIsLoading] = useState(true);
   const [isVisible, setIsVisible] = useState(true);
 
@@ -42,7 +44,7 @@ export default function LoadingScreen() {
     <div
       role="status"
       aria-live="polite"
-      aria-label="جاري تحميل الموقع"
+      aria-label={t("جاري تحميل الموقع")}
       aria-hidden={!isLoading}
       className={`fixed inset-0 z-9999 flex flex-col items-center justify-center gap-6 bg-white transition-opacity duration-300 ease-out motion-reduce:transition-none ${isLoading ? "opacity-100" : "pointer-events-none opacity-0"}`}
     >
@@ -59,7 +61,7 @@ export default function LoadingScreen() {
         aria-hidden="true"
         className="size-8 animate-spin rounded-full border-3 border-primary/15 border-t-primary motion-reduce:animate-none sm:size-9"
       />
-      <span className="sr-only">جاري تحميل الموقع…</span>
+      <span className="sr-only">{t("جاري تحميل الموقع…")}</span>
     </div>
   );
 }

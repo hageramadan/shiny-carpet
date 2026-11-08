@@ -1,3 +1,5 @@
+"use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 import Link from "next/link";
 import type { Address } from "@/lib/data";
 import { addressLines } from "@/lib/addresses";
@@ -15,6 +17,7 @@ export default function ProfileAddress({
   error?: string;
   onRetry?: () => void;
 }) {
+  const t = useTranslation();
   return (
     <section
       aria-labelledby="profile-address-heading"
@@ -24,14 +27,14 @@ export default function ProfileAddress({
         id="profile-address-heading"
         className="text-xl font-bold text-[#17202A]"
       >
-        عنوان الاستلام والتوصيل
+        {t("عنوان الاستلام والتوصيل")}
       </h2>
       {loading ? (
         <p
           role="status"
           className="mt-4 text-sm text-muted"
         >
-          جاري تحميل العناوين…
+          {t("جاري تحميل العناوين…")}
         </p>
       ) : error ? (
         <div>
@@ -39,13 +42,13 @@ export default function ProfileAddress({
             role="alert"
             className="mt-4 text-sm text-red-700"
           >
-            {error}
+            {t(error)}
           </p>
           <button
             onClick={onRetry}
             className="min-h-11 text-sm text-primary"
           >
-            إعادة المحاولة
+            {t("إعادة المحاولة")}
           </button>
         </div>
       ) : address ? (
@@ -57,19 +60,19 @@ export default function ProfileAddress({
                 key={index}
                 className="break-words"
               >
-                {line}
+                {t(line)}
               </p>
             ))}
           </address>
           {count > 1 && (
             <p className="mt-2 text-xs text-muted">
-              يمكنك عرض جميع عناوينك من إدارة العناوين.
+              {t("يمكنك عرض جميع عناوينك من إدارة العناوين.")}
             </p>
           )}
         </>
       ) : (
         <p className="mt-4 text-sm leading-7 text-muted">
-          لا توجد عناوين محفوظة بعد. أضف عنوان الاستلام والتوصيل من إدارة العناوين.
+          {t("لا توجد عناوين محفوظة بعد. أضف عنوان الاستلام والتوصيل من إدارة العناوين.")}
         </p>
       )}
       <div className="mt-3 flex justify-end">
@@ -77,7 +80,7 @@ export default function ProfileAddress({
           href="/addresses"
           className="inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-primary bg-white px-6 py-2 text-sm font-extrabold text-[#087B82] md:text-base transition-colors hover:bg-primary/5 sm:w-49"
         >
-          إدارة العناوين
+          {t("إدارة العناوين")}
         </Link>
       </div>
     </section>

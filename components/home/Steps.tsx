@@ -1,3 +1,5 @@
+"use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 import { FiGrid, FiFileText, FiTruck } from "react-icons/fi";
 import { PiRulerBold } from "react-icons/pi";
 
@@ -13,17 +15,18 @@ const steps = [
     number: "03",
     icon: FiFileText,
     title: "أكد تفاصيل طلبك",
-    description: "اختر عنوانك وموعد الاستلام",
+    description: "وأضف الصور والملاحظات",
   },
   {
     number: "04",
     icon: FiTruck,
     title: "تابع طلبك",
-    description: "من أول خطوة لحد الاستلام",
+    description: "   لحد الاستلام",
   },
 ];
 
 export default function Steps() {
+  const t = useTranslation();
   return (
     <section
       id="how"
@@ -33,16 +36,16 @@ export default function Steps() {
       <div className="container mx-auto px-5 sm:px-6 lg:px-8">
         <div className="text-center">
           <span className="text-sm font-extrabold text-[#087B82] md:text-base max-sm:text-xs">
-            خطوات بسيطة
+            {t("خطوات بسيطة")}
           </span>
           <h2
             id="steps-title"
             className="mt-3 text-3xl font-semibold leading-relaxed text-ink lg:text-[43.23px] max-sm:text-2xl max-sm:leading-snug"
           >
-            من أول طلبك لحد باب بيتك
+            {t("من أول طلبك إلى باب بيتك")}
           </h2>
           <p className="mt-3 text-sm md:text-base text-[#607779] max-sm:text-xs">
-            أربع خطوات بس، وإحنا نهتم بكل اللي بعد كده.
+            {t("خمس خطوات منك ، واترك الباقي علينا")}
           </p>
         </div>
         <div className="relative mt-12 max-sm:mt-6">
@@ -51,7 +54,7 @@ export default function Steps() {
             className="absolute inset-x-[12.5%] top-9 hidden border-t border-dashed border-gray-200 lg:block"
           />
           <ol
-            aria-label="خطوات الطلب، اسحب لعرض باقي الخطوات"
+            aria-label={t("خطوات الطلب، اسحب لعرض باقي الخطوات")}
             tabIndex={0}
             className="relative grid grid-flow-col auto-cols-[calc((100%_-_2rem)/2.5)] snap-x snap-proximity gap-4 overflow-x-auto overscroll-x-contain pb-3 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary lg:auto-cols-auto lg:grid-flow-row lg:grid-cols-4 lg:gap-8 lg:overflow-visible lg:pb-0"
           >
@@ -63,14 +66,14 @@ export default function Steps() {
                 <div className="relative mx-auto grid size-18 place-items-center rounded-full border border-gray-200 bg-white text-2xl text-primary shadow-sm max-sm:text-xl">
                   <Icon />
                   <span className="absolute -right-1 top-0 grid size-5 place-items-center rounded-full bg-primary text-[10px] font-bold text-white">
-                    {number}
+                    {t(number)}
                   </span>
                 </div>
                 <h3 className="mt-5 text-base font-bold text-ink max-sm:mt-3 max-sm:text-sm">
-                  {title}
+                  {t(title)}
                 </h3>
                 <p className="mt-2 text-sm leading-7 text-muted max-sm:text-xs max-sm:leading-6">
-                  {description}
+                  {t(description)}
                 </p>
               </li>
             ))}

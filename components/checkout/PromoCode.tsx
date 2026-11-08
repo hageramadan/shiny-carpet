@@ -1,4 +1,6 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
+
 import { useRef, useState, type FormEvent } from "react";
 import { applyCoupon, type CouponQuote } from "@/lib/api/orders";
 import { authErrorMessage } from "@/lib/auth/contracts";
@@ -9,6 +11,7 @@ export default function PromoCode({
   onApplied: (quote: CouponQuote) => void;
   onBusyChange: (busy: boolean) => void;
 }) {
+  const t = useTranslation();
   const [code, setCode] = useState(""),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
@@ -36,13 +39,13 @@ export default function PromoCode({
   }
   return (
     <section className="rounded-2xl border border-gray-200 bg-white p-5">
-      <h2 className="font-bold">هل لديك كود خصم؟</h2>
+      <h2 className="font-bold">{t("هل لديك كود خصم؟")}</h2>
       <form
         onSubmit={apply}
         className="mt-4 flex gap-3"
       >
         <label className="min-w-0 flex-1">
-          كود الخصم
+          {t("كود الخصم")}
           <input
             required
             maxLength={30}
@@ -56,24 +59,29 @@ export default function PromoCode({
           disabled={busy}
           className="self-end rounded-xl bg-primary px-5 py-3 text-white"
         >
-          {busy ? "جاري التفعيل…" : "تفعيل"}
+          {t(busy ? "جاري التفعيل…" : "تفعيل")}
         </button>
       </form>
-      {applied && (
-        <p
-          role="status"
-          className="mt-3 text-primary"
-        >
-          تم تطبيق الكود: {applied}
-        </p>
+      {t(
+        applied && (
+          <p
+            role="status"
+            className="mt-3 text-primary"
+          >
+            {t("تم تطبيق الكود: ")}
+            {t(applied)}
+          </p>
+        ),
       )}
-      {error && (
-        <p
-          role="alert"
-          className="mt-3 text-red-600"
-        >
-          {error}
-        </p>
+      {t(
+        error && (
+          <p
+            role="alert"
+            className="mt-3 text-red-600"
+          >
+            {t(error)}
+          </p>
+        ),
       )}
     </section>
   );

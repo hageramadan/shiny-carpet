@@ -1,3 +1,5 @@
+"use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 import Image from "next/image";
 import servicesPreview from "@/public/images/PhoneMockup1.png";
 import detailsPreview from "@/public/images/PhoneMockup2.png";
@@ -22,13 +24,14 @@ export default function PhoneMockup({
   screen = "services",
   className = "",
 }: PhoneMockupProps) {
+  const t = useTranslation();
   const { image, alt } = screens[screen];
 
   return (
     <div className={`relative w-72 max-w-full shrink-0 sm:w-80 ${className}`}>
       <Image
         src={image}
-        alt={alt}
+        alt={t(alt)}
         width={image.width}
         height={image.height}
         quality={100}

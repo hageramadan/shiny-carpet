@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import {
   createContext,
@@ -37,6 +38,7 @@ type CartContext = {
 const Context = createContext<CartContext | null>(null);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
+  const t = useTranslation();
   const { ready } = useStore();
   const [token, setToken] = useState<string | null>(null);
   const [cart, setCart] = useState<CartSnapshot | null>(null);
@@ -146,7 +148,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         clear: () => mutate((signal) => clearRemoteCart(signal)),
       }}
     >
-      {children}
+      {t(children)}
     </Context.Provider>
   );
 }

@@ -11,7 +11,7 @@
   --font-sans: var(--font-cairo);
   --shadow-button: 0 6px 14px #1ca6ad38, 0 2px 4px #1ca6ad38;
 }
-button{
+button {
   cursor: pointer;
 }
 @theme {

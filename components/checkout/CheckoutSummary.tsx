@@ -1,3 +1,5 @@
+"use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 import { cartCurrency, type CartItem, type OrderPricing } from "@/lib/data";
 import { OrderItems, PriceBreakdown } from "@/components/orders/OrderSummary";
 
@@ -14,9 +16,10 @@ export default function CheckoutSummary({
   preparingPhotos?: boolean;
   unavailable?: boolean;
 }) {
+  const t = useTranslation();
   return (
     <aside className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 lg:sticky lg:top-24 lg:p-6">
-      <h2 className="mb-5 text-lg font-bold text-ink">ملخص الطلب</h2>
+      <h2 className="mb-5 text-lg font-bold text-ink">{t("ملخص الطلب")}</h2>
       <OrderItems items={items} />
       <div className="mt-6 border-t border-gray-200 pt-5">
         <PriceBreakdown
@@ -31,18 +34,22 @@ export default function CheckoutSummary({
         disabled={busy || preparingPhotos || unavailable}
         className="mt-5 flex min-h-12 w-full items-center justify-center rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-ink shadow-button"
       >
-        {unavailable
-          ? "اختر عنوان الاستلام أولًا"
-          : preparingPhotos
-            ? "جاري تجهيز الصور…"
-            : busy
-              ? "جاري إتمام الطلب…"
-              : "إتمام الطلب"}
+        {t(
+          unavailable
+            ? "اختر عنوان الاستلام أولًا"
+            : preparingPhotos
+              ? "جاري تجهيز الصور…"
+              : busy
+                ? "جاري إتمام الطلب…"
+                : "إتمام الطلب",
+        )}
       </button>
       <p className="mt-4 text-sm leading-7 text-[#6B7280] font-semibold text-center">
-        {unavailable
-          ? "أضف عنوانًا محفوظًا أو انتظر تحميل العناوين."
-          : "راجع تفاصيل الطلب قبل الإتمام."}
+        {t(
+          unavailable
+            ? "أضف عنوانًا محفوظًا أو انتظر تحميل العناوين."
+            : "راجع تفاصيل الطلب قبل الإتمام.",
+        )}
       </p>
     </aside>
   );

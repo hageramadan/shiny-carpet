@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import { useEffect, useRef, useState } from "react";
 import L from "leaflet";
@@ -13,6 +14,7 @@ export default function LocationMap({
   onChange: (point: Coordinates) => void;
   focusVersion: number;
 }) {
+  const t = useTranslation();
   const host = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const marker = useRef<L.Marker | null>(null);
@@ -87,7 +89,9 @@ export default function LocationMap({
       <div
         ref={host}
         tabIndex={0}
-        aria-label="خريطة اختيار الموقع. اضغط لتحديد نقطة، أو حرّك الخريطة ثم اختر مركزها."
+        aria-label={t(
+          "خريطة اختيار الموقع. اضغط لتحديد نقطة، أو حرّك الخريطة ثم اختر مركزها.",
+        )}
         dir="ltr"
         className="relative z-0 h-60 w-full overflow-hidden rounded-lg bg-gray-100"
       />
@@ -99,14 +103,14 @@ export default function LocationMap({
         }}
         className="mt-2 min-h-9 text-xs text-primary hover:underline"
       >
-        اختيار مركز الخريطة
+        {t("اختيار مركز الخريطة")}
       </button>
       {tileError && (
         <p
           role="status"
           className="mt-2 text-xs leading-6 text-muted"
         >
-          تعذر تحميل بعض أجزاء الخريطة. تحقق من الاتصال أو استخدم البحث.
+          {t("تعذر تحميل بعض أجزاء الخريطة. تحقق من الاتصال أو استخدم البحث.")}
         </p>
       )}
     </div>

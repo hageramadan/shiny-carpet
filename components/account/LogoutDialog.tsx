@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import { useEffect, useRef } from "react";
 import { FiLogOut } from "react-icons/fi";
@@ -14,6 +15,7 @@ export default function LogoutDialog({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  const t = useTranslation();
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const dialog = ref.current;
@@ -26,7 +28,7 @@ export default function LogoutDialog({
       ref={ref}
       aria-labelledby="logout-title"
       aria-describedby="logout-description"
-      dir="rtl"
+      dir={t.dir}
       onCancel={(event) => {
         event.preventDefault();
         if (!pending) onCancel();
@@ -43,21 +45,23 @@ export default function LogoutDialog({
         id="logout-title"
         className="text-xl font-bold"
       >
-        تسجيل الخروج
+        {t("تسجيل الخروج")}
       </h2>
       <p
         id="logout-description"
         className="mt-3 text-sm leading-7 text-muted"
       >
-        هل تود تسجيل الخروج من حسابك؟
+        {t("هل تود تسجيل الخروج من حسابك؟")}
       </p>
-      {error && (
-        <p
-          role="alert"
-          className="mt-3 text-sm text-red-700"
-        >
-          {error}
-        </p>
+      {t(
+        error && (
+          <p
+            role="alert"
+            className="mt-3 text-sm text-red-700"
+          >
+            {t(error)}
+          </p>
+        ),
       )}
       <div className="mt-5 grid grid-cols-2 gap-3">
         <button
@@ -67,7 +71,7 @@ export default function LogoutDialog({
           aria-busy={pending}
           className="min-h-11 rounded-lg bg-primary px-3 py-2 text-sm font-bold text-white transition-colors hover:bg-ink disabled:opacity-50"
         >
-          {pending ? "جاري تسجيل الخروج…" : "نعم، تسجيل الخروج"}
+          {t(pending ? "جاري تسجيل الخروج…" : "نعم، تسجيل الخروج")}
         </button>
         <button
           type="button"
@@ -76,7 +80,7 @@ export default function LogoutDialog({
           disabled={pending}
           className="min-h-11 rounded-lg border border-gray-200 px-3 py-2 text-sm font-bold transition-colors hover:bg-gray-50 disabled:opacity-50"
         >
-          لا، البقاء في الحساب
+          {t("لا، البقاء في الحساب")}
         </button>
       </div>
     </dialog>

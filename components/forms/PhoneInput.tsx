@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import {
   useCallback,
@@ -10,6 +11,7 @@ import {
 } from "react";
 import PhoneNumberInput, { type Country } from "react-phone-number-input";
 import ar from "react-phone-number-input/locale/ar";
+import en from "react-phone-number-input/locale/en";
 import { phoneFlags } from "./phone-flags";
 import {
   DEFAULT_PHONE_COUNTRY,
@@ -50,6 +52,7 @@ export default function PhoneInput({
   "aria-invalid": invalid,
   "aria-describedby": describedBy,
 }: Props) {
+  const t = useTranslation();
   const generatedId = useId();
   const inputId = id ?? generatedId;
   const inputRef = useRef<HTMLInputElement>(null);
@@ -85,7 +88,7 @@ export default function PhoneInput({
         htmlFor={inputId}
         className="block text-sm font-bold text-ink"
       >
-        {label}
+        {t(label)}
       </label>
       <PhoneNumberInput
         ref={attachInput}
@@ -112,7 +115,7 @@ export default function PhoneInput({
         countryOptionsOrder={["SA"]}
         countrySelectComponent={PhoneCountrySelect}
         flags={phoneFlags}
-        labels={ar}
+        labels={t.locale === "en" ? en : ar}
         locales="ar"
         focusInputOnCountrySelection={false}
         required={required}
@@ -126,7 +129,7 @@ export default function PhoneInput({
           [describedBy, showError ? errorId : undefined].filter(Boolean).join(" ") ||
           undefined
         }
-        placeholder="رقم الهاتف"
+        placeholder={t("رقم الهاتف")}
         containerComponentProps={{ dir: "ltr" }}
         className="mt-2 flex min-h-12 w-full min-w-0 overflow-hidden rounded-xl border border-gray-200 bg-white font-normal transition-colors hover:border-primary/50 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/15 [&_.PhoneInputInput]:min-w-0 [&_.PhoneInputInput]:flex-1 [&_.PhoneInputInput]:bg-transparent [&_.PhoneInputInput]:px-3 [&_.PhoneInputInput]:py-2 [&_.PhoneInputInput]:text-left [&_.PhoneInputInput]:text-base [&_.PhoneInputInput]:text-ink [&_.PhoneInputInput]:outline-none [&_.PhoneInputInput]:placeholder:text-muted sm:[&_.PhoneInputInput]:text-sm"
       />
@@ -136,7 +139,7 @@ export default function PhoneInput({
           className="mt-2 text-sm text-red-600"
           role="alert"
         >
-          {error}
+          {t(error)}
         </p>
       )}
       <input

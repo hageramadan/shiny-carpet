@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import Link from "next/link";
 import { useEffect } from "react";
@@ -14,6 +15,7 @@ export default function ClientProductPage({
   id: number;
   categoryId?: number;
 }) {
+  const t = useTranslation();
   const request = useProduct(id);
   const product = request.data;
 
@@ -36,7 +38,7 @@ export default function ClientProductPage({
             href="/products"
             className="mt-4 inline-flex min-h-11 items-center text-sm font-bold text-primary"
           >
-            العودة للمنتجات
+            {t("العودة للمنتجات")}
           </Link>
         </div>
       </section>

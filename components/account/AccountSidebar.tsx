@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -29,6 +30,7 @@ export default function AccountSidebar({
   onImageChange?: (image: File) => void;
   imageDisabled?: boolean;
 }) {
+  const t = useTranslation();
   const { state, update } = useStore();
   const router = useRouter();
   const { error, setError, pending, run } = useAuthAction();
@@ -54,7 +56,7 @@ export default function AccountSidebar({
       clearAuthDraft();
       update((current) => ({ ...current, profile: null }));
       announceSessionChange();
-      toast.success("تم تسجيل الخروج بنجاح.", { id: "auth-success" });
+      toast.success(t("تم تسجيل الخروج بنجاح."), { id: "auth-success" });
       router.replace("/");
     });
   }
@@ -71,8 +73,8 @@ export default function AccountSidebar({
             <>
               <button
                 type="button"
-                aria-label="تغيير صورة الملف الشخصي"
-                title="تغيير الصورة"
+                aria-label={t("تغيير صورة الملف الشخصي")}
+                title={t("تغيير الصورة")}
                 onClick={() => imageInput.current?.click()}
                 disabled={pending || imageDisabled}
                 className="absolute -bottom-1 -right-1 flex size-8 items-center justify-center rounded-full border-2 border-white bg-primary text-white shadow-sm transition-colors hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50"
@@ -86,7 +88,7 @@ export default function AccountSidebar({
                 ref={imageInput}
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
-                aria-label="اختيار صورة الملف الشخصي"
+                aria-label={t("اختيار صورة الملف الشخصي")}
                 className="hidden"
                 disabled={pending || imageDisabled}
                 onChange={(event) => {
@@ -109,20 +111,22 @@ export default function AccountSidebar({
             </>
           )}
         </div>
-        {imageError && (
-          <p
-            role="alert"
-            className="text-xs text-red-700"
-          >
-            {imageError}
-          </p>
+        {t(
+          imageError && (
+            <p
+              role="alert"
+              className="text-xs text-red-700"
+            >
+              {t(imageError)}
+            </p>
+          ),
         )}
         {selectedImage && (
           <p
             role="status"
             className="text-xs text-muted"
           >
-            اضغط «حفظ المعلومات» لحفظ الصورة.
+            {t("اضغط «حفظ المعلومات» لحفظ الصورة.")}
           </p>
         )}
         <p className="max-w-full break-words text-lg font-bold text-[#17202A]">
@@ -130,7 +134,7 @@ export default function AccountSidebar({
         </p>
       </div>
       <nav
-        aria-label="قائمة الحساب"
+        aria-label={t("قائمة الحساب")}
         className="mt-4"
       >
         <ul className="divide-y divide-gray-100">
@@ -145,7 +149,7 @@ export default function AccountSidebar({
                   aria-hidden="true"
                   className="size-4 text-[#ff4d58]"
                 />
-                {label}
+                {t(label)}
               </Link>
             </li>
           ))}
@@ -157,13 +161,13 @@ export default function AccountSidebar({
                 setConfirmLogout(true);
               }}
               disabled={pending}
-              className="flex min-h-11 w-full items-center gap-2 py-3 text-right text-sm text-muted transition-colors hover:text-red-600"
+              className="flex min-h-11 w-full items-center gap-2 py-3 text-start text-sm text-muted transition-colors hover:text-red-600"
             >
               <FiLogOut
                 aria-hidden="true"
                 className="size-4 text-[#ff4d58]"
               />
-              {pending ? "جاري تسجيل الخروج…" : "تسجيل الخروج"}
+              {t(pending ? "جاري تسجيل الخروج…" : "تسجيل الخروج")}
             </button>
           </li>
         </ul>

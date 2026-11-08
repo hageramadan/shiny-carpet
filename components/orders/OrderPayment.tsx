@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
@@ -36,6 +37,7 @@ export default function OrderPayment({
   returnedFromTamara?: boolean;
   onPaid: () => void;
 }) {
+  const t = useTranslation();
   const [brand, setBrand] = useState<PaymentMethod>("MADA");
   const [checkout, setCheckout] = useState<PaymentCheckout | null>(null);
   const { pending, error, setError, run } = useAuthAction();
@@ -117,37 +119,45 @@ export default function OrderPayment({
           : "";
   const statusControls = (
     <div className="space-y-3">
-      {statusMessage && (
-        <p
-          role="status"
-          className="text-sm leading-6 text-ink"
-        >
-          {statusMessage}
-        </p>
+      {t(
+        statusMessage && (
+          <p
+            role="status"
+            className="text-sm leading-6 text-ink"
+          >
+            {t(statusMessage)}
+          </p>
+        ),
       )}
-      {verification.error && (
-        <p
-          role="alert"
-          className="text-sm text-red-700"
-        >
-          {verification.error}
-        </p>
+      {t(
+        verification.error && (
+          <p
+            role="alert"
+            className="text-sm text-red-700"
+          >
+            {t(verification.error)}
+          </p>
+        ),
       )}
-      {(tamaraReference || checkoutId) && (
-        <button
-          type="button"
-          disabled={verification.pending || now < nextCheckAt}
-          onClick={() => void verify()}
-          className="min-h-11 rounded-xl border border-primary px-4 text-sm font-bold text-primary disabled:opacity-50"
-        >
-          {verification.pending
-            ? "جاري التحقق من الدفع…"
-            : now < nextCheckAt
-              ? "إعادة التحقق بعد قليل"
-              : tamaraReference
-                ? "تحقق من دفع تمارا"
-                : "تحقق من حالة الدفع"}
-        </button>
+      {t(
+        (tamaraReference || checkoutId) && (
+          <button
+            type="button"
+            disabled={verification.pending || now < nextCheckAt}
+            onClick={() => void verify()}
+            className="min-h-11 rounded-xl border border-primary px-4 text-sm font-bold text-primary disabled:opacity-50"
+          >
+            {t(
+              verification.pending
+                ? "جاري التحقق من الدفع…"
+                : now < nextCheckAt
+                  ? "إعادة التحقق بعد قليل"
+                  : tamaraReference
+                    ? "تحقق من دفع تمارا"
+                    : "تحقق من حالة الدفع",
+            )}
+          </button>
+        ),
       )}
     </div>
   );
@@ -218,9 +228,9 @@ export default function OrderPayment({
             id={"order-payment-" + order.id}
             className="font-bold"
           >
-            دفع قيمة الطلب
+            {t("دفع قيمة الطلب")}
           </h2>
-          <p className="mt-1 text-sm text-muted">اختر طريقة الدفع لإكمال طلبك.</p>
+          <p className="mt-1 text-sm text-muted">{t("اختر طريقة الدفع لإكمال طلبك.")}</p>
         </div>
       </div>
       <fieldset
@@ -233,7 +243,7 @@ export default function OrderPayment({
         }
         className="mt-5"
       >
-        <legend className="sr-only">طريقة الدفع</legend>
+        <legend className="sr-only">{t("طريقة الدفع")}</legend>
         <div className="grid grid-cols-2 gap-3">
           {methods.map((method) => (
             <label
@@ -272,7 +282,7 @@ export default function OrderPayment({
                     aria-hidden="true"
                     className="rounded-lg bg-[#f5d9e8] px-2 py-1 text-sm font-bold text-ink"
                   >
-                    تمارا
+                    {t("تمارا")}
                   </span>
                 )}
                 <span
@@ -281,28 +291,34 @@ export default function OrderPayment({
                   }
                   className="text-sm font-semibold text-ink"
                 >
-                  {method.label}
+                  {t(method.label)}
                 </span>
               </span>
             </label>
           ))}
         </div>
       </fieldset>
-      {tamaraReference && (
-        <p
-          role="status"
-          className="mt-4 text-sm text-muted"
-        >
-          لديك جلسة دفع تمارا لهذا الطلب. بعد إكمال الدفع، اضغط تحقق من دفع تمارا.
-        </p>
+      {t(
+        tamaraReference && (
+          <p
+            role="status"
+            className="mt-4 text-sm text-muted"
+          >
+            {t(
+              "لديك جلسة دفع تمارا لهذا الطلب. بعد إكمال الدفع، اضغط تحقق من دفع تمارا.",
+            )}
+          </p>
+        ),
       )}
-      {error && (
-        <p
-          role="alert"
-          className="mt-3 text-sm text-red-700"
-        >
-          {error}
-        </p>
+      {t(
+        error && (
+          <p
+            role="alert"
+            className="mt-3 text-sm text-red-700"
+          >
+            {t(error)}
+          </p>
+        ),
       )}
       <button
         type="button"
@@ -319,17 +335,19 @@ export default function OrderPayment({
               aria-hidden="true"
               className="size-4 animate-spin rounded-full border-2 border-white/30 border-t-white motion-reduce:animate-none"
             />
-            جاري تجهيز الدفع…
+            {t("جاري تجهيز الدفع…")}
           </>
         ) : (
           <>
             <FiLock aria-hidden="true" />
-            متابعة الدفع
+            {t("متابعة الدفع")}
           </>
         )}
       </button>
-      {(checkoutId || tamaraReference) && !open && (
-        <div className="mt-4">{statusControls}</div>
+      {t(
+        (checkoutId || tamaraReference) && !open && (
+          <div className="mt-4">{statusControls}</div>
+        ),
       )}
       {checkout && open && brand !== "TAMARA" && (
         <PaymentDialog

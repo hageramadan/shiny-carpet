@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState, type FormEvent } from "react";
@@ -9,14 +10,17 @@ import type { Place } from "@/lib/geocoding";
 
 const LocationMap = dynamic(() => import("./LocationMap"), {
   ssr: false,
-  loading: () => (
-    <div
-      role="status"
-      className="grid h-60 place-items-center rounded-lg bg-gray-100 text-sm text-muted"
-    >
-      جاري تحميل الخريطة…
-    </div>
-  ),
+  loading: function MapLoading() {
+    const t = useTranslation();
+    return (
+      <div
+        role="status"
+        className="grid h-60 place-items-center rounded-lg bg-gray-100 text-sm text-muted"
+      >
+        {t("جاري تحميل الخريطة…")}
+      </div>
+    );
+  },
 });
 
 export default function LocationPicker({
@@ -30,6 +34,7 @@ export default function LocationPicker({
   onPlace: (place: Place) => void;
   onBusyChange: (busy: boolean) => void;
 }) {
+  const t = useTranslation();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Place[]>([]);
   const [busy, setBusy] = useState(false);
@@ -60,6 +65,7 @@ export default function LocationPicker({
     try {
       const response = await fetch(`/api/locations?${params}`, {
         signal: controller.signal,
+        headers: { "Accept-Language": t.locale },
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "تعذر البحث عن المكان.");
@@ -143,7 +149,7 @@ export default function LocationPicker({
 
   return (
     <aside className="min-w-0 rounded-xl border border-gray-200 bg-white p-4">
-      <h2 className="text-xl font-bold text-[#17202A]">تحديد الموقع</h2>
+      <h2 className="text-xl font-bold text-[#17202A]">{t("تحديد الموقع")}</h2>
       <form
         onSubmit={search}
         className="mt-4"
@@ -152,7 +158,7 @@ export default function LocationPicker({
           htmlFor="location-search"
           className="block text-sm font-bold text-[#17202A]"
         >
-          ابحث عن موقعك
+          {t("ابحث عن موقعك")}
         </label>
         <div className="mt-2 flex gap-2">
           <input
@@ -160,13 +166,13 @@ export default function LocationPicker({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             maxLength={200}
-            placeholder="الرياض، حي العليا"
+            placeholder={t("الرياض، حي العليا")}
             className="min-h-11 w-full min-w-0 rounded-lg border border-gray-200 px-3 py-2 text-sm placeholder:text-muted"
           />
           <button
             type="submit"
             disabled={busy || locating}
-            aria-label="بحث عن الموقع"
+            aria-label={t("بحث عن الموقع")}
             className="grid size-11 shrink-0 place-items-center rounded-lg bg-primary text-white transition-colors hover:bg-ink"
           >
             <FiSearch aria-hidden="true" />
@@ -180,11 +186,11 @@ export default function LocationPicker({
         className="my-3 inline-flex min-h-9 items-center gap-2 text-sm font-extrabold text-[#087B82] md:text-base hover:text-ink"
       >
         <FiCrosshair aria-hidden="true" />
-        {locating ? "جاري تحديد موقعك…" : "استخدم موقعي الحالي"}
+        {t(locating ? "جاري تحديد موقعك…" : "استخدم موقعي الحالي")}
       </button>
       {results.length > 0 && (
         <ul
-          aria-label="نتائج البحث عن الموقع"
+          aria-label={t("نتائج البحث عن الموقع")}
           className="mb-3 max-h-48 overflow-auto rounded-lg border border-gray-200 divide-y divide-gray-100"
         >
           {results.map((place, index) => (
@@ -198,9 +204,9 @@ export default function LocationPicker({
                   onPlace(place);
                   setQuery(place.label);
                 }}
-                className="w-full px-3 py-2 text-right text-sm leading-6 transition-colors hover:bg-primary/5"
+                className="w-full px-3 py-2 text-start text-sm leading-6 transition-colors hover:bg-primary/5"
               >
-                {place.label}
+                {t(place.label)}
               </button>
             </li>
           ))}
@@ -218,33 +224,37 @@ export default function LocationPicker({
           role="status"
           className="mt-2 text-xs text-muted"
         >
-          جاري البحث عن تفاصيل الموقع…
+          {t("جاري البحث عن تفاصيل الموقع…")}
         </p>
       )}
-      {error && (
-        <p
-          role="status"
-          className="mt-2 text-xs leading-6 text-red-700"
-        >
-          {error}
-        </p>
+      {t(
+        error && (
+          <p
+            role="status"
+            className="mt-2 text-xs leading-6 text-red-700"
+          >
+            {t(error)}
+          </p>
+        ),
       )}
-      <h3 className="mt-4 text-lg font-bold text-[#17202A]">الموقع المحدد</h3>
+      <h3 className="mt-4 text-lg font-bold text-[#17202A]">{t("الموقع المحدد")}</h3>
       {value ? (
         <>
           <p className="mt-3 text-sm md:text-base  text-[#607779]">
-            {value.label || "تم تحديد النقطة؛ راجع تفاصيل العنوان قبل الحفظ."}
+            {t(value.label || "تم تحديد النقطة؛ راجع تفاصيل العنوان قبل الحفظ.")}
           </p>
           <p
             dir="ltr"
-            className="mt-2 text-right text-xs tabular-nums text-muted"
+            className="mt-2 text-start text-xs tabular-nums text-muted"
           >
-            {value.lat.toFixed(6)}, {value.lng.toFixed(6)}
+            {t(value.lat.toFixed(6))}
+            {t(", ")}
+            {t(value.lng.toFixed(6))}
           </p>
         </>
       ) : (
         <p className="mt-3 text-sm md:text-base  text-[#607779]">
-          ابحث عن مكان أو اضغط على الخريطة لتحديد موقع الاستلام.
+          {t("ابحث عن مكان أو اضغط على الخريطة لتحديد موقع الاستلام.")}
         </p>
       )}
       <button
@@ -252,19 +262,20 @@ export default function LocationPicker({
         onClick={() => setFocusVersion((version) => version + 1)}
         className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-primary px-4 py-2 text-sm font-extrabold text-[#087B82] md:text-base transition-colors hover:bg-primary/5"
       >
-        تغيير الموقع
+        {t("تغيير الموقع")}
       </button>
       <p className="mt-3 text-xs leading-6 text-muted">
-        حدد الموقع على الخريطة ثم أكمل تفاصيل العنوان. بيانات الأماكن ©{" "}
+        {t("حدد الموقع على الخريطة ثم أكمل تفاصيل العنوان. بيانات الأماكن ©")}
+        {t(" ")}
         <a
           href="https://www.openstreetmap.org/copyright"
           target="_blank"
           rel="noopener noreferrer"
           className="text-primary"
         >
-          OpenStreetMap
+          {t("OpenStreetMap")}
         </a>
-        .
+        {t(".")}
       </p>
     </aside>
   );

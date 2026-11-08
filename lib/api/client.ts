@@ -1,3 +1,4 @@
+import { getLocale, type Locale } from "../i18n";
 export class ApiError extends Error {
   constructor(
     public readonly status: number,
@@ -29,6 +30,7 @@ export async function requestJson(
     signal?: AbortSignal;
     token?: string;
     baseUrl?: string;
+    locale?: Locale;
   },
 ): Promise<unknown> {
   const { method, body, signal } = options;
@@ -38,7 +40,7 @@ export async function requestJson(
     method,
     headers: {
       Accept: "application/json",
-      "Accept-Language": "ar",
+      "Accept-Language": options.locale ?? getLocale(),
       ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),
       ...(hasBody && !multipart ? { "Content-Type": "application/json" } : {}),
     },

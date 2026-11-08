@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -21,6 +22,7 @@ import OtpInput from "./OtpInput";
 import toast from "react-hot-toast";
 
 export default function VerifyOtp() {
+  const t = useTranslation();
   const router = useRouter();
   const { update, ready } = useStore();
   const [draft, setDraft] = useState<AuthDraft | null>(null);
@@ -76,42 +78,46 @@ export default function VerifyOtp() {
       update((current) => ({ ...current, profile }));
       clearAuthDraft();
       announceSessionChange();
-      toast.success("تم تسجيل الدخول بنجاح.", { id: "auth-success" });
+      toast.success(t("تم تسجيل الدخول بنجاح."), { id: "auth-success" });
       router.replace(draft.destination);
     });
   }
 
   return (
     <AuthLayout
-      title="التحقق من الهاتف"
-      description="أدخل رمز التحقق المكون من ٦ أرقام لإكمال تسجيل الدخول أو إنشاء حسابك."
+      title={t("التحقق من الهاتف")}
+      description={t(
+        "أدخل رمز التحقق المكون من ٦ أرقام لإكمال تسجيل الدخول أو إنشاء حسابك.",
+      )}
     >
       {!loaded ? (
         <p
           role="status"
           className="py-10 text-center text-sm text-muted"
         >
-          جاري تحميل بيانات التحقق…
+          {t("جاري تحميل بيانات التحقق…")}
         </p>
       ) : !draft ? (
         <div className="py-6 text-center">
-          <h2 className="text-xl font-bold text-[#17202A]">أدخل رقم هاتفك أولًا</h2>
+          <h2 className="text-xl font-bold text-[#17202A]">
+            {t("أدخل رقم هاتفك أولًا")}
+          </h2>
           <p className="my-4 text-sm leading-6 text-muted">
-            ابدأ من صفحة تسجيل الدخول أو إنشاء الحساب لطلب رمز التحقق.
+            {t("ابدأ من صفحة تسجيل الدخول أو إنشاء الحساب لطلب رمز التحقق.")}
           </p>
           <Link
             href="/login"
             className={authButtonClass}
           >
-            تسجيل الدخول
+            {t("تسجيل الدخول")}
           </Link>
         </div>
       ) : (
         <>
-          <h2 className="text-xl font-bold text-[#17202A]">أدخل رمز التحقق</h2>
-          <p className="mt-4 text-sm leading-6 text-muted">رقم الهاتف:</p>
+          <h2 className="text-xl font-bold text-[#17202A]">{t("أدخل رمز التحقق")}</h2>
+          <p className="mt-4 text-sm leading-6 text-muted">{t("رقم الهاتف:")}</p>
           <p className="mt-3 text-sm text-primary">
-            <bdi>{draft.phone}</bdi>
+            <bdi>{t(draft.phone)}</bdi>
           </p>
           <Link
             href={authHref(
@@ -120,7 +126,7 @@ export default function VerifyOtp() {
             )}
             className="mt-3 inline-block text-sm text-primary hover:underline"
           >
-            تغيير رقم الهاتف
+            {t("تغيير رقم الهاتف")}
           </Link>
           <form onSubmit={submit}>
             <OtpInput
@@ -134,7 +140,7 @@ export default function VerifyOtp() {
             />
             <div
               className="mt-3 flex items-center gap-2 text-xs text-muted"
-              aria-label={`إعادة الإرسال متاحة بعد ${remaining} ثانية`}
+              aria-label={t(`إعادة الإرسال متاحة بعد ${remaining} ثانية`)}
             >
               <FiClock
                 aria-hidden="true"
@@ -144,12 +150,13 @@ export default function VerifyOtp() {
                 dir="ltr"
                 className="tabular-nums"
               >
-                {String(Math.floor(remaining / 60)).padStart(2, "0")}:
-                {String(remaining % 60).padStart(2, "0")}
+                {t(String(Math.floor(remaining / 60)).padStart(2, "0"))}
+                {t(":")}
+                {t(String(remaining % 60).padStart(2, "0"))}
               </span>
             </div>
             <p className="mt-4 text-sm leading-6 text-muted">
-              لم تستلم الرمز؟ إعادة الإرسال متاحة بعد انتهاء العد التنازلي.
+              {t("لم تستلم الرمز؟ إعادة الإرسال متاحة بعد انتهاء العد التنازلي.")}
             </p>
             <button
               type="button"
@@ -157,24 +164,28 @@ export default function VerifyOtp() {
               disabled={remaining > 0 || pending}
               className="mt-2 min-h-8 text-sm text-primary transition-colors hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {busy === "resend" ? "جاري إعادة الإرسال…" : "إعادة إرسال الرمز"}
+              {t(busy === "resend" ? "جاري إعادة الإرسال…" : "إعادة إرسال الرمز")}
             </button>
-            {message && (
-              <p
-                role="status"
-                className="mb-2 text-sm text-muted"
-              >
-                {message}
-              </p>
+            {t(
+              message && (
+                <p
+                  role="status"
+                  className="mb-2 text-sm text-muted"
+                >
+                  {t(message)}
+                </p>
+              ),
             )}
-            {error && (
-              <p
-                id="otp-error"
-                role="alert"
-                className="mb-3 text-sm leading-6 text-red-700"
-              >
-                {error}
-              </p>
+            {t(
+              error && (
+                <p
+                  id="otp-error"
+                  role="alert"
+                  className="mb-3 text-sm leading-6 text-red-700"
+                >
+                  {t(error)}
+                </p>
+              ),
             )}
             <button
               type="submit"
@@ -182,12 +193,13 @@ export default function VerifyOtp() {
               aria-busy={busy === "verify"}
               className={`${authButtonClass} mt-2`}
             >
-              {busy === "verify" ? "جاري التحقق…" : "تحقق ومتابعة"}
+              {t(busy === "verify" ? "جاري التحقق…" : "تحقق ومتابعة")}
             </button>
           </form>
           <p className="mt-3 border-t border-gray-100 pt-3 text-sm font-semibold leading-6 text-[#6B7280]">
-            بعد التحقق ستنتقل إلى حسابك. إذا بدأت تسجيل الدخول أثناء الطلب، ستعود إلى
-            استكمال الطلب.
+            {t(
+              "بعد التحقق ستنتقل إلى حسابك. إذا بدأت تسجيل الدخول أثناء الطلب، ستعود إلى استكمال الطلب.",
+            )}
           </p>
         </>
       )}

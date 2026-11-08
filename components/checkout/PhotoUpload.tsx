@@ -1,4 +1,6 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
+
 import { useEffect, useRef, useState, type ChangeEvent, type DragEvent } from "react";
 import Image from "next/image";
 import { FiAlertCircle, FiImage, FiUpload, FiX } from "react-icons/fi";
@@ -17,14 +19,19 @@ type Preview = OrderPhoto & {
 export default function PhotoUpload({
   productName,
   validationError = "",
+  required = true,
+  disabled = false,
   onChange,
   onBusyChange,
 }: {
   productName: string;
   validationError?: string;
+  required?: boolean;
+  disabled?: boolean;
   onChange: (photos: OrderPhoto[]) => void;
   onBusyChange?: (busy: boolean) => void;
 }) {
+  const t = useTranslation();
   const [photos, setPhotos] = useState<Preview[]>([]);
   const [error, setError] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -57,6 +64,7 @@ export default function PhotoUpload({
   }
 
   function add(files: File[]) {
+    if (disabled) return;
     const next = [...photoState.current];
     const messages = new Set<string>();
     for (const file of files) {
@@ -154,6 +162,7 @@ export default function PhotoUpload({
   }
 
   function remove(photo: Preview) {
+    if (disabled) return;
     URL.revokeObjectURL(photo.url);
     urls.current.delete(photo.url);
     update(photoState.current.filter((item) => item.id !== photo.id));
@@ -173,11 +182,17 @@ export default function PhotoUpload({
         className="flex flex-wrap items-center gap-2 text-base font-bold text-ink"
       >
         <FiImage className="text-primary" />
-        صور  <span className="text-xs font-normal text-muted">(إجباري)</span>
+        {t("صور  ")}
+        <span className="text-xs font-normal text-muted">
+          {t(required ? "(إجباري)" : "(اختياري)")}
+        </span>
       </h2>
       <p className="mt-3 text-xs leading-7 text-muted">
-        أضف صور السجاد من الموبايل أو اسحبها هنا. صورة واحدة على الأقل مطلوبة لإتمام
-        الطلب.
+        {t(
+          required
+            ? "أضف صور السجاد من الموبايل أو اسحبها هنا. صورة واحدة على الأقل مطلوبة لإتمام الطلب."
+            : "يمكنك إضافة صور جديدة للطلب، مع الاحتفاظ بالصور الحالية.",
+        )}
       </p>
       <input
         ref={inputRef}
@@ -187,8 +202,9 @@ export default function PhotoUpload({
         onChange={select}
         className="sr-only"
         tabIndex={-1}
-        aria-label="اختيار صور السجاد"
-        aria-required="true"
+        aria-label={t(required ? "اختيار صور السجاد" : "اختيار صور الطلب")}
+        aria-required={required}
+        disabled={disabled}
         aria-invalid={Boolean(validationError || error)}
         aria-describedby={
           validationError
@@ -208,43 +224,48 @@ export default function PhotoUpload({
       >
         <FiUpload className="mx-auto text-2xl text-primary" />
         <p className="mt-3 text-xs leading-7 text-primary">
-          اسحب الصور هنا أو اضغط للاختيار
+          {t("اسحب الصور هنا أو اضغط للاختيار")}
         </p>
         <button
           type="button"
           id="checkout-add-photos"
           aria-invalid={Boolean(validationError)}
           aria-describedby={validationError ? "checkout-photos-required" : undefined}
+          disabled={disabled}
           onClick={() => inputRef.current?.click()}
           className="mt-3 min-h-10 rounded-xl border border-gray-200 bg-white px-4 py-2 text-xs font-bold text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         >
-          إضافة صور
+          {t("إضافة صور")}
         </button>
       </div>
-      {validationError && (
-        <div
-          id="checkout-photos-required"
-          role="alert"
-          className="mt-4 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-3 text-red-700"
-        >
-          <FiAlertCircle
-            aria-hidden="true"
-            className="mt-1 size-5 shrink-0"
-          />
-          <div>
-            <p className="text-sm font-bold">صور السجاد مطلوبة</p>
-            <p className="mt-1 text-xs leading-7">{validationError}</p>
+      {t(
+        validationError && (
+          <div
+            id="checkout-photos-required"
+            role="alert"
+            className="mt-4 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-3 text-red-700"
+          >
+            <FiAlertCircle
+              aria-hidden="true"
+              className="mt-1 size-5 shrink-0"
+            />
+            <div>
+              <p className="text-sm font-bold">{t("صور السجاد مطلوبة")}</p>
+              <p className="mt-1 text-xs leading-7">{t(validationError)}</p>
+            </div>
           </div>
-        </div>
+        ),
       )}
-      {error && (
-        <p
-          id="checkout-photos-error"
-          role="alert"
-          className="mt-3 text-xs leading-7 text-red-600"
-        >
-          {error}
-        </p>
+      {t(
+        error && (
+          <p
+            id="checkout-photos-error"
+            role="alert"
+            className="mt-3 text-xs leading-7 text-red-600"
+          >
+            {t(error)}
+          </p>
+        ),
       )}
       {photos.length > 0 && (
         <ul className="mt-4 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:gap-3">
@@ -263,12 +284,13 @@ export default function PhotoUpload({
               />
               <p
                 className="mt-2 max-w-24 truncate text-xs text-ink"
-                title={productName}
+                title={t(productName)}
               >
-                {productName}
+                {t(productName)}
               </p>
               <button
                 type="button"
+                disabled={disabled}
                 onClick={() => remove(photo)}
                 aria-label={"حذف صورة " + photo.name}
                 className="absolute right-1 top-1 grid size-8 place-items-center rounded-full border border-gray-200 bg-white text-ink"
@@ -280,8 +302,11 @@ export default function PhotoUpload({
         </ul>
       )}
       <p className="mt-3 text-xs leading-6 text-muted">
-        أضف صورة واحدة على الأقل لإتمام الطلب. بحد أقصى ٣ صور للطلب، وحجم الصورة الواحدة
-        لا يتجاوز ٥ ميجابايت. يتم تقليل حجم الصور الكبيرة قبل إرسالها.
+        {t(
+          required
+            ? "أضف صورة واحدة على الأقل لإتمام الطلب. بحد أقصى ٣ صور للطلب، وحجم الصورة الواحدة لا يتجاوز ٥ ميجابايت. يتم تقليل حجم الصور الكبيرة قبل إرسالها."
+            : "يمكنك إضافة ٣ صور جديدة بحد أقصى، وحجم الصورة الواحدة لا يتجاوز ٥ ميجابايت.",
+        )}
       </p>
     </section>
   );

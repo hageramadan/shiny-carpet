@@ -27,6 +27,7 @@ export type Product = {
 };
 export type CartItem = {
   cartItemId?: number;
+  orderItemId?: number;
   lineTotal?: number;
   id: string;
   quantity: number;
@@ -93,6 +94,10 @@ export type Order = {
   paymentStatusLabel?: string;
   userPaid?: boolean;
   isRated?: boolean;
+  canEdit?: boolean;
+  statusLabel?: string;
+  rawStatus?: string;
+  isReceived?: boolean;
   createdAt: string;
 };
 export const money = (value: number) =>

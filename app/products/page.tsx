@@ -1,7 +1,8 @@
+import { localizeMetadata } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Catalog from "@/components/catalog/Catalog";
-export const metadata: Metadata = {
+const metadata: Metadata = {
   title: "خدمات غسيل السجاد والبطاطين",
   description: "اختر خدمة غسيل السجاد أو البطاطين وحدد المقاس والكمية المناسبة لبيتك.",
   alternates: { canonical: "/products" },
@@ -20,4 +21,8 @@ export default async function Page({
   )
     notFound();
   return <Catalog categoryId={category === undefined ? undefined : Number(category)} />;
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  return localizeMetadata(metadata);
 }

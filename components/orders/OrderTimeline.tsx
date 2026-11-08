@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import { useEffect, useRef } from "react";
 import { FiCheck } from "react-icons/fi";
@@ -22,8 +23,10 @@ const steps = [
 // Only advance using statuses supplied by the API; no simulated progress or dates.
 
 export default function OrderTimeline({ order }: { order: Order }) {
+  const t = useTranslation();
   const fulfillmentStatus = orderFulfillmentStatus(order);
   const cancelled = fulfillmentStatus === "cancelled";
+  const unknown = fulfillmentStatus === "unknown";
   const stage = orderStages.find((stage) => stage.id === fulfillmentStatus)!;
   const current = stage.step;
   const delivered = isOrderDelivered(fulfillmentStatus);
@@ -48,7 +51,7 @@ export default function OrderTimeline({ order }: { order: Order }) {
     observer.observe(region);
     return () => observer.disconnect();
   }, [order.id, current]);
-  const createdAt = new Intl.DateTimeFormat("ar-EG", {
+  const createdAt = new Intl.DateTimeFormat(t.locale === "en" ? "en-GB" : "ar-EG", {
     day: "2-digit",
     month: "long",
     hour: "2-digit",
@@ -64,14 +67,14 @@ export default function OrderTimeline({ order }: { order: Order }) {
         id="order-status-title"
         className="text-base font-bold text-ink"
       >
-        حالة الطلب
+        {t("حالة الطلب")}
       </h2>
       {!cancelled && (
         <p
           role="status"
           className="mt-3 inline-flex rounded-full bg-primary/10 px-3 py-1 text-sm font-bold text-primary"
         >
-          {stage.label}
+          {t((!delivered && order.status !== "paid" && order.statusLabel) || stage.label)}
         </p>
       )}
       {cancelled ? (
@@ -79,18 +82,18 @@ export default function OrderTimeline({ order }: { order: Order }) {
           role="status"
           className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm font-bold text-red-600"
         >
-          ملغي
+          {t("ملغي")}
         </p>
-      ) : (
+      ) : unknown ? null : (
         <div
           ref={regionRef}
           role="region"
-          aria-label="مراحل الطلب"
+          aria-label={t("مراحل الطلب")}
           tabIndex={0}
           className="mt-5 overflow-x-auto pb-1 focus-visible:outline-primary"
         >
           <ol
-            dir="rtl"
+            dir={t.dir}
             className="grid min-w-[780px] grid-cols-7 pt-1"
           >
             {steps.map((label, index) => {
@@ -148,21 +151,23 @@ export default function OrderTimeline({ order }: { order: Order }) {
                       (complete || active ? "font-semibold text-primary" : "text-muted")
                     }
                   >
-                    {label}
+                    {t(label)}
                   </h3>
                   <p className="mt-2 text-[10px] leading-5 text-muted">
-                    {index === 0 ? (
-                      <time dateTime={order.createdAt}>{createdAt}</time>
-                    ) : active ? (
-                      "قيد التنفيذ"
-                    ) : complete ? (
-                      "تمت المرحلة"
-                    ) : (
-                      "قريبًا"
+                    {t(
+                      index === 0 ? (
+                        <time dateTime={order.createdAt}>{t(createdAt)}</time>
+                      ) : active ? (
+                        "قيد التنفيذ"
+                      ) : complete ? (
+                        "تمت المرحلة"
+                      ) : (
+                        "قريبًا"
+                      ),
                     )}
                   </p>
                   <span className="sr-only">
-                    {complete ? "مكتملة" : active ? "الحالة الحالية" : "مرحلة قادمة"}
+                    {t(complete ? "مكتملة" : active ? "الحالة الحالية" : "مرحلة قادمة")}
                   </span>
                 </li>
               );

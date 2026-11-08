@@ -1,3 +1,4 @@
+import { localizeMetadata } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import ClientProductPage from "@/components/catalog/ClientProductPage";
@@ -16,7 +17,10 @@ function positiveId(value: unknown): number | undefined {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  return { title: "تفاصيل المنتج", alternates: { canonical: `/products/${id}` } };
+  return localizeMetadata({
+    title: "تفاصيل المنتج",
+    alternates: { canonical: `/products/${id}` },
+  });
 }
 
 export default async function Page({ params, searchParams }: Props) {

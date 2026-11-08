@@ -1,4 +1,6 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
+
 import Link from "next/link";
 import type { ReactNode } from "react";
 
@@ -16,13 +18,12 @@ export default function AuthLayout({
   description: string;
   children: ReactNode;
 }) {
+  const t = useTranslation();
   return (
-    <section
-      className="min-h-[65vh] bg-[#f7f9fa] pb-10 pt-6 text-ink"
-    >
+    <section className="min-h-[65vh] bg-[#f7f9fa] pb-10 pt-6 text-ink">
       <div className="container mx-auto px-5 sm:px-6 lg:px-8">
         <nav
-          aria-label="مسار التصفح"
+          aria-label={t("مسار التصفح")}
           className="mb-3 text-xs text-muted"
         >
           <ol className="flex flex-wrap items-center gap-1">
@@ -31,19 +32,19 @@ export default function AuthLayout({
                 href="/"
                 className="transition-colors hover:text-primary"
               >
-                الرئيسية
+                {t("الرئيسية")}
               </Link>
             </li>
-            <li aria-hidden="true">/</li>
-            <li aria-current="page">{title}</li>
+            <li aria-hidden="true">{t("/")}</li>
+            <li aria-current="page">{t(title)}</li>
           </ol>
         </nav>
         <h1 className="text-[30px] font-extrabold leading-normal text-[#17202A] sm:text-4xl">
-          {title}
+          {t(title)}
         </h1>
-        <p className="mt-3 text-sm leading-6 text-muted">{description}</p>
+        <p className="mt-3 text-sm leading-6 text-muted">{t(description)}</p>
         <div className="mx-auto mt-6 w-full max-w-xl rounded-xl border border-gray-200 bg-white p-4">
-          {children}
+          {t(children)}
         </div>
       </div>
     </section>

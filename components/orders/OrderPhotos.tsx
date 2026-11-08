@@ -1,15 +1,20 @@
+"use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 import Image from "next/image";
 import { FiFileText, FiImage } from "react-icons/fi";
 import type { OrderPhoto } from "@/lib/data";
 
 export default function OrderPhotos({ photos = [] }: { photos?: OrderPhoto[] }) {
+  const t = useTranslation();
   return (
     <section className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 lg:p-6">
-      <h2 className="text-lg font-bold text-ink">الصور المضافة للطلب</h2>
+      <h2 className="text-lg font-bold text-ink">{t("الصور المضافة للطلب")}</h2>
       <p className="mt-3 text-xs leading-7 text-muted">
-        {photos.length
-          ? photos.length + " صور مرفقة بالطلب."
-          : "لم تتم إضافة صور لهذا الطلب."}
+        {t(
+          photos.length
+            ? photos.length + " صور مرفقة بالطلب."
+            : "لم تتم إضافة صور لهذا الطلب.",
+        )}
       </p>
       {photos.length > 0 ? (
         <ul className="mt-4 grid grid-cols-3 gap-2 sm:flex sm:flex-wrap sm:gap-3">

@@ -1,23 +1,26 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
+
 import { useEffect, useState, type FormEvent } from "react";
 import toast from "react-hot-toast";
 import { useStore } from "@/components/store";
 import { readAuthSession } from "@/lib/auth/session";
 import OrderDetails from "./OrderDetails";
 export default function TrackingPage({ initialId = "" }: { initialId?: string }) {
+  const t = useTranslation();
   const { state, ready } = useStore();
   const [input, setInput] = useState(initialId),
     [query, setQuery] = useState(initialId);
   useEffect(() => {
     if (ready && query && !state.profile) {
-      toast.error("يجب تسجيل الدخول", { id: "tracking-login-required" });
+      toast.error(t("يجب تسجيل الدخول"), { id: "tracking-login-required" });
       setQuery("");
     }
   }, [ready, query, state.profile]);
   function search(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!readAuthSession()) {
-      toast.error("يجب تسجيل الدخول", { id: "tracking-login-required" });
+      toast.error(t("يجب تسجيل الدخول"), { id: "tracking-login-required" });
       setQuery("");
       return;
     }
@@ -26,13 +29,13 @@ export default function TrackingPage({ initialId = "" }: { initialId?: string })
   return (
     <section className="min-h-[70vh] bg-[#f7f9fa] py-7">
       <div className="container mx-auto space-y-6 px-4 sm:px-8">
-        <h1 className="text-3xl font-extrabold">تفاصيل الطلب</h1>
+        <h1 className="text-3xl font-extrabold">{t("تفاصيل الطلب")}</h1>
         <form
           onSubmit={search}
           className="flex gap-3"
         >
           <label className="flex-1">
-            رقم الطلب
+            {t("رقم الطلب")}
             <input
               required
               inputMode="numeric"
@@ -42,14 +45,16 @@ export default function TrackingPage({ initialId = "" }: { initialId?: string })
             />
           </label>
           <button className="self-end rounded-xl bg-primary px-5 py-3 text-white">
-            عرض الطلب
+            {t("عرض الطلب")}
           </button>
         </form>
-        {query && ready && state.profile && (
-          <OrderDetails
-            key={query}
-            id={query}
-          />
+        {t(
+          query && ready && state.profile && (
+            <OrderDetails
+              key={query}
+              id={query}
+            />
+          ),
         )}
       </div>
     </section>

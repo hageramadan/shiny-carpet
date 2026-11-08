@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import { useRef, type ClipboardEvent, type KeyboardEvent } from "react";
 import { normalizeDigits } from "@/lib/phone";
@@ -14,6 +15,7 @@ export default function OtpInput({
   invalid: boolean;
   disabled?: boolean;
 }) {
+  const t = useTranslation();
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
 
   function fill(index: number, text: string) {
@@ -53,7 +55,7 @@ export default function OtpInput({
       disabled={disabled}
       className="mt-3"
     >
-      <legend className="sr-only">رمز التحقق المكون من ستة أرقام</legend>
+      <legend className="sr-only">{t("رمز التحقق المكون من ستة أرقام")}</legend>
       <div
         dir="ltr"
         className="mx-auto flex max-w-84.5 justify-between gap-2"
@@ -67,7 +69,7 @@ export default function OtpInput({
             type="text"
             inputMode="numeric"
             autoComplete={index === 0 ? "one-time-code" : "off"}
-            aria-label={`الرقم ${index + 1} من رمز التحقق`}
+            aria-label={t(`الرقم ${index + 1} من رمز التحقق`)}
             aria-invalid={invalid}
             aria-describedby={invalid ? "otp-error" : undefined}
             value={digit}

@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
@@ -32,6 +33,7 @@ export default function ProfileDetails({
   onImageSaved: () => void;
   onEditingChange: (disabled: boolean) => void;
 }) {
+  const t = useTranslation();
   const { update } = useStore();
   const router = useRouter();
   const [message, setMessage] = useState("");
@@ -71,7 +73,7 @@ export default function ProfileDetails({
       setDigits(Array(6).fill(""));
       setMessage(result.message);
       if (!result.pending)
-        toast.success("تم تحديث الملف الشخصي بنجاح.", { id: "profile-success" });
+        toast.success(t("تم تحديث الملف الشخصي بنجاح."), { id: "profile-success" });
     });
   }
 
@@ -82,7 +84,7 @@ export default function ProfileDetails({
       setChallenge(null);
       setOtpOpen(false);
       setMessage("تم تأكيد رقم الهاتف وتحديثه بنجاح.");
-      toast.success("تم تحديث الملف الشخصي وتأكيد رقم الهاتف بنجاح.", {
+      toast.success(t("تم تحديث الملف الشخصي وتأكيد رقم الهاتف بنجاح."), {
         id: "profile-success",
       });
     });
@@ -105,7 +107,7 @@ export default function ProfileDetails({
         id="personal-information-heading"
         className="text-xl font-bold text-[#17202A]"
       >
-        المعلومات الشخصية
+        {t("المعلومات الشخصية")}
       </h2>
       <div className="mt-5 flex items-center gap-3">
         <ProfileAvatar
@@ -130,7 +132,7 @@ export default function ProfileDetails({
           className="grid min-w-0 gap-4 sm:grid-cols-2"
         >
           <label className="min-w-0 text-sm font-bold text-[#17202A]">
-            الاسم
+            {t("الاسم")}
             <input
               name="name"
               autoComplete="name"
@@ -153,26 +155,30 @@ export default function ProfileDetails({
           />
         </fieldset>
         <p className="mt-3 text-xs leading-6 text-muted">
-          يمكنك تعديل المعلومات ثم حفظ التغييرات.
+          {t("يمكنك تعديل المعلومات ثم حفظ التغييرات.")}
         </p>
-        {error && !otpOpen && (
-          <p
-            id="profile-error"
-            role="alert"
-            className="mt-2 text-sm text-red-700"
-          >
-            {error}
-          </p>
+        {t(
+          error && !otpOpen && (
+            <p
+              id="profile-error"
+              role="alert"
+              className="mt-2 text-sm text-red-700"
+            >
+              {t(error)}
+            </p>
+          ),
         )}
         <div className="mt-3 flex flex-wrap items-center justify-end gap-3">
-          {message && (
-            <p
-              role="status"
-              className="inline-flex items-center gap-2 text-sm text-primary"
-            >
-              <FiCheck aria-hidden="true" />
-              {message}
-            </p>
+          {t(
+            message && (
+              <p
+                role="status"
+                className="inline-flex items-center gap-2 text-sm text-primary"
+              >
+                <FiCheck aria-hidden="true" />
+                {t(message)}
+              </p>
+            ),
           )}
           <button
             type="submit"
@@ -180,7 +186,7 @@ export default function ProfileDetails({
             aria-busy={busy === "save"}
             className="inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-primary px-6 py-2 text-sm font-bold text-white transition-colors hover:bg-ink sm:w-49 shadow-button"
           >
-            {busy === "save" ? "جاري الحفظ…" : "حفظ المعلومات"}
+            {t(busy === "save" ? "جاري الحفظ…" : "حفظ المعلومات")}
           </button>
         </div>
       </form>
@@ -195,7 +201,7 @@ export default function ProfileDetails({
             disabled={pending}
             className="mt-4 min-h-11 text-sm font-bold text-primary"
           >
-            استكمال تأكيد رقم الهاتف
+            {t("استكمال تأكيد رقم الهاتف")}
           </button>
           {otpOpen && (
             <ProfilePhoneDialog

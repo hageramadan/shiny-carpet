@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -25,6 +26,7 @@ export default function AddressEditor({
   showMap?: boolean;
   onSaved?: (address: Address) => void;
 }) {
+  const t = useTranslation();
   const router = useRouter();
   const addresses = useAddresses();
   const action = useAuthAction();
@@ -83,7 +85,7 @@ export default function AddressEditor({
         ? await addresses.edit(address.id, draft)
         : await addresses.create(draft);
       signal.throwIfAborted();
-      toast.success(address ? "تم تحديث العنوان بنجاح." : "تمت إضافة العنوان بنجاح.");
+      toast.success(t(address ? "تم تحديث العنوان بنجاح." : "تمت إضافة العنوان بنجاح."));
       if (onSaved) {
         onSaved(saved);
         return;
@@ -102,14 +104,14 @@ export default function AddressEditor({
             role="alert"
             className="text-sm text-red-700"
           >
-            تعذر تحميل المناطق والمحافظات والأحياء.
+            {t("تعذر تحميل المناطق والمحافظات والأحياء.")}
           </p>
           <button
             type="button"
             onClick={areas.reload}
             className="mt-4 min-h-11 rounded-xl bg-primary px-6 text-sm font-bold text-white transition-colors hover:bg-ink"
           >
-            إعادة تحميل المناطق
+            {t("إعادة تحميل المناطق")}
           </button>
         </div>
       </div>
@@ -136,7 +138,7 @@ export default function AddressEditor({
       )}
       <section className="min-w-0 rounded-xl border border-gray-200 bg-white p-4 lg:-order-1">
         <h2 className="mb-4 text-xl font-bold text-[#17202A]">
-          {address ? `تفاصيل عنوان ${address.label}` : "تفاصيل العنوان"}
+          {t(address ? `تفاصيل عنوان ${address.label}` : "تفاصيل العنوان")}
         </h2>
         <form onSubmit={submit}>
           {areas.status === "success" && !areas.data?.length && (
@@ -144,12 +146,12 @@ export default function AddressEditor({
               role="status"
               className="mb-4 text-sm text-muted"
             >
-              لا توجد مناطق متاحة حاليًا.
+              {t("لا توجد مناطق متاحة حاليًا.")}
             </p>
           )}
           {address && !chosenLocation && areas.status === "success" && (
             <p className="mb-4 text-sm text-muted">
-              يرجى اختيار المنطقة والمحافظة والحي لهذا العنوان.
+              {t("يرجى اختيار المنطقة والمحافظة والحي لهذا العنوان.")}
             </p>
           )}
           <fieldset disabled={pending || areas.status !== "success"}>
@@ -176,13 +178,15 @@ export default function AddressEditor({
               ? "هذا هو عنوانك الافتراضي للاستلام والتوصيل."
               : "سيُحفظ هذا العنوان في حسابك لاستخدامه عند الاستلام والتوصيل."}
           </p>
-          {error && (
-            <p
-              role="alert"
-              className="mt-3 text-sm text-red-700"
-            >
-              {error}
-            </p>
+          {t(
+            error && (
+              <p
+                role="alert"
+                className="mt-3 text-sm text-red-700"
+              >
+                {t(error)}
+              </p>
+            ),
           )}
           <div className="mt-3 flex flex-wrap gap-2">
             <button
@@ -191,13 +195,13 @@ export default function AddressEditor({
               aria-busy={pending}
               className="min-h-11 rounded-lg bg-primary px-5 py-2 text-sm font-bold text-white transition-colors hover:bg-ink shadow-button"
             >
-              {pending ? "جاري الحفظ…" : address ? "حفظ التغييرات" : "حفظ العنوان"}
+              {t(pending ? "جاري الحفظ…" : address ? "حفظ التغييرات" : "حفظ العنوان")}
             </button>
             <Link
               href="/addresses"
               className="inline-flex min-h-11 items-center justify-center rounded-lg border border-primary px-5 py-2 text-sm font-extrabold text-[#087B82] md:text-base transition-colors hover:bg-primary/5"
             >
-              إلغاء
+              {t("إلغاء")}
             </Link>
           </div>
         </form>

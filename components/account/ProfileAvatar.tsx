@@ -1,4 +1,6 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
+
 import { useState } from "react";
 import Image from "next/image";
 
@@ -11,6 +13,7 @@ export default function ProfileAvatar({
   image?: string | null;
   small?: boolean;
 }) {
+  const t = useTranslation();
   const [failedImage, setFailedImage] = useState<string | null>(null);
   const initial = Array.from(name?.trim() || "؟")[0].toLocaleUpperCase("ar");
   const label = name ? `صورة الملف الشخصي لـ ${name}` : "صورة الملف الشخصي";
@@ -20,10 +23,10 @@ export default function ProfileAvatar({
     return (
       <span
         role="img"
-        aria-label={label}
+        aria-label={t(label)}
         className={`inline-flex shrink-0 items-center justify-center rounded-full bg-[#e5f6f8] font-bold text-ink ${size} ${small ? "text-xl" : "text-3xl"}`}
       >
-        <span aria-hidden="true">{initial}</span>
+        <span aria-hidden="true">{t(initial)}</span>
       </span>
     );
   }
@@ -31,7 +34,7 @@ export default function ProfileAvatar({
   return (
     <Image
       src={image}
-      alt={label}
+      alt={t(label)}
       width={72}
       height={72}
       sizes={small ? "48px" : "72px"}

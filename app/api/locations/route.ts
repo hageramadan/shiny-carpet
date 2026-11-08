@@ -1,3 +1,4 @@
+import { normalizeLocale } from "../../../lib/i18n";
 import { photonPlaces, type Place } from "@/lib/geocoding";
 import { validCoordinates } from "@/lib/addresses";
 
@@ -6,6 +7,7 @@ let nextRequestAt = 0;
 
 export async function GET(request: Request) {
   const params = new URL(request.url).searchParams;
+  const locale = normalizeLocale(request.headers.get("accept-language"));
   const query = params.get("q")?.trim();
   const reverse = params.has("lat") && params.has("lng");
   const point = { lat: Number(params.get("lat")), lng: Number(params.get("lng")) };
@@ -25,6 +27,7 @@ export async function GET(request: Request) {
     reverse ? "reverse" : "api",
     `${(process.env.GEOCODING_BASE_URL || "https://photon.komoot.io").replace(/\/+$/, "")}/`,
   );
+  upstream.searchParams.set("lang", locale);
   upstream.searchParams.set("limit", reverse ? "1" : "5");
   if (reverse) {
     upstream.searchParams.set("lat", point.lat.toFixed(6));
@@ -47,6 +50,7 @@ export async function GET(request: Request) {
       headers: {
         "User-Agent": "ShinyCarpetDemo/1.0 (address picker)",
         Accept: "application/json",
+        "Accept-Language": locale,
       },
       signal: request.signal,
       cache: "no-store",

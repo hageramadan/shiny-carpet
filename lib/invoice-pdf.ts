@@ -1,3 +1,4 @@
+import { getLocale, translateText } from "./i18n";
 import type { OrderInvoice } from "./api/invoice";
 
 // Canvas keeps Arabic shaping consistent with the invoice page in every browser.
@@ -21,6 +22,8 @@ export async function createInvoicePdf(
   signal?.throwIfAborted();
   document.fonts.add(regular);
   document.fonts.add(bold);
+  const locale = getLocale();
+  const isEnglish = locale === "en";
   const width = 1240,
     height = 1754,
     margin = 80,
@@ -56,6 +59,7 @@ export async function createInvoicePdf(
     fill: string,
     border = false,
   ) {
+    if (isEnglish) x = width - x - w;
     ctx!.beginPath();
     ctx!.roundRect(x, top, w, h, 14);
     ctx!.fillStyle = fill;
@@ -67,6 +71,7 @@ export async function createInvoicePdf(
     }
   }
   function rule(top: number, x = margin, w = contentWidth) {
+    if (isEnglish) x = width - x - w;
     ctx!.beginPath();
     ctx!.moveTo(x, top);
     ctx!.lineTo(x + w, top);
@@ -75,6 +80,7 @@ export async function createInvoicePdf(
     ctx!.stroke();
   }
   function lines(value: string, maxWidth: number, size = 20, weight = 400): string[] {
+    value = translateText(value, locale);
     font(size, weight);
     const output: string[] = [];
     for (const paragraph of value.split("\n")) {
@@ -110,6 +116,12 @@ export async function createInvoicePdf(
     align: CanvasTextAlign = "right",
     direction: CanvasDirection = "rtl",
   ) {
+    value = translateText(value, locale);
+    if (isEnglish) {
+      x = width - x;
+      align = align === "left" ? "right" : align === "right" ? "left" : align;
+      direction = "ltr";
+    }
     font(size, weight);
     ctx!.fillStyle = color;
     ctx!.textAlign = align;
@@ -142,7 +154,7 @@ export async function createInvoicePdf(
     ctx!.fillStyle = "#fff";
     ctx!.fillRect(0, 0, width, height);
     box(45, 40, width - 90, height - 115, "#fff", true);
-    ctx!.drawImage(logo, right - 106, 79, 106, 81);
+    ctx!.drawImage(logo, isEnglish ? margin : right - 106, 79, 106, 81);
     const titleWidth = 550;
     const titleHeight = block(
       invoice.title,

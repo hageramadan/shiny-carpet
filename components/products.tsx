@@ -1,5 +1,8 @@
+"use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 import Image from "next/image";
 import Link from "next/link";
+import { isCarpetProduct } from "@/lib/product-selection";
 import {
   money,
   currencyLabel,
@@ -9,6 +12,7 @@ import {
 } from "@/lib/data";
 
 export function ProductCard({ product }: { product: Product }) {
+  const t = useTranslation();
   const currency = currencyLabel(productCurrency(product));
   return (
     <article className="flex min-w-0 flex-col rounded-2xl border border-gray-200 bg-white p-2.5 shadow-sm sm:p-3">
@@ -33,13 +37,16 @@ export function ProductCard({ product }: { product: Product }) {
         </p>
         <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-3 sm:gap-4">
           <span className="text-base font-bold text-primary">
-            {product.hasSizes && <small className="me-1 text-xs font-normal">من</small>}
-            {money(product.price)} <small className="text-xs">{currency}</small>
+            {product.hasSizes && (
+              <small className="me-1 text-xs font-normal">{t("من")}</small>
+            )}
+            {t(money(product.price))} <small className="text-xs">{t(currency)}</small>
             {product.originalPrice !== undefined && (
               <del className="ms-2 text-xs font-normal text-muted">
-                {money(product.originalPrice)}
+                {t(money(product.originalPrice))}
               </del>
             )}
+            {isCarpetProduct(product) && <span className="text-xs">{t("/ للمتر")}</span>}
           </span>
         </div>
       </div>

@@ -1,3 +1,6 @@
+import { localizeMetadata } from "@/lib/i18n/server";
+import { LanguageProvider } from "@/components/i18n/LanguageProvider";
+import { getServerLocale } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { StoreProvider } from "@/components/store";
@@ -21,7 +24,7 @@ const cairo = localFont({
   display: "swap",
 });
 
-export const metadata: Metadata = {
+const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
     default: "Shiny Carpet | غسيل السجاد والبطاطين بعناية",
@@ -56,38 +59,45 @@ export const metadata: Metadata = {
     images: [{ url: "/images/logo1.png", alt: "شعار Shiny Carpet" }],
   },
 };
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await getServerLocale();
   return (
     <html
       className="scroll-smooth scroll-pt-27.5 motion-reduce:scroll-auto selection:bg-[#c5eeeb]"
-      lang="ar"
-      dir="rtl"
+      lang={locale}
+      dir={locale === "ar" ? "rtl" : "ltr"}
       data-scroll-behavior="smooth"
     >
       <body
         id="top"
-        className={`${cairo.variable} bg-white pt-16 font-sans text-sm leading-[1.9] text-ink antialiased md:pt-20`}
+        className={`${cairo.variable} bg-white pt-16 font-sans text-sm leading-[1.9] text-ink antialiased lg:pt-20`}
       >
-        <SettingsProvider>
-          <StoreProvider>
-            <CartProvider>
-              <AddressesProvider>
-                <AppToaster />
-                <LoadingScreen />
-                {/* <a
+        <LanguageProvider locale={locale}>
+          <SettingsProvider>
+            <StoreProvider>
+              <CartProvider>
+                <AddressesProvider>
+                  <AppToaster />
+                  <LoadingScreen />
+                  {/* <a
                   href="#main"
                   className="fixed -top-20 right-5 bg-ink text-white z-100 focus:top-2.5 p-3"
                 >
                   تخطي إلى المحتوى
                 </a> */}
-                <Navbar />
-                <main id="main">{children}</main>
-                <Footer />
-              </AddressesProvider>
-            </CartProvider>
-          </StoreProvider>
-        </SettingsProvider>
+                  <Navbar />
+                  <main id="main">{children}</main>
+                  <Footer />
+                </AddressesProvider>
+              </CartProvider>
+            </StoreProvider>
+          </SettingsProvider>
+        </LanguageProvider>
       </body>
     </html>
   );
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  return localizeMetadata(metadata);
 }

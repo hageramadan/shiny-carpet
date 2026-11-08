@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import { useEffect, useState } from "react";
 import AddressEditor from "@/components/addresses/AddressEditor";
@@ -15,6 +16,7 @@ export default function CheckoutLocation({
   address: Address;
   onPendingChange: (pending: boolean) => void;
 }) {
+  const t = useTranslation();
   const addresses = useAddresses();
   const [location, setLocation] = useState(address.location);
   const [searching, setSearching] = useState(false);
@@ -64,7 +66,7 @@ export default function CheckoutLocation({
           onClick={() => setCompleting(false)}
           className="mt-3 min-h-11 text-sm font-bold text-primary"
         >
-          العودة إلى اختيار الموقع
+          {t("العودة إلى اختيار الموقع")}
         </button>
       </div>
     );
@@ -72,8 +74,9 @@ export default function CheckoutLocation({
   return (
     <div className="mt-5 border-t border-gray-100 pt-5">
       <p className="mb-3 text-sm leading-7 text-muted">
-        حدد نقطة الاستلام بالضغط على الخريطة أو سحب العلامة. عند حفظ الموقع، سيتم تحديث
-        موقع العنوان المختار.
+        {t(
+          "حدد نقطة الاستلام بالضغط على الخريطة أو سحب العلامة. عند حفظ الموقع، سيتم تحديث موقع العنوان المختار.",
+        )}
       </p>
       <fieldset disabled={saving || addresses.busy}>
         <div inert={saving || addresses.busy}>
@@ -91,8 +94,9 @@ export default function CheckoutLocation({
         {changed && (
           <div className="mt-3 rounded-xl bg-primary/5 p-4">
             <p className="text-xs leading-6 text-ink">
-              احفظ الموقع المحدد قبل إتمام الطلب. راجع تفاصيل الشارع والمبنى إذا اخترت
-              مكانًا مختلفًا.
+              {t(
+                "احفظ الموقع المحدد قبل إتمام الطلب. راجع تفاصيل الشارع والمبنى إذا اخترت مكانًا مختلفًا.",
+              )}
             </p>
             {needsDetails ? (
               <button
@@ -101,7 +105,7 @@ export default function CheckoutLocation({
                 disabled={searching || saving || addresses.busy}
                 className="mt-2 inline-flex min-h-11 items-center text-sm font-bold text-primary"
               >
-                استكمال بيانات العنوان لحفظ الموقع
+                {t("استكمال بيانات العنوان لحفظ الموقع")}
               </button>
             ) : (
               <button
@@ -111,7 +115,7 @@ export default function CheckoutLocation({
                 aria-busy={saving}
                 className="mt-3 min-h-11 rounded-xl bg-primary px-5 py-2 text-sm font-bold text-white transition-colors hover:bg-ink disabled:opacity-50"
               >
-                {saving ? "جاري حفظ الموقع…" : "حفظ موقع الاستلام"}
+                {t(saving ? "جاري حفظ الموقع…" : "حفظ موقع الاستلام")}
               </button>
             )}
             <button
@@ -124,25 +128,27 @@ export default function CheckoutLocation({
               disabled={saving || searching || addresses.busy}
               className="ms-3 mt-3 min-h-11 px-2 text-sm font-bold text-muted disabled:opacity-50"
             >
-              إلغاء تغيير الموقع
+              {t("إلغاء تغيير الموقع")}
             </button>
           </div>
         )}
       </fieldset>
-      {error && (
-        <p
-          role="alert"
-          className="mt-3 text-sm text-red-700"
-        >
-          {error}
-        </p>
+      {t(
+        error && (
+          <p
+            role="alert"
+            className="mt-3 text-sm text-red-700"
+          >
+            {t(error)}
+          </p>
+        ),
       )}
       {saved && !changed && (
         <p
           role="status"
           className="mt-3 text-sm text-primary"
         >
-          تم حفظ موقع الاستلام.
+          {t("تم حفظ موقع الاستلام.")}
         </p>
       )}
     </div>

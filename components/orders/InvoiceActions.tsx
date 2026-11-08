@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import { useEffect, useRef } from "react";
 import toast from "react-hot-toast";
@@ -16,6 +17,7 @@ export default function InvoiceActions({
   id: number;
   invoice: OrderInvoice;
 }) {
+  const t = useTranslation();
   const { pending, error, run } = useAuthAction();
   const downloadUrl = useRef("");
   useEffect(
@@ -53,7 +55,7 @@ export default function InvoiceActions({
         }
       } else {
         await navigator.clipboard.writeText(url);
-        toast.success("تم نسخ رابط الفاتورة");
+        toast.success(t("تم نسخ رابط الفاتورة"));
       }
     });
   }
@@ -67,7 +69,7 @@ export default function InvoiceActions({
           className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-ink disabled:opacity-50"
         >
           <FiDownload aria-hidden="true" />
-          تحميل الفاتورة PDF
+          {t("تحميل الفاتورة PDF")}
         </button>
         <button
           type="button"
@@ -76,16 +78,18 @@ export default function InvoiceActions({
           className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-primary bg-white px-4 py-2 text-sm font-bold text-primary hover:bg-primary/5 disabled:opacity-50"
         >
           <FiShare2 aria-hidden="true" />
-          مشاركة الفاتورة
+          {t("مشاركة الفاتورة")}
         </button>
       </div>
-      {error && (
-        <p
-          role="alert"
-          className="text-sm text-red-600"
-        >
-          {error}
-        </p>
+      {t(
+        error && (
+          <p
+            role="alert"
+            className="text-sm text-red-600"
+          >
+            {t(error)}
+          </p>
+        ),
       )}
     </div>
   );

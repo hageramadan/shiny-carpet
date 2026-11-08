@@ -2,7 +2,7 @@ import { authenticatedApiRequest } from "../auth/client";
 import { ApiError, ApiResponseError } from "./client";
 import { assertPositiveId, isPositiveId, isRecord } from "./validation";
 import { cartSuccess, parseCartItem, parseCartTotals, type CartTotals } from "./cart";
-import type { Order } from "../data";
+import type { Order, Address } from "../data";
 import { isOrderStatus, type OrderStatus } from "../order-status";
 import { apiPhone } from "../phone";
 
@@ -47,11 +47,34 @@ function orderFlag(value: unknown): boolean | undefined {
   if (value === true || value === 1 || value === "1") return true;
   if (value === false || value === 0 || value === "0") return false;
 }
+function orderAddress(value: unknown, addressId: unknown): Address | undefined {
+  if (!isRecord(value)) return;
+  const text = (field: unknown) => (typeof field === "string" ? field : "");
+  const label = (field: unknown) => (isRecord(field) ? text(field.name) : text(field));
+  const street = text(value.street) || text(value.full_address);
+  if (!street && !text(value.title)) return;
+  return {
+    id: isPositiveId(value.id)
+      ? String(value.id)
+      : isPositiveId(addressId)
+        ? String(addressId)
+        : "",
+    label: text(value.title),
+    street,
+    building: text(value.building_number),
+    floor: text(value.floor),
+    apartment: text(value.apartment),
+    details: text(value.details),
+    city: label(value.city) || text(value.city_name),
+    region: label(value.governorate) || text(value.governorate_name),
+  };
+}
 export function parseOrder(value: unknown, requireItems = false): Order {
   if (
     !isRecord(value) ||
     !isPositiveId(value.id) ||
-    !isOrderStatus(value.status) ||
+    typeof value.status !== "string" ||
+    !value.status.trim() ||
     typeof value.created_at !== "string"
   )
     throw new ApiResponseError("Invalid order");
@@ -65,8 +88,18 @@ export function parseOrder(value: unknown, requireItems = false): Order {
     total = amount(value.total);
   return {
     id: String(value.id),
-    status: value.status as OrderStatus,
-    driverTask: isOrderStatus(value.driver_task) ? value.driver_task : undefined,
+    status: isOrderStatus(value.status) ? value.status : "unknown",
+    rawStatus: value.status,
+    statusLabel:
+      typeof value.status_label === "string" && value.status_label.trim()
+        ? value.status_label.trim()
+        : undefined,
+    driverTask:
+      typeof value.driver_task === "string" && value.driver_task.trim()
+        ? isOrderStatus(value.driver_task)
+          ? value.driver_task
+          : "unknown"
+        : undefined,
     paymentStatusLabel:
       value.status === "paid" || orderFlag(value.user_paid) === true
         ? typeof value.status_label === "string" && value.status_label.trim()
@@ -75,6 +108,8 @@ export function parseOrder(value: unknown, requireItems = false): Order {
         : undefined,
     userPaid: orderFlag(value.user_paid),
     isRated: orderFlag(value.is_rated),
+    canEdit: orderFlag(value.can_edit),
+    isReceived: orderFlag(value.is_received),
     createdAt,
     total,
     items: Array.isArray(value.items)
@@ -84,19 +119,26 @@ export function parseOrder(value: unknown, requireItems = false): Order {
             isRecord(item.product) &&
             Array.isArray(item.product.images)
           ) {
-            return parseCartItem({
-              ...item,
-              product: {
-                ...item.product,
-                images: item.product.images.map((image) =>
-                  storageImage(image, "products"),
-                ),
-              },
-            });
+            return {
+              ...parseCartItem({
+                ...item,
+                product: {
+                  ...item.product,
+                  images: item.product.images.map((image) =>
+                    storageImage(image, "products"),
+                  ),
+                },
+              }),
+              orderItemId: isPositiveId(item.id) ? item.id : undefined,
+            };
           }
-          return parseCartItem(item);
+          return {
+            ...parseCartItem(item),
+            orderItemId: isRecord(item) && isPositiveId(item.id) ? item.id : undefined,
+          };
         })
       : [],
+    address: orderAddress(value.address, value.address_id),
     phone: typeof value.phone === "string" ? value.phone : undefined,
     notes: typeof value.note === "string" ? value.note : undefined,
     coupon: typeof value.coupon_code === "string" ? value.coupon_code : undefined,
@@ -104,7 +146,7 @@ export function parseOrder(value: unknown, requireItems = false): Order {
       subtotal,
       tax,
       total,
-      delivery: 0,
+      delivery: value.delivery_fee == null ? 0 : amount(value.delivery_fee),
       discount: value.discount == null ? 0 : amount(value.discount),
     },
     photos: Array.isArray(value.order_images)

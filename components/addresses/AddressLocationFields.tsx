@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import { useId } from "react";
 import * as Menu from "@radix-ui/react-dropdown-menu";
@@ -14,6 +15,7 @@ export default function AddressLocationFields({
   value: AreaSelection;
   onChange: (value: AreaSelection) => void;
 }) {
+  const t = useTranslation();
   const id = useId();
   const area = areas.find((item) => item.id === value.areaId);
   const governorate = area?.governorates.find((item) => item.id === value.governorateId);
@@ -75,7 +77,7 @@ export default function AddressLocationFields({
               htmlFor={id + field.key}
               className="mb-2 block text-sm font-bold text-[#17202A]"
             >
-              {field.label}
+              {t(field.label)}
             </label>
             <input
               type="hidden"
@@ -85,13 +87,13 @@ export default function AddressLocationFields({
               }
             />
             <Menu.Root
-              dir="rtl"
+              dir={t.dir}
               modal={false}
             >
               <Menu.Trigger
                 id={id + field.key}
                 type="button"
-                aria-label={field.label}
+                aria-label={t(field.label)}
                 disabled={!field.options.length}
                 className="group flex min-h-11 w-full min-w-0 items-center gap-2.5 rounded-[9px] border border-gray-200 bg-white px-3 py-2 text-start text-sm outline-none transition-colors hover:border-primary/60 hover:bg-primary/[0.02] focus-visible:border-primary focus-visible:ring-4 focus-visible:ring-primary/10 data-[state=open]:border-primary data-[state=open]:ring-4 data-[state=open]:ring-primary/10 disabled:cursor-not-allowed disabled:border-gray-100 disabled:bg-gray-50 disabled:text-gray-400"
               >
@@ -105,7 +107,7 @@ export default function AddressLocationFields({
                     (selected ? "font-medium text-ink" : "text-muted")
                   }
                 >
-                  {selected?.name ?? placeholder}
+                  {t(selected?.name ?? placeholder)}
                 </span>
                 <FiChevronDown
                   aria-hidden="true"
@@ -132,10 +134,12 @@ export default function AddressLocationFields({
                       >
                         <span className="min-w-0 flex-1">
                           {option.name}
-                          {option.context && (
-                            <span className="mt-0.5 block text-xs font-normal text-muted">
-                              {option.context}
-                            </span>
+                          {t(
+                            option.context && (
+                              <span className="mt-0.5 block text-xs font-normal text-muted">
+                                {t(option.context)}
+                              </span>
+                            ),
                           )}
                         </span>
                         <Menu.ItemIndicator>

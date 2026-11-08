@@ -1,6 +1,7 @@
+import { localizeMetadata } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import Tracking from "@/components/orders/TrackingPage";
-export const metadata: Metadata = {
+const metadata: Metadata = {
   title: "تتبع الطلب",
   robots: { index: false, follow: false },
   alternates: { canonical: "/tracking" },
@@ -17,4 +18,8 @@ export default async function Page({
       initialId={order}
     />
   );
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  return localizeMetadata(metadata);
 }

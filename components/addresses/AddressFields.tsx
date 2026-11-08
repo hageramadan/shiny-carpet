@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import { Fragment, useId, type ReactNode } from "react";
 
@@ -71,6 +72,7 @@ export default function AddressFields({
   editing?: boolean;
   children?: ReactNode;
 }) {
+  const t = useTranslation();
   const id = useId();
   return (
     <div className="grid gap-x-3 gap-y-4 sm:grid-cols-2">
@@ -80,7 +82,7 @@ export default function AddressFields({
             htmlFor={`${id}-${field.name}`}
             className={`min-w-0 text-sm font-bold text-[#17202A] ${field.wide ? "sm:col-span-2" : ""}`}
           >
-            {field.label}
+            {t(field.label)}
             <input
               id={`${id}-${field.name}`}
               name={field.name}
@@ -93,11 +95,11 @@ export default function AddressFields({
               onChange={(event) =>
                 onChange({ ...value, [field.name]: event.target.value })
               }
-              placeholder={field.placeholder}
+              placeholder={t(field.placeholder)}
               className="mt-2 min-h-11 w-full min-w-0 rounded-[9px] border border-gray-200 bg-white px-3 py-2 text-sm font-normal text-ink placeholder:text-muted"
             />
           </label>
-          {field.name === "label" && children}
+          {t(field.name === "label" && children)}
         </Fragment>
       ))}
     </div>

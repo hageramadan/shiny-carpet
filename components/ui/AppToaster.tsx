@@ -1,8 +1,10 @@
 "use client";
 
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 import { Toaster } from "react-hot-toast";
 
 export default function AppToaster() {
+  const t = useTranslation();
   return (
     <Toaster
       position="top-center"
@@ -10,7 +12,7 @@ export default function AppToaster() {
       toastOptions={{
         duration: 4000,
         style: {
-          direction: "rtl",
+          direction: t.dir,
           fontFamily: "var(--font-cairo), sans-serif",
           background: "#fff",
           color: "#14383B",

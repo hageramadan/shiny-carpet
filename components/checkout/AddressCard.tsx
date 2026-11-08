@@ -1,4 +1,6 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
+
 import { useState } from "react";
 import Link from "next/link";
 import { FiMapPin } from "react-icons/fi";
@@ -24,13 +26,14 @@ export default function AddressCard({
   error = "",
   onRetry,
 }: Props) {
+  const t = useTranslation();
   const [choosing, setChoosing] = useState(false);
   return (
     <section className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 lg:p-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2 sm:gap-4">
         <h2 className="flex items-center gap-2 text-base font-bold text-ink">
           <FiMapPin className="text-primary" />
-          عنوان الاستلام
+          {t("عنوان الاستلام")}
         </h2>
         {!loading && !error && addresses.length > 0 && (
           <button
@@ -39,7 +42,7 @@ export default function AddressCard({
             aria-expanded={choosing}
             className="inline-flex min-h-11 items-center text-xs font-bold text-primary"
           >
-            تغيير / تعديل
+            {t("تغيير / تعديل")}
           </button>
         )}
       </div>
@@ -48,7 +51,7 @@ export default function AddressCard({
           role="status"
           className="text-sm text-muted"
         >
-          جاري تحميل العناوين…
+          {t("جاري تحميل العناوين…")}
         </p>
       ) : error ? (
         <div>
@@ -56,27 +59,27 @@ export default function AddressCard({
             role="alert"
             className="text-sm text-red-700"
           >
-            {error}
+            {t(error)}
           </p>
           <button
             type="button"
             onClick={onRetry}
             className="min-h-11 text-sm text-primary"
           >
-            إعادة المحاولة
+            {t("إعادة المحاولة")}
           </button>
         </div>
       ) : (
         <>
           {selected ? (
             <div className="rounded-xl bg-[#f7f9fa] p-3 wrap-anywhere sm:p-4 text-sm leading-8 text-ink">
-              <strong>{selected.label}</strong>
+              <strong>{t(selected.label)}</strong>
               {addressLines(selected).map((line, index) => (
-                <p key={index}>{line}</p>
+                <p key={index}>{t(line)}</p>
               ))}
             </div>
           ) : (
-            <p className="text-sm text-muted">لا توجد عناوين محفوظة بعد.</p>
+            <p className="text-sm text-muted">{t("لا توجد عناوين محفوظة بعد.")}</p>
           )}
           {choosing && (
             <div className="mt-4 space-y-3">
@@ -95,7 +98,9 @@ export default function AddressCard({
                   <span className="min-w-0 wrap-anywhere">
                     <strong className="block">{address.label}</strong>
                     <span className="text-xs leading-6 text-muted">
-                      {address.city}، {address.street}
+                      {address.city}
+                      {t("، ")}
+                      {address.street}
                     </span>
                   </span>
                 </label>
@@ -107,14 +112,14 @@ export default function AddressCard({
               href="/addresses/new?next=%2Fcheckout"
               className="inline-flex min-h-11 items-center text-xs font-bold text-primary"
             >
-              + إضافة عنوان
+              {t("+ إضافة عنوان")}
             </Link>
             {selected && (
               <Link
                 href={`/addresses/${selected.id}/edit?next=%2Fcheckout`}
                 className="inline-flex min-h-11 items-center text-xs font-bold text-primary"
               >
-                تعديل العنوان المحدد
+                {t("تعديل العنوان المحدد")}
               </Link>
             )}
           </div>

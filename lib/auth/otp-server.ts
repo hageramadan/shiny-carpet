@@ -1,3 +1,4 @@
+import type { Locale } from "../i18n";
 import { createHash, randomInt, randomUUID, timingSafeEqual } from "node:crypto";
 import { DatabaseSync } from "node:sqlite";
 import { mkdirSync } from "node:fs";
@@ -132,6 +133,7 @@ export async function verifyOtp(
   id: string,
   token?: string,
   signal?: AbortSignal,
+  locale: Locale = "ar",
 ) {
   const input = authInput("verify", rawInput) as ApiPhone & { code: string };
   const phone = input.country_code + input.phone;
@@ -157,6 +159,7 @@ export async function verifyOtp(
   const result = parseAuthResult(
     "verify",
     await requestJson("/auth/verify", {
+      locale,
       method: "POST",
       body: { phone: input.phone, country_code: input.country_code, code: legacyCode },
       token,

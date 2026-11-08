@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import Link from "next/link";
 import Image from "next/image";
@@ -28,6 +29,7 @@ export default function CartItemRow({
   onRemove,
   disabled = false,
 }: Props) {
+  const t = useTranslation();
   const label =
     item.sizeLabel ||
     (product.category === "السجاد"
@@ -57,15 +59,18 @@ export default function CartItemRow({
           <h3 className="text-base font-bold leading-7 text-ink sm:text-lg">
             <Link href={productHref(product)}>{product.name}</Link>
           </h3>
-          <p className="mt-2 text-xs leading-6 text-muted">المقاس: {label}</p>
+          <p className="mt-2 text-xs leading-6 text-muted">
+            {t("المقاس: ")}
+            {t(label)}
+          </p>
           <Link
             href={productHref(product)}
             className="mt-1 inline-flex min-h-9 items-center text-xs font-bold text-primary hover:underline"
           >
-            عرض المنتج والمقاسات
+            {t("عرض المنتج والمقاسات")}
           </Link>
           <p className="mt-2 text-sm text-primary">
-            {money(itemPrice(item))} {currencyLabel(productCurrency(product))}
+            {t(money(itemPrice(item)))} {t(currencyLabel(productCurrency(product)))}
           </p>
         </div>
         <div className="col-span-2 flex w-full items-center justify-between gap-3 border-t border-gray-100 pt-3 sm:w-auto sm:justify-end sm:gap-4 sm:border-0 sm:pt-0">
@@ -102,11 +107,11 @@ export default function CartItemRow({
             type="button"
             onClick={onRemove}
             disabled={disabled}
-            aria-label={"حذف " + product.name + " من السلة"}
+            aria-label={t("حذف " + product.name + " من السلة")}
             className="inline-flex min-h-11 items-center gap-2 px-2 sm:px-0 text-xs text-red-500 hover:text-red-700"
           >
             <FiTrash2 className="text-lg" />
-            حذف
+            {t("حذف")}
           </button>
         </div>
       </div>

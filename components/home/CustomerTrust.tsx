@@ -1,3 +1,5 @@
+"use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 import { IoIosStar } from "react-icons/io";
 const avatars = [
   { letter: "ن", color: "bg-[#6b8e8c]" },
@@ -6,6 +8,7 @@ const avatars = [
 ];
 
 export default function CustomerTrust() {
+  const t = useTranslation();
   return (
     <div className="mt-5.5 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 sm:mt-6.5 sm:justify-start lg:gap-x-4 max-sm:mt-4">
       <div
@@ -17,16 +20,16 @@ export default function CustomerTrust() {
             key={letter}
             className={`relative -ms-2 grid size-8 shrink-0 place-items-center rounded-full border-2 border-white text-sm font-bold text-white first:ms-0 lg:size-10 lg:text-base ${color}`}
           >
-            {letter}
+            {t(letter)}
           </span>
         ))}
       </div>
-      <div className="text-right">
+      <div className="text-start">
         <p className="whitespace-nowrap text-sm font-bold leading-relaxed text-ink lg:text-lg max-sm:text-xs">
-          <bdi dir="ltr">2,500+</bdi> بيت سعيد
+          <bdi dir="ltr">{t("2,500+")}</bdi> {t(" بيت سعيد")}
         </p>
         <p className="mt-0.5 whitespace-nowrap text-xs leading-relaxed text-muted lg:text-sm">
-          اختاروا شايني كاربت
+          {t("اختاروا شايني كاربت")}
         </p>
       </div>
       <div

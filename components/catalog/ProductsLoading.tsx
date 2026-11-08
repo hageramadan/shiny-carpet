@@ -1,13 +1,16 @@
+"use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 export default function ProductsLoading() {
+  const t = useTranslation();
   return (
     <section
       role="status"
-      aria-label="جاري تحميل المنتجات"
+      aria-label={t("جاري تحميل المنتجات")}
       className="min-h-[60vh] bg-soft py-6"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <p className="mb-5 text-center text-sm text-muted">
-          جاري تحميل المنتجات، يرجى الانتظار…
+          {t("جاري تحميل المنتجات، يرجى الانتظار…")}
         </p>
         <div
           aria-hidden="true"

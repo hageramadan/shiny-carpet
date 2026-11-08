@@ -1,5 +1,14 @@
+import { normalizeLocale, translateText, LOCALE_COOKIE } from "../../lib/i18n";
 export function GET(request: Request) {
   const url = new URL(request.url);
+  const locale = normalizeLocale(
+    request.headers
+      .get("cookie")
+      ?.split(";")
+      .map((part) => part.trim())
+      .find((part) => part.startsWith(LOCALE_COOKIE + "="))
+      ?.split("=")[1],
+  );
   const order = url.searchParams.get("order") ?? "";
   const checkout = url.searchParams.get("checkout_id") ?? "";
   if (
@@ -14,7 +23,7 @@ export function GET(request: Request) {
     checkoutId: checkout,
   });
   const tracking = "/tracking?order=" + order + "&checkout_id=" + checkout;
-  const html = `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="font-family:Tahoma,Arial;text-align:center;padding:32px;color:#14383B"><p role="status">تمت العودة من بوابة الدفع. جاري التحقق من النتيجة…</p><script>if(window.parent!==window){window.parent.postMessage(${message},location.origin)}else{location.replace(${JSON.stringify(tracking)})}</script></body></html>`;
+  const html = `<!doctype html><html lang="${locale}" dir="${locale === "ar" ? "rtl" : "ltr"}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="font-family:Tahoma,Arial;text-align:center;padding:32px;color:#14383B"><p role="status">${translateText("تمت العودة من بوابة الدفع. جاري التحقق من النتيجة…", locale)}</p><script>if(window.parent!==window){window.parent.postMessage(${message},location.origin)}else{location.replace(${JSON.stringify(tracking)})}</script></body></html>`;
   return new Response(html, {
     headers: {
       "Content-Type": "text/html; charset=utf-8",

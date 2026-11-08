@@ -1,3 +1,5 @@
+"use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 import Link from "next/link";
 import { FiEdit3, FiTrash2 } from "react-icons/fi";
 import type { Address } from "@/lib/data";
@@ -14,6 +16,7 @@ export default function SavedAddressCard({
   disabled?: boolean;
   onDelete: () => void;
 }) {
+  const t = useTranslation();
   return (
     <article className="rounded-xl border border-gray-200 bg-white p-4">
       <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-start">
@@ -22,7 +25,9 @@ export default function SavedAddressCard({
             <h3 className="break-words text-lg font-bold text-[#17202A]">
               {address.label}
             </h3>
-            {isDefault && <span className="text-xs text-primary">العنوان الافتراضي</span>}
+            {isDefault && (
+              <span className="text-xs text-primary">{t("العنوان الافتراضي")}</span>
+            )}
           </div>
           <address className="mt-5 space-y-3 text-sm not-italic leading-7 text-muted">
             {addressLines(address).map((line, index) => (
@@ -30,7 +35,7 @@ export default function SavedAddressCard({
                 key={index}
                 className="break-words"
               >
-                {line}
+                {t(line)}
               </p>
             ))}
           </address>
@@ -38,21 +43,21 @@ export default function SavedAddressCard({
         <div className="flex shrink-0 items-center gap-5">
           <Link
             href={`/addresses/${encodeURIComponent(address.id)}/edit`}
-            aria-label={`تعديل عنوان ${address.label}`}
+            aria-label={t(`تعديل عنوان ${address.label}`)}
             className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-primary px-4 py-2 text-sm font-extrabold text-[#087B82] md:text-base transition-colors hover:bg-primary/5"
           >
             <FiEdit3 aria-hidden="true" />
-            تعديل
+            {t("تعديل")}
           </Link>
           <button
             type="button"
             onClick={onDelete}
             disabled={disabled}
-            aria-label={`حذف عنوان ${address.label}`}
+            aria-label={t(`حذف عنوان ${address.label}`)}
             className="inline-flex min-h-11 items-center gap-2 px-2 py-2 text-sm font-semibold text-[#f44e51] transition-colors hover:text-red-700"
           >
             <FiTrash2 aria-hidden="true" />
-            حذف
+            {t("حذف")}
           </button>
         </div>
       </div>

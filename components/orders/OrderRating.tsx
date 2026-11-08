@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import Image from "next/image";
@@ -18,6 +19,7 @@ export default function OrderRating({
   order: Order;
   compact?: boolean;
 }) {
+  const t = useTranslation();
   const [open, setOpen] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   if (submitted || order.isRated === true)
@@ -26,8 +28,9 @@ export default function OrderRating({
         role="status"
         className="flex items-center gap-2 text-sm font-semibold text-primary"
       >
-        <FiCheckCircle aria-hidden="true" />{" "}
-        {submitted ? "شكرًا لك! تم إرسال تقييمك بنجاح." : "تم تقييم الطلب"}
+        <FiCheckCircle aria-hidden="true" />
+        {t(" ")}
+        {t(submitted ? "شكرًا لك! تم إرسال تقييمك بنجاح." : "تم تقييم الطلب")}
       </p>
     );
   if (!canRateOrder(order)) return null;
@@ -39,14 +42,14 @@ export default function OrderRating({
           onClick={() => setOpen(true)}
           className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-primary bg-white px-4 py-2 text-sm font-bold text-primary transition-colors hover:bg-primary/10"
         >
-          <FiStar aria-hidden="true" /> تقييم الطلب
+          <FiStar aria-hidden="true" /> {t(" تقييم الطلب")}
         </button>
       ) : (
         <section className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-white p-5">
           <div>
-            <h2 className="font-bold text-ink">كيف كانت تجربتك مع شايني كاربت؟</h2>
+            <h2 className="font-bold text-ink">{t("كيف كانت تجربتك مع شايني كاربت؟")}</h2>
             <p className="mt-2 text-sm leading-7 text-muted">
-              رأيك يهمنا ويساعدنا على تقديم خدمة أفضل.
+              {t("رأيك يهمنا ويساعدنا على تقديم خدمة أفضل.")}
             </p>
           </div>
           <button
@@ -54,7 +57,7 @@ export default function OrderRating({
             onClick={() => setOpen(true)}
             className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-ink"
           >
-            <FiStar aria-hidden="true" /> قيّم تجربتك
+            <FiStar aria-hidden="true" /> {t(" قيّم تجربتك")}
           </button>
         </section>
       )}
@@ -81,6 +84,7 @@ function RatingDialog({
   onClose: () => void;
   onSuccess: () => void;
 }) {
+  const t = useTranslation();
   const dialog = useRef<HTMLDialogElement>(null);
   const stars = useRef<HTMLFieldSetElement>(null);
   const lock = useRef(false);
@@ -137,7 +141,7 @@ function RatingDialog({
   return (
     <dialog
       ref={dialog}
-      dir="rtl"
+      dir={t.dir}
       aria-labelledby={titleId}
       aria-describedby={descriptionId}
       onCancel={(event) => {
@@ -161,7 +165,7 @@ function RatingDialog({
         type="button"
         onClick={onClose}
         disabled={busy}
-        aria-label="إغلاق نافذة التقييم"
+        aria-label={t("إغلاق نافذة التقييم")}
         className="mr-auto mb-3 grid size-9 place-items-center rounded-full bg-gray-50 text-muted transition-colors hover:bg-primary/10 disabled:opacity-50"
       >
         <FiX
@@ -170,39 +174,58 @@ function RatingDialog({
         />
       </button>
       <div className="flex items-center gap-3 rounded-xl bg-[#f7f9fa] p-3 sm:p-4">
-        {image && (
-          <Image
-            src={image}
-            alt={order.items[0]?.product?.name ?? "صورة المنتج"}
-            width={44}
-            height={44}
-            className="size-11 shrink-0 rounded-lg object-cover"
-          />
+        {t(
+          image && (
+            <Image
+              src={image}
+              alt={t(order.items[0]?.product?.name ?? "صورة المنتج")}
+              width={44}
+              height={44}
+              className="size-11 shrink-0 rounded-lg object-cover"
+            />
+          ),
         )}
         <div className="min-w-0 flex-1">
           <p className="text-sm font-bold">
-            طلب <bdi>{order.id}</bdi>
+            {t("طلب ")}
+            <bdi>{t(order.id)}</bdi>
           </p>
           <p className="mt-1 text-xs leading-6 text-muted">
-            {new Date(order.createdAt).toLocaleDateString("ar-EG")}{" "}
-            {pieces > 0 && <> · {new Intl.NumberFormat("ar-EG").format(pieces)} قطع</>}
+            {t(
+              new Date(order.createdAt).toLocaleDateString(
+                t.locale === "en" ? "en-GB" : "ar-EG",
+              ),
+            )}
+            {t(" ")}
+            {pieces > 0 && (
+              <>
+                {" "}
+                {t(" · ")}
+                {t(
+                  new Intl.NumberFormat(t.locale === "en" ? "en-GB" : "ar-EG").format(
+                    pieces,
+                  ),
+                )}{" "}
+                {t(" قطع")}
+              </>
+            )}
           </p>
         </div>
         <span className="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
-          تم التسليم
+          {t("تم التسليم")}
         </span>
       </div>
       <h2
         id={titleId}
         className="mt-7 text-center text-lg font-extrabold sm:text-2xl"
       >
-        كيف كانت تجربتك مع شايني كاربت؟
+        {t("كيف كانت تجربتك مع شايني كاربت؟")}
       </h2>
       <p
         id={descriptionId}
         className="mt-3 text-center text-xs leading-7 text-muted sm:text-sm"
       >
-        قيّم خدمة التنظيف والتوصيل لطلبك. رأيك يساعدنا على تقديم تجربة أفضل.
+        {t("قيّم خدمة التنظيف والتوصيل لطلبك. رأيك يساعدنا على تقديم تجربة أفضل.")}
       </p>
       <form
         onSubmit={send}
@@ -216,7 +239,7 @@ function RatingDialog({
           aria-describedby={missing ? errorId : undefined}
           className="min-w-0"
         >
-          <legend className="sr-only">تقييم الخدمة من ١ إلى ٥ نجوم</legend>
+          <legend className="sr-only">{t("تقييم الخدمة من ١ إلى ٥ نجوم")}</legend>
           <div className="flex justify-center gap-1 sm:gap-2">
             {[1, 2, 3, 4, 5].map((value) => (
               <label
@@ -233,7 +256,7 @@ function RatingDialog({
                     setMissing(false);
                     setError("");
                   }}
-                  aria-label={value + " من 5 نجوم"}
+                  aria-label={t(value + " من 5 نجوم")}
                   className="peer sr-only"
                 />
                 <FiStar
@@ -252,10 +275,10 @@ function RatingDialog({
             aria-live="polite"
             className="mt-3 min-h-7 text-center text-sm font-bold text-primary"
           >
-            {rating ? ratingLabels[rating] : "اختر تقييمك"}
+            {t(rating ? ratingLabels[rating] : "اختر تقييمك")}
           </p>
           <p className="mt-1 text-center text-xs leading-6 text-muted">
-            اضغط على النجوم لاختيار تقييمك (من ١ إلى ٥)
+            {t("اضغط على النجوم لاختيار تقييمك (من ١ إلى ٥)")}
           </p>
         </fieldset>
         {missing && (
@@ -264,16 +287,18 @@ function RatingDialog({
             role="alert"
             className="mt-4 rounded-xl bg-red-50 p-3 text-center text-sm text-red-700"
           >
-            اختر عدد النجوم أولًا علشان نقدر نسجل تقييمك.
+            {t("اختر عدد النجوم أولًا علشان نقدر نسجل تقييمك.")}
           </p>
         )}
-        {error && (
-          <p
-            role="alert"
-            className="mt-4 rounded-xl bg-red-50 p-3 text-sm leading-7 text-red-700"
-          >
-            {error}
-          </p>
+        {t(
+          error && (
+            <p
+              role="alert"
+              className="mt-4 rounded-xl bg-red-50 p-3 text-sm leading-7 text-red-700"
+            >
+              {t(error)}
+            </p>
+          ),
         )}
         <div className="mt-6 border-t border-gray-100 pt-5">
           <button
@@ -281,7 +306,7 @@ function RatingDialog({
             disabled={busy}
             className="min-h-12 w-full rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-ink disabled:cursor-wait disabled:opacity-60"
           >
-            {busy ? "جاري إرسال التقييم…" : "إرسال التقييم"}
+            {t(busy ? "جاري إرسال التقييم…" : "إرسال التقييم")}
           </button>
         </div>
       </form>

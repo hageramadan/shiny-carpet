@@ -1,3 +1,5 @@
+"use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 import type { Product } from "@/lib/data";
 import { productSizeOptions } from "@/lib/product-selection";
 
@@ -22,6 +24,7 @@ export default function ProductSizePicker({
   onWidth,
   disabled = false,
 }: Props) {
+  const t = useTranslation();
   const options = productSizeOptions(product);
   if (product.apiId !== undefined && !product.hasSizes) return null;
   return (
@@ -30,7 +33,9 @@ export default function ProductSizePicker({
         disabled={disabled}
         className="min-w-0"
       >
-        <legend className="mb-3 text-base font-bold text-[#17202A]">المقاسات</legend>
+        <legend className="mb-3 text-base font-bold text-[#17202A]">
+          {t("المقاسات")}
+        </legend>
         <div className="grid grid-cols-4 gap-x-3 gap-y-2 sm:gap-x-6 sm:gap-y-3">
           {options.map((option) => (
             <label
@@ -49,13 +54,13 @@ export default function ProductSizePicker({
                 dir={option.label.includes("×") ? "ltr" : undefined}
                 className="inline-flex min-h-11 w-full items-center justify-center rounded-sm border border-transparent bg-[#f3f4f5] px-1 py-2 text-xs font-bold text-[#242424] peer-checked:border-[#242424] peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary sm:text-sm"
               >
-                {option.label}
+                {t(option.label)}
               </span>
             </label>
           ))}
         </div>
         {!options.length && (
-          <p className="text-sm text-muted">المقاسات غير متاحة حاليًا.</p>
+          <p className="text-sm text-muted">{t("المقاسات غير متاحة حاليًا.")}</p>
         )}
       </fieldset>
       {choice === "custom" && options.some((option) => option.value === "custom") && (
@@ -64,7 +69,7 @@ export default function ProductSizePicker({
           className="mt-4 min-w-0 rounded-2xl bg-primary/10 p-3 sm:p-4"
         >
           <legend className="float-right mb-3 w-full text-sm font-semibold text-[#17202A]">
-            أدخل المقاس بالمتر
+            {t("أدخل المقاس بالمتر")}
           </legend>
           <div className="clear-both grid grid-cols-2 gap-3 *:min-w-0">
             {[
@@ -75,7 +80,7 @@ export default function ProductSizePicker({
                 key={field.name}
                 className="text-sm text-ink"
               >
-                {field.label}
+                {t(field.label)}
                 <input
                   type="number"
                   name={field.name}
@@ -85,7 +90,7 @@ export default function ProductSizePicker({
                   required
                   value={field.value}
                   onChange={(event) => field.change(event.target.value)}
-                  placeholder={"أدخل " + field.label}
+                  placeholder={t("أدخل " + field.label)}
                   className="mt-2 min-h-12 w-full min-w-0 rounded-xl border border-gray-200 bg-white px-3 text-base sm:text-sm"
                 />
               </label>

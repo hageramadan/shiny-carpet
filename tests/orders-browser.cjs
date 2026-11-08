@@ -132,6 +132,20 @@ async function main() {
       }
       if (path === "/api/orders/12")
         return ok({ ...order, status: cancelled ? "cancelled" : detailStatus });
+      if (path === "/api/orders/551")
+        return ok({
+          ...order,
+          id: 551,
+          status: "returned_to_laundry",
+          status_label: "تم الإرجاع للمغسلة",
+        });
+      if (path === "/api/orders/552")
+        return ok({
+          ...order,
+          id: 552,
+          status: "future_status",
+          status_label: "مراجعة الطلب",
+        });
       if (path === "/api/orders" && !url.searchParams.has("status"))
         return ok([
           { ...order, id: 13, status: "processing", items: undefined },
@@ -139,6 +153,20 @@ async function main() {
           { ...order, id: 15, status: "delivered_to_customer", items: undefined },
           { ...order, id: 16, status: "cancelled", items: undefined },
           { ...order, id: 17, status: "paid", items: undefined },
+          {
+            ...order,
+            id: 551,
+            status: "returned_to_laundry",
+            status_label: "تم الإرجاع للمغسلة",
+            items: undefined,
+          },
+          {
+            ...order,
+            id: 552,
+            status: "future_status",
+            status_label: "مراجعة الطلب",
+            items: undefined,
+          },
         ]);
       if (path === "/api/orders")
         return ok(
@@ -165,7 +193,7 @@ async function main() {
     await page.getByRole("button", { name: "تفعيل", exact: true }).click();
     await page.getByText("تم تطبيق الكود: SERVER12").waitFor();
     await page.getByRole("textbox", { name: /ملاحظات/ }).fill("ملاحظة الاختبار");
-    await page.getByRole("heading", { name: "صور السجاد (إجباري)" }).waitFor();
+    await page.getByRole("heading", { name: "صور (إجباري)", exact: true }).waitFor();
     assert.equal(await page.locator("input[type=file]").count(), 1);
     await page.getByRole("button", { name: "إتمام الطلب", exact: true }).click();
     await page.getByText("صور السجاد مطلوبة", { exact: true }).waitFor();
@@ -216,7 +244,7 @@ async function main() {
     await page.getByText("تم استلام طلبك بنجاح", { exact: true }).waitFor();
     assert.equal(
       await page.getByRole("button", { name: "إلغاء الطلب", exact: true }).count(),
-      0,
+      1,
     );
     detailStatus = "delivered_to_customer";
     await page.reload();
@@ -238,7 +266,7 @@ async function main() {
       assert.equal(await page.locator('[aria-current="step"] h3').innerText(), label);
       assert.equal(
         await page.getByRole("button", { name: "إلغاء الطلب", exact: true }).count(),
-        0,
+        status === "processing" ? 1 : 0,
       );
     }
     detailStatus = "confirmed";
@@ -311,6 +339,26 @@ async function main() {
     assert.equal(
       await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth),
       false,
+    );
+    await page.getByRole("button", { name: "كل الطلبات", exact: true }).click();
+    await page.getByRole("link", { name: "عرض تفاصيل الطلب 551", exact: true }).waitFor();
+    await page.getByText("تم الإرجاع للمغسلة", { exact: true }).waitFor();
+    await page.getByText("مراجعة الطلب", { exact: true }).waitFor();
+    assert.equal(
+      await page.getByRole("link", { name: "تعديل الطلب 551", exact: true }).count(),
+      0,
+    );
+    assert.equal(
+      await page.getByRole("link", { name: "تعديل الطلب 552", exact: true }).count(),
+      0,
+    );
+    await page.getByRole("link", { name: "عرض تفاصيل الطلب 551", exact: true }).click();
+    await page.getByRole("status").filter({ hasText: "تم الإرجاع للمغسلة" }).waitFor();
+    await page.goto(base + "/tracking?order=552");
+    await page.getByRole("status").filter({ hasText: "مراجعة الطلب" }).waitFor();
+    assert.equal(
+      await page.getByRole("region", { name: "مراحل الطلب", exact: true }).count(),
+      0,
     );
     assert.deepEqual(errors, []);
     console.log(

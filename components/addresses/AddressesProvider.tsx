@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import {
   createContext,
@@ -34,6 +35,7 @@ type State = {
 };
 const Context = createContext<State | null>(null);
 export function AddressesProvider({ children }: { children: React.ReactNode }) {
+  const t = useTranslation();
   const { ready } = useStore();
   const [token, setToken] = useState<string | null>(null);
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -138,7 +140,7 @@ export function AddressesProvider({ children }: { children: React.ReactNode }) {
         remove: (id) => mutate((signal) => deleteAddress(id, signal)),
       }}
     >
-      {children}
+      {t(children)}
     </Context.Provider>
   );
 }

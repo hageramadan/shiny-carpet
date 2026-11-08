@@ -2,7 +2,7 @@ import type { Product } from "./data";
 import { resolveCustomSize, type ResolvedSize } from "./product-options";
 
 export function isCarpetProduct(product: Product): boolean {
-  return product.category.includes("سجاد");
+  return product.categoryId === 16 || /سجاد|carpet/i.test(product.category);
 }
 
 export function productSizeOptions(product: Product): { value: string; label: string }[] {

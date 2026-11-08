@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import Link from "next/link";
 import { FiMapPin } from "react-icons/fi";
@@ -11,6 +12,7 @@ import CartSummary from "./CartSummary";
 import EmptyCart from "./EmptyCart";
 
 export default function CartPage() {
+  const t = useTranslation();
   const { state, ready } = useStore();
   const { cart, status, busy, error, reload, setQuantity, remove, clear } = useCart();
   const action = useAuthAction();
@@ -20,27 +22,29 @@ export default function CartPage() {
     <section className="min-h-[70vh] bg-[#f7f9fa] pb-8 pt-5 sm:pb-12 sm:pt-7 lg:pb-16">
       <div className="container mx-auto min-w-0 px-4 sm:px-6 lg:px-8">
         <nav
-          aria-label="مسار التصفح"
+          aria-label={t("مسار التصفح")}
           className="mb-3 text-xs leading-6 sm:mb-5 text-muted"
         >
           <Link
             href="/"
             className="hover:text-primary"
           >
-            الرئيسية
+            {t("الرئيسية")}
           </Link>
-          <span className="mx-2">/</span>
-          <span>السلة</span>
+          <span className="mx-2">{t("/")}</span>
+          <span>{t("السلة")}</span>
         </nav>
         <h1 className="text-2xl font-extrabold leading-snug text-ink sm:text-3xl sm:leading-relaxed lg:text-4xl">
-          السلة
+          {t("السلة")}
         </h1>
         <p className="my-3 text-sm leading-7 sm:my-4 sm:leading-8 text-muted">
-          {ready && cart?.items.length
-            ? "راجع قطعك والمقاسات والكميات قبل استكمال الطلب."
-            : "أضف القطع اللي محتاجة عناية، وبعدها كمّل تفاصيل الاستلام."}
+          {t(
+            ready && cart?.items.length
+              ? "راجع قطعك والمقاسات والكميات قبل استكمال الطلب."
+              : "أضف القطع اللي محتاجة عناية، وبعدها كمّل تفاصيل الاستلام.",
+          )}
         </p>
-         {/* <button
+        {/* <button
                   type="button"
                   disabled={disabled}
                   onClick={() =>
@@ -52,29 +56,31 @@ export default function CartPage() {
                 >
                    حذف جميع عناصر السله
                 </button> */}
-        {(error || action.error) && status !== "error" && (
-          <p
-            role="alert"
-            className="mb-4 text-sm text-red-700"
-          >
-            {error || action.error}
-          </p>
+        {t(
+          (error || action.error) && status !== "error" && (
+            <p
+              role="alert"
+              className="mb-4 text-sm text-red-700"
+            >
+              {t(error || action.error)}
+            </p>
+          ),
         )}
         {!ready ? (
           <div
             role="status"
             className="rounded-2xl border border-gray-200 bg-white p-10 text-center text-muted"
           >
-            جاري تحميل السلة…
+            {t("جاري تحميل السلة…")}
           </div>
         ) : !state.profile ? (
           <div className="rounded-2xl border border-gray-200 bg-white p-10 text-center">
-            <p className="text-ink">سجّل الدخول لعرض سلتك وإضافة المنتجات.</p>
+            <p className="text-ink">{t("سجّل الدخول لعرض سلتك وإضافة المنتجات.")}</p>
             <Link
               href="/login?next=%2Fcart"
               className="mt-4 inline-flex min-h-11 items-center rounded-xl bg-primary px-6 font-bold text-white"
             >
-              تسجيل الدخول
+              {t("تسجيل الدخول")}
             </Link>
           </div>
         ) : status === "error" ? (
@@ -83,14 +89,14 @@ export default function CartPage() {
               role="alert"
               className="text-red-700"
             >
-              {error}
+              {t(error)}
             </p>
             <button
               type="button"
               onClick={() => void reload()}
               className="mt-4 min-h-11 font-bold text-primary"
             >
-              إعادة المحاولة
+              {t("إعادة المحاولة")}
             </button>
           </div>
         ) : !cart || status === "loading" ? (
@@ -98,7 +104,7 @@ export default function CartPage() {
             role="status"
             className="rounded-2xl border border-gray-200 bg-white p-10 text-center text-muted"
           >
-            جاري تحميل السلة…
+            {t("جاري تحميل السلة…")}
           </p>
         ) : cart.items.length === 0 ? (
           <EmptyCart />
@@ -106,11 +112,12 @@ export default function CartPage() {
           <div className="grid items-start gap-5 *:min-w-0 sm:gap-7 lg:grid-cols-3">
             <div className="lg:col-span-2">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-2 sm:mb-5 sm:gap-4">
-                <h2 className="text-lg font-bold text-ink sm:text-xl">القطع المضافة</h2>
+                <h2 className="text-lg font-bold text-ink sm:text-xl">
+                  {t("القطع المضافة")}
+                </h2>
                 <span className="text-sm text-[#6B7280] font-semibold">
-                  {money(cart.count)} منتجات
+                  {t(money(cart.count))} {t(" منتجات")}
                 </span>
-               
               </div>
               <div className="space-y-4">
                 {cart.items.map((item) => {
@@ -140,12 +147,14 @@ export default function CartPage() {
                 href="/products"
                 className="mt-4 inline-flex min-h-12 w-full sm:w-auto items-center justify-center rounded-xl border border-gray-200 bg-white px-7 py-3 text-sm font-extrabold text-[#087B82] md:text-base transition-colors hover:bg-primary/5"
               >
-                إضافة منتج
+                {t("إضافة منتج")}
               </Link>
               <div className="mt-4 flex items-start gap-3 rounded-2xl bg-[#E6F6F7] p-4 sm:mt-6 sm:items-center sm:gap-4 sm:px-5">
                 <FiMapPin className="shrink-0 text-xl text-primary" />
                 <p className="text-sm leading-7 text-[#17202A] font-semibold">
-                  في الخطوة التالية، أضف صور القطع وملاحظاتك إن رغبت وعنوان الاستلام.
+                  {t(
+                    "في الخطوة التالية، أضف صور القطع وملاحظاتك إن رغبت وعنوان الاستلام.",
+                  )}
                 </p>
               </div>
             </div>

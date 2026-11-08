@@ -1,3 +1,4 @@
+import { getServerLocale } from "@/lib/i18n/server";
 import Hero from "@/components/home/Hero";
 import Services from "@/components/home/Services";
 import Steps from "@/components/home/Steps";
@@ -8,7 +9,8 @@ import FAQ from "@/components/home/FAQ";
 import OrderCTA from "@/components/home/OrderCTA";
 import { siteUrl } from "@/lib/data";
 
-export default function Home() {
+export default async function Home() {
+  const locale = await getServerLocale();
   return (
     <>
       <script
@@ -20,14 +22,14 @@ export default function Home() {
             name: "Shiny Carpet",
             alternateName: "Shiny Carpet",
             url: siteUrl,
-            inLanguage: "ar",
+            inLanguage: locale,
           }),
         }}
       />
       <Hero />
       <Services />
       <Steps />
-      <WhyUs />
+      {/* <WhyUs /> */}
       <DownloadApp />
       <ChooseYourService />
       <FAQ />

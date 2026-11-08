@@ -10,6 +10,7 @@ export const orderStages = [
   { id: "arrived_to_laundry", label: "وصلت القطع إلى المغسلة", step: 2 },
   { id: "delivered_to_laundry", label: "تم تسليم القطع للمغسلة", step: 2 },
   { id: "laundry_received", label: "استلمت المغسلة القطع", step: 3 },
+  { id: "returned_to_laundry", label: "تم الإرجاع للمغسلة", step: 3 },
   { id: "ready_for_delivery", label: "جاهز للتوصيل", step: 4 },
   { id: "picked_up_from_laundry", label: "تم استلام القطع من المغسلة", step: 5 },
   { id: "deliver_to_customer", label: "تم الاستلام", step: 5 },
@@ -20,6 +21,7 @@ export const orderStages = [
   // Retain the cancellation response and older completed orders.
   { id: "cancelled", label: "ملغي", step: -1 },
   { id: "delivered", label: "تم التسليم", step: 6 },
+  { id: "unknown", label: "حالة الطلب غير متاحة", step: -1 },
 ] as const;
 export type OrderStatus = (typeof orderStages)[number]["id"];
 export function isOrderStatus(value: unknown): value is OrderStatus {
@@ -39,4 +41,26 @@ export function orderFulfillmentStatus(order: {
   if (order.status === "paid" && order.driverTask === "deliver_to_customer")
     return "delivered";
   return order.status === "paid" && order.driverTask ? order.driverTask : order.status;
+}
+
+const beforePickup = new Set<OrderStatus>([
+  "ordered",
+  "confirmed",
+  "processing",
+  "pickup_from_customer",
+  "driver_on_way_to_customer",
+  "arrived_to_customer",
+]);
+export function canEditOrder(order: {
+  status: OrderStatus;
+  driverTask?: OrderStatus;
+  canEdit?: boolean;
+  isReceived?: boolean;
+}): boolean {
+  return (
+    order.canEdit !== false &&
+    order.isReceived !== true &&
+    beforePickup.has(orderFulfillmentStatus(order)) &&
+    (!order.driverTask || beforePickup.has(order.driverTask))
+  );
 }

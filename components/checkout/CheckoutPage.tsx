@@ -1,4 +1,6 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
+
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -18,6 +20,7 @@ import PhotoUpload from "./PhotoUpload";
 import CheckoutSummary from "./CheckoutSummary";
 
 export default function CheckoutPage() {
+  const t = useTranslation();
   const { state, ready } = useStore();
   const router = useRouter();
   const [busy, setBusy] = useState(false);
@@ -113,47 +116,47 @@ export default function CheckoutPage() {
     <section className="min-h-[70vh] bg-[#f7f9fa] py-5 sm:py-7 lg:pb-16">
       <div className="container mx-auto min-w-0 px-4 sm:px-6 lg:px-8">
         <nav
-          aria-label="مسار التصفح"
+          aria-label={t("مسار التصفح")}
           className="mb-3 flex sm:mb-5 flex-wrap gap-2 text-xs text-muted"
         >
-          <Link href="/">الرئيسية</Link>
-          <span>/</span>
-          <Link href="/cart">السلة</Link>
-          <span>/</span>
-          <span>استكمال الطلب</span>
+          <Link href="/">{t("الرئيسية")}</Link>
+          <span>{t("/")}</span>
+          <Link href="/cart">{t("السلة")}</Link>
+          <span>{t("/")}</span>
+          <span>{t("استكمال الطلب")}</span>
         </nav>
         <h1 className="text-2xl font-extrabold leading-snug text-ink sm:text-3xl sm:leading-relaxed lg:text-4xl">
-          استكمال الطلب
+          {t("استكمال الطلب")}
         </h1>
         <p className="mb-5 mt-2 text-sm leading-7 sm:mb-8 sm:mt-3 md:text-base  text-[#607779]">
-          أكد عنوان الاستلام وأضف التفاصيل اللي تهمك.
+          {t("أكد عنوان الاستلام وأضف التفاصيل اللي تهمك.")}
         </p>
         {!ready ? (
           <div
             role="status"
             className="rounded-2xl border border-gray-200 bg-white p-10 text-center text-muted"
           >
-            جاري تحميل تفاصيل الطلب…
+            {t("جاري تحميل تفاصيل الطلب…")}
           </div>
         ) : !state.profile ? (
           <Link
             href="/login?next=%2Fcheckout"
             className="inline-flex min-h-11 items-center rounded-xl bg-primary px-6 text-white"
           >
-            سجّل الدخول لاستكمال الطلب
+            {t("سجّل الدخول لاستكمال الطلب")}
           </Link>
         ) : status === "error" ? (
           <div>
-            <p role="alert">{cartError}</p>
+            <p role="alert">{t(cartError)}</p>
             <button
               onClick={() => void reload()}
               className="min-h-11 text-primary"
             >
-              إعادة المحاولة
+              {t("إعادة المحاولة")}
             </button>
           </div>
         ) : !cart || status === "loading" ? (
-          <p role="status">جاري تحميل تفاصيل الطلب…</p>
+          <p role="status">{t("جاري تحميل تفاصيل الطلب…")}</p>
         ) : !cart.items.length ? (
           <EmptyCart />
         ) : (
@@ -189,13 +192,14 @@ export default function CheckoutPage() {
               </div>
               <section className="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 lg:p-6">
                 <label className="block text-sm font-bold text-ink">
-                  ملاحظات{" "}
-                  <span className="text-xs font-normal text-muted">(اختياري)</span>
+                  {t("ملاحظات")}
+                  {t(" ")}
+                  <span className="text-xs font-normal text-muted">{t("(اختياري)")}</span>
                   <textarea
                     name="notes"
                     form="checkout-form"
                     maxLength={500}
-                    placeholder="هل لديك أي ملاحظات عن القطع أو الاستلام؟"
+                    placeholder={t("هل لديك أي ملاحظات عن القطع أو الاستلام؟")}
                     className="mt-3 min-h-28 w-full resize-y rounded-xl border border-gray-200 p-3 text-base font-normal sm:text-sm"
                   />
                 </label>
@@ -207,13 +211,15 @@ export default function CheckoutPage() {
                   error ? "rounded-2xl border border-gray-200 bg-white p-4" : "contents"
                 }
               >
-                {error && (
-                  <p
-                    role="alert"
-                    className="mt-4 text-sm leading-7 text-red-600"
-                  >
-                    {error}
-                  </p>
+                {t(
+                  error && (
+                    <p
+                      role="alert"
+                      className="mt-4 text-sm leading-7 text-red-600"
+                    >
+                      {t(error)}
+                    </p>
+                  ),
                 )}
               </form>
             </fieldset>

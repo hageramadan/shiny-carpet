@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import * as Menu from "@radix-ui/react-dropdown-menu";
 import { getCountryCallingCode, type Country } from "react-phone-number-input";
@@ -19,13 +20,14 @@ type Props = {
 };
 
 function CountryFlag({ country, label }: { country?: Country; label: string }) {
+  const t = useTranslation();
   const Flag = country ? phoneFlags[country] : undefined;
   return (
     <span
       aria-hidden="true"
       className="inline-flex h-4 w-6 shrink-0 items-center justify-center overflow-hidden rounded-[2px] [&>svg]:h-full [&>svg]:w-full"
     >
-      {Flag ? <Flag title={label} /> : <FiGlobe />}
+      {Flag ? <Flag title={t(label)} /> : <FiGlobe />}
     </span>
   );
 }
@@ -40,6 +42,7 @@ export default function PhoneCountrySelect({
   onBlur,
   "aria-label": ariaLabel = "الدولة ورمز الاتصال",
 }: Props) {
+  const t = useTranslation();
   const selected = options.find((option) => option.value === value);
   return (
     <Menu.Root
@@ -49,7 +52,7 @@ export default function PhoneCountrySelect({
       <Menu.Trigger
         type="button"
         disabled={disabled || readOnly}
-        aria-label={`${ariaLabel}${selected ? `: ${selected.label}` : ""}`}
+        aria-label={t(`${ariaLabel}${selected ? `: ${selected.label}` : ""}`)}
         onFocus={onFocus}
         onBlur={onBlur}
         className="flex min-h-11 shrink-0 items-center gap-2 self-stretch border-r border-gray-200 bg-soft/60 px-3 text-sm font-normal text-ink outline-none transition-colors hover:bg-primary/10 focus-visible:bg-primary/10 disabled:cursor-not-allowed sm:gap-2.5"
@@ -57,9 +60,11 @@ export default function PhoneCountrySelect({
         <span className="inline-flex items-center gap-2">
           <CountryFlag
             country={value}
-            label={selected?.label ?? "الدولة"}
+            label={t(selected?.label ?? "الدولة")}
           />
-          <span dir="ltr">{value ? `+${getCountryCallingCode(value)}` : "الدولة"}</span>
+          <span dir="ltr">
+            {t(value ? `+${getCountryCallingCode(value)}` : "الدولة")}
+          </span>
         </span>
         <FiChevronDown
           aria-hidden="true"
@@ -87,18 +92,19 @@ export default function PhoneCountrySelect({
                   value={option.value}
                   textValue={`${option.label} +${getCountryCallingCode(option.value)}`}
                   className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-sm outline-none data-[highlighted]:bg-primary/10 data-[highlighted]:text-primary"
-                  dir="rtl"
+                  dir={t.dir}
                 >
                   <CountryFlag
                     country={option.value}
-                    label={option.label}
+                    label={t(option.label)}
                   />
-                  <span>{option.label}</span>
+                  <span>{t(option.label)}</span>
                   <span
                     className="ms-auto text-xs text-muted"
                     dir="ltr"
                   >
-                    +{getCountryCallingCode(option.value)}
+                    {t("+")}
+                    {t(getCountryCallingCode(option.value))}
                   </span>
                   <Menu.ItemIndicator>
                     <FiCheck

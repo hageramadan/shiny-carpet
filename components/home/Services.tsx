@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -10,10 +11,11 @@ const servicesGridClassName =
   "grid grid-flow-col auto-cols-[85%] snap-x snap-proximity gap-4 overflow-x-auto overscroll-x-contain pb-3 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary md:auto-cols-auto md:grid-flow-row md:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0";
 
 function ServicesLoading() {
+  const t = useTranslation();
   return (
     <div
       role="status"
-      aria-label="جاري تحميل الخدمات"
+      aria-label={t("جاري تحميل الخدمات")}
       className={servicesGridClassName}
     >
       {[0, 1].map((index) => (
@@ -23,12 +25,13 @@ function ServicesLoading() {
           className="h-[299.9px] min-w-0 animate-pulse rounded-3xl bg-primary/10 motion-reduce:animate-none md:h-[429.9px]"
         />
       ))}
-      <span className="sr-only">جاري تحميل الخدمات…</span>
+      <span className="sr-only">{t("جاري تحميل الخدمات…")}</span>
     </div>
   );
 }
 
 function ServiceCards() {
+  const t = useTranslation();
   const request = useCategories();
   if (request.status === "loading") return <ServicesLoading />;
   if (request.status === "error")
@@ -44,7 +47,7 @@ function ServiceCards() {
   return (
     <div
       role="region"
-      aria-label="الخدمات، اسحب لعرض الخدمة التالية"
+      aria-label={t("الخدمات، اسحب لعرض الخدمة التالية")}
       tabIndex={0}
       className={servicesGridClassName}
     >
@@ -58,7 +61,7 @@ function ServiceCards() {
           {category.image ? (
             <Image
               src={category.image}
-              alt={category.name}
+              alt={t(category.name)}
               fill
               sizes="(max-width: 767px) 85vw, 50vw"
               className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -72,7 +75,7 @@ function ServiceCards() {
           <div className="absolute inset-0 bg-linear-to-t from-ink via-ink/25 to-transparent" />
           <div className="absolute inset-x-0 bottom-0 p-7 text-white lg:p-9 max-sm:p-4">
             <span className="text-lg font-bold text-cyan-200 max-sm:text-base">
-              {String(index + 1).padStart(2, "0")}
+              {t(String(index + 1).padStart(2, "0"))}
             </span>
             <h3 className="mt-3 text-2xl font-bold max-sm:text-xl">{category.name}</h3>
           </div>
@@ -83,6 +86,7 @@ function ServiceCards() {
 }
 
 export default function Services() {
+  const t = useTranslation();
   return (
     <section
       id="services"
@@ -92,27 +96,39 @@ export default function Services() {
       <div className="container mx-auto px-5 sm:px-6 lg:px-8">
         <div className="mb-10 text-center max-sm:mb-6">
           <span className="text-sm font-extrabold text-[#087B82] md:text-base max-sm:text-xs">
-            خدماتنا
+            {t("خدماتنا")}
           </span>
           <h2
             id="services-title"
             className="mt-3 text-3xl font-semibold leading-relaxed text-ink lg:text-[43.23px] max-sm:text-2xl max-sm:leading-snug"
           >
-            كل اللي محتاجه لنظافة بيتك
+            {t("كل اللي محتاجه لنظافة بيتك")}
           </h2>
           <p className="mt-3 text-sm md:text-base text-[#607779] max-sm:text-xs">
-            خدمات متخصصة بعناية حقيقية لكل قطعة في بيتك.
+            {t("خدمات متخصصة بعناية حقيقية لكل قطعة في بيتك.")}
           </p>
         </div>
-        <ServiceCards />
-        <div className="mt-8 flex justify-center max-sm:mt-5">
+        <div className="mb-8 flex justify-center max-sm:mb-5">
           <Link
             href="/products"
             className="inline-flex min-h-12 items-center justify-center gap-5 rounded-xl bg-[#1CA6AD] px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-ink max-sm:gap-3 max-sm:px-4 max-sm:text-xs"
           >
-            استعرض المقاسات والأسعار <FiArrowLeft />
+            {t("استعرض المقاسات والأسعار ")}
+            <FiArrowLeft
+              aria-hidden="true"
+              className="ltr:rotate-180"
+            />
           </Link>
         </div>
+        <ServiceCards />
+        {/* <div className="mt-8 flex justify-center max-sm:mt-5">
+          <Link
+            href="/products"
+            className="inline-flex min-h-12 items-center justify-center gap-5 rounded-xl bg-[#1CA6AD] px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-ink max-sm:gap-3 max-sm:px-4 max-sm:text-xs"
+          >
+            استعرض المقاسات والأسعار <FiArrowLeft aria-hidden="true" className="ltr:rotate-180" />
+          </Link>
+        </div> */}
       </div>
     </section>
   );

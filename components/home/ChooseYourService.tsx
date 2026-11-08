@@ -1,3 +1,5 @@
+"use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 import { FiCheckCircle } from "react-icons/fi";
 import PhoneMockup from "./PhoneMockup";
 
@@ -32,6 +34,7 @@ const choices = [
 ];
 
 export default function ChooseYourService() {
+  const t = useTranslation();
   return (
     <section
       aria-labelledby="choose-title"
@@ -40,18 +43,18 @@ export default function ChooseYourService() {
       <div className="container mx-auto px-5 sm:px-6 lg:px-8">
         <div className="mb-10 text-center max-sm:mb-6">
           <span className="text-sm font-extrabold text-[#087B82] md:text-base max-sm:text-xs">
-            كل حاجة في مكان واحد
+            {t("كل حاجة في مكان واحد")}
           </span>
           <h2
             id="choose-title"
             className="mt-3 text-3xl font-semibold leading-relaxed text-ink lg:text-[43.23px] max-sm:text-2xl max-sm:leading-snug"
           >
-            تطبيق واحد… وتحكم أسهل في طلباتك
+            {t("منصة واحد… وتحكم أسهل في طلباتك")}
           </h2>
         </div>
         <div
           role="region"
-          aria-label="مميزات التطبيق، اسحب لعرض الكارت التالي"
+          aria-label={t("مميزات المنصة، اسحب لعرض الكارت التالي")}
           tabIndex={0}
           className="grid grid-flow-col auto-cols-[85%] snap-x snap-proximity gap-4 overflow-x-auto overscroll-x-contain pb-3 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary lg:auto-cols-auto lg:grid-flow-row lg:grid-cols-3 lg:gap-8 lg:overflow-visible lg:pb-0"
         >
@@ -64,13 +67,13 @@ export default function ChooseYourService() {
               }
             >
               <span className="border-b border-primary pb-1 text-sm font-extrabold leading-5 text-[#087B82] md:text-base lg:leading-[1.9] max-sm:text-xs">
-                {choice.number}
+                {t(choice.number)}
               </span>
               <h3 className="mt-3 text-xl font-bold leading-7 text-ink lg:mt-6 lg:leading-[1.9] max-sm:text-lg max-sm:leading-6">
-                {choice.title}
+                {t(choice.title)}
               </h3>
               <p className="mt-2 text-sm leading-6 text-[#607779] md:text-base lg:mt-3 lg:leading-[1.9] max-sm:text-xs">
-                {choice.description}
+                {t(choice.description)}
               </p>
               <ul className="mt-3 space-y-2 text-sm leading-6 text-ink md:text-base lg:mt-5 lg:leading-[1.9] max-sm:text-xs">
                 {choice.points.map((point) => (
@@ -79,7 +82,7 @@ export default function ChooseYourService() {
                     className="flex items-center justify-center gap-2"
                   >
                     <FiCheckCircle className="text-primary" />
-                    {point}
+                    {t(point)}
                   </li>
                 ))}
               </ul>

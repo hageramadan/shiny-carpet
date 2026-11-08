@@ -5,8 +5,8 @@ import { getCategories } from "@/lib/categories";
 import { getApiProduct, getProductsByCategory } from "@/lib/api-products";
 import { useApiResource } from "./useApiResource";
 
-export function useCategories() {
-  return useApiResource("categories", getCategories);
+export function useCategories(enabled = true) {
+  return useApiResource(enabled ? "categories" : null, getCategories);
 }
 
 export function useCategoryProducts(categoryId?: number) {

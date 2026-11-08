@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import { useCallback, useState } from "react";
 import Link from "next/link";
@@ -19,6 +20,7 @@ const tabs = [
 type OrdersTab = (typeof tabs)[number]["id"];
 
 export function OrdersPage() {
+  const t = useTranslation();
   const [activeTab, setActiveTab] = useState<OrdersTab>("all");
   const load = useCallback(
     async (signal: AbortSignal) => {
@@ -48,7 +50,7 @@ export function OrdersPage() {
     <section className="min-h-[65vh] bg-[#f7f9fa]  pb-12 pt-6 text-ink sm:pb-14">
       <div className="container mx-auto w-full  px-5 sm:px-8 lg:px-14">
         <nav
-          aria-label="مسار التصفح"
+          aria-label={t("مسار التصفح")}
           className="mb-3 text-sm text-muted"
         >
           <ol className="flex items-center gap-1">
@@ -57,21 +59,23 @@ export function OrdersPage() {
                 href="/"
                 className="transition-colors hover:text-primary"
               >
-                الرئيسية
+                {t("الرئيسية")}
               </Link>
             </li>
-            <li aria-hidden="true">/</li>
-            <li aria-current="page">طلباتي</li>
+            <li aria-hidden="true">{t("/")}</li>
+            <li aria-current="page">{t("طلباتي")}</li>
           </ol>
         </nav>
-        <h1 className="text-[32px] font-extrabold leading-normal sm:text-4xl">طلباتي</h1>
+        <h1 className="text-[32px] font-extrabold leading-normal sm:text-4xl">
+          {t("طلباتي")}
+        </h1>
         <p className="mt-3 text-sm leading-6 text-muted sm:text-base">
-          استعرض كل طلباتك، أو اختر التصنيف لمتابعة الطلبات الحالية والسابقة.
+          {t("استعرض كل طلباتك، أو اختر التصنيف لمتابعة الطلبات الحالية والسابقة.")}
         </p>
 
         <div
           role="group"
-          aria-label="تصفية الطلبات"
+          aria-label={t("تصفية الطلبات")}
           className="mb-6 mt-6 flex flex-wrap gap-2.5"
         >
           {tabs.map(({ id, label }) => (
@@ -83,7 +87,7 @@ export function OrdersPage() {
               onClick={() => setActiveTab(id)}
               className="min-h-9 rounded-[9px] border border-gray-200 bg-white px-4 py-1.5 text-sm transition-colors hover:border-primary aria-pressed:border-primary aria-pressed:bg-[#e5f6f8] aria-pressed:text-primary"
             >
-              {label}
+              {t(label)}
             </button>
           ))}
         </div>
@@ -102,23 +106,23 @@ export function OrdersPage() {
                 aria-hidden="true"
                 className="size-10 animate-spin rounded-full border-4 border-primary/20 border-t-primary motion-reduce:animate-none"
               />
-              <span className="sr-only">جاري تحميل الطلبات…</span>
+              <span className="sr-only">{t("جاري تحميل الطلبات…")}</span>
             </div>
           ) : !signedIn ? (
             <Link
               href="/login?next=%2Forders"
               className="text-primary"
             >
-              سجّل الدخول لعرض طلباتك
+              {t("سجّل الدخول لعرض طلباتك")}
             </Link>
           ) : error ? (
             <div role="alert">
-              {error}
+              {t(error)}
               <button
                 onClick={reload}
                 className="m-3 text-primary"
               >
-                إعادة المحاولة
+                {t("إعادة المحاولة")}
               </button>
             </div>
           ) : visibleOrders.length === 0 ? (
@@ -129,10 +133,16 @@ export function OrdersPage() {
                 id="orders-list-heading"
                 className="mb-6 text-lg font-bold"
               >
-                {tabs.find((tab) => tab.id === activeTab)?.label}
+                {t(tabs.find((tab) => tab.id === activeTab)?.label)}
                 <span className="font-normal">
-                  {" "}
-                  · {new Intl.NumberFormat("ar-EG").format(visibleOrders.length)} طلب
+                  {t(" ")}
+                  {t("· ")}
+                  {t(
+                    new Intl.NumberFormat(t.locale === "en" ? "en-GB" : "ar-EG").format(
+                      visibleOrders.length,
+                    ),
+                  )}{" "}
+                  {t(" طلب")}
                 </span>
               </h2>
               <ul className="space-y-4">

@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
@@ -25,6 +26,7 @@ import ProductSizePicker from "./ProductSizePicker";
 import { useCustomProductPrice } from "@/hooks/useCustomProductPrice";
 
 export default function ProductDetails({ product }: { product: Product }) {
+  const t = useTranslation();
   const { state } = useStore();
   const router = useRouter();
   const cart = useCart();
@@ -122,18 +124,18 @@ export default function ProductDetails({ product }: { product: Product }) {
         </h1>
         <div className="mt-2 flex min-h-11 items-center justify-between gap-4">
           <div className="text-xl text-primary sm:text-2xl">
-            {money(product.price)} <span className="text-sm">{currency}</span>
+            {t(money(product.price))} <span className="text-sm">{t(currency)}</span>
           </div>
           {!hideAddControls && (
             <div
               role="group"
-              aria-label="الكمية"
+              aria-label={t("الكمية")}
               dir="ltr"
               className="flex shrink-0 items-center gap-3"
             >
               <button
                 type="button"
-                aria-label="تقليل الكمية"
+                aria-label={t("تقليل الكمية")}
                 disabled={pending || quantity <= 1}
                 onClick={() => {
                   setQuantity(quantity - 1);
@@ -150,7 +152,7 @@ export default function ProductDetails({ product }: { product: Product }) {
               </span>
               <button
                 type="button"
-                aria-label="زيادة الكمية"
+                aria-label={t("زيادة الكمية")}
                 disabled={pending || quantity >= 99}
                 onClick={() => {
                   setQuantity(quantity + 1);
@@ -167,7 +169,7 @@ export default function ProductDetails({ product }: { product: Product }) {
         </div>
         {product.description && (
           <p className="mt-5 whitespace-pre-line text-sm leading-7 text-[#242424] sm:text-base sm:leading-8">
-            {product.description}
+            {t(product.description)}
           </p>
         )}
         <div className="mt-6 sm:mt-8">
@@ -198,56 +200,62 @@ export default function ProductDetails({ product }: { product: Product }) {
               type="submit"
               disabled={pending || (!resolved && choice !== "custom")}
               aria-busy={pending}
-              aria-label={
+              aria-label={t(
                 pending
                   ? "جاري الإضافة…"
                   : added
                     ? "تمت الإضافة - أضف منتج آخر"
                     : isApiCustom
                       ? "احسب السعر وأضف إلى السلة"
-                      : "أضف إلى السلة"
-              }
+                      : "أضف إلى السلة",
+              )}
               className="flex min-h-14 w-full flex-wrap items-center justify-between gap-x-4 gap-y-1 rounded-2xl bg-primary px-4 py-3 text-base font-bold text-white transition-colors hover:bg-ink disabled:cursor-not-allowed sm:min-h-16 sm:px-5 sm:text-lg"
             >
               <span>
-                {pending
-                  ? "جاري الإضافة…"
-                  : added
-                    ? "تمت الإضافة - أضف منتج آخر"
-                    : "أضف إلى السلة"}
+                {t(
+                  pending
+                    ? "جاري الإضافة…"
+                    : added
+                      ? "تمت الإضافة - أضف منتج آخر"
+                      : "أضف إلى السلة",
+                )}
               </span>
               {total !== null && (
                 <span>
-                  {money(total)} {currency}
+                  {t(money(total))} {t(currency)}
                 </span>
               )}
             </button>
           )}
-          {error && (
-            <p
-              role="alert"
-              className="mt-3 text-sm text-red-600"
-            >
-              {error}{" "}
-              <Link
-                href="/cart"
-                className="underline"
+          {t(
+            error && (
+              <p
+                role="alert"
+                className="mt-3 text-sm text-red-600"
               >
-                عرض السلة
-              </Link>
-            </p>
+                {t(error)}
+                {t(" ")}
+                <Link
+                  href="/cart"
+                  className="underline"
+                >
+                  {t("عرض السلة")}
+                </Link>
+              </p>
+            ),
           )}
           {state.profile && cart.status === "error" && (
             <p
               role="alert"
               className="mt-3 text-sm text-red-600"
             >
-              {cart.error}{" "}
+              {t(cart.error)}
+              {t(" ")}
               <Link
                 href="/cart"
                 className="underline"
               >
-                عرض السلة
+                {t("عرض السلة")}
               </Link>
             </p>
           )}
@@ -257,15 +265,18 @@ export default function ProductDetails({ product }: { product: Product }) {
               className={isCarpet ? "sr-only" : "text-sm text-primary"}
             >
               <span className="sr-only">
-                {isCarpet
-                  ? "تمت إضافة القطعة بالمقاس المحدد."
-                  : "تمت إضافة المنتج. يمكنك زيادة العدد أو تقليله من السلة."}{" "}
+                {t(
+                  isCarpet
+                    ? "تمت إضافة القطعة بالمقاس المحدد."
+                    : "تمت إضافة المنتج. يمكنك زيادة العدد أو تقليله من السلة.",
+                )}
+                {t(" ")}
               </span>
               <Link
                 href="/cart"
                 className="font-bold underline underline-offset-4"
               >
-                عرض السلة
+                {t("عرض السلة")}
               </Link>
             </p>
           )}

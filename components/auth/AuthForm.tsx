@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -24,6 +25,7 @@ export default function AuthForm({
   register?: boolean;
   destination?: string;
 }) {
+  const t = useTranslation();
   const router = useRouter();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -53,11 +55,11 @@ export default function AuthForm({
       const credentials = apiPhone(phone);
       const exists = await phoneExists(credentials, signal);
       if (register && exists) {
-        toast.error("رقم الهاتف موجود بالفعل", { id: "auth-phone-exists" });
+        toast.error(t("رقم الهاتف موجود بالفعل"), { id: "auth-phone-exists" });
         return;
       }
       if (!register && !exists) {
-        toast.error("رقم الهاتف غير مسجل", { id: "auth-phone-not-found" });
+        toast.error(t("رقم الهاتف غير مسجل"), { id: "auth-phone-not-found" });
         return;
       }
       const mode = register ? "register" : "login";
@@ -80,19 +82,19 @@ export default function AuthForm({
 
   return (
     <AuthLayout
-      title={title}
-      description={
+      title={t(title)}
+      description={t(
         register
           ? "أنشئ حسابك لتتابع طلباتك وتحفظ عناوين الاستلام والتوصيل."
-          : "أدخل رقم هاتفك للمتابعة إلى حسابك، بدون كلمة مرور."
-      }
+          : "أدخل رقم هاتفك للمتابعة إلى حسابك، بدون كلمة مرور.",
+      )}
     >
       <h2 className="mb-4 text-xl font-bold text-[#17202A]">
-        {register ? "بيانات الحساب" : "مرحبًا بعودتك"}
+        {t(register ? "بيانات الحساب" : "مرحبًا بعودتك")}
       </h2>
       {!register && (
         <p className="mb-3 text-sm leading-6 text-muted">
-          تابع إلى خطوة التحقق باستخدام رمز من ٦ أرقام.
+          {t("تابع إلى خطوة التحقق باستخدام رمز من ٦ أرقام.")}
         </p>
       )}
       <form
@@ -101,7 +103,7 @@ export default function AuthForm({
       >
         {register && (
           <label className="block text-sm font-bold">
-            الاسم
+            {t("الاسم")}
             <input
               name="name"
               autoComplete="name"
@@ -113,7 +115,7 @@ export default function AuthForm({
                 setName(event.target.value);
                 setError("");
               }}
-              placeholder="الاسم"
+              placeholder={t("الاسم")}
               className={`${authInputClass} mt-1.5`}
             />
           </label>
@@ -133,7 +135,7 @@ export default function AuthForm({
         {register && (
           <>
             <p className="text-sm md:text-base leading-6 text-[#6B7280]">
-              سيرسل رمز تحقق من 6 أرقام إلى هاتفك لإتمام إنشاء الحساب.
+              {t("سيرسل رمز تحقق من 6 أرقام إلى هاتفك لإتمام إنشاء الحساب.")}
             </p>
             <label className="flex cursor-pointer items-start gap-2 text-sm leading-6 text-primary">
               <input
@@ -144,36 +146,40 @@ export default function AuthForm({
                 className="mt-1 size-3.5 shrink-0 accent-primary"
               />
               <span>
-                أوافق على{" "}
+                {t("أوافق على")}
+                {t(" ")}
                 <Link
                   href="/terms-and-conditions"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="underline"
                 >
-                  الشروط والأحكام
-                </Link>{" "}
-                و
+                  {t("الشروط والأحكام")}
+                </Link>
+                {t(" ")}
+                {t("و")}
                 <Link
                   href="/privacy-policy"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="underline"
                 >
-                  سياسة الخصوصية
+                  {t("سياسة الخصوصية")}
                 </Link>
               </span>
             </label>
           </>
         )}
-        {error && (
-          <p
-            id="auth-error"
-            role="alert"
-            className="text-sm text-red-700"
-          >
-            {error}
-          </p>
+        {t(
+          error && (
+            <p
+              id="auth-error"
+              role="alert"
+              className="text-sm text-red-700"
+            >
+              {t(error)}
+            </p>
+          ),
         )}
         <button
           type="submit"
@@ -181,24 +187,24 @@ export default function AuthForm({
           aria-busy={pending}
           className={authButtonClass}
         >
-          {pending ? "جاري المتابعة…" : title}
+          {t(pending ? "جاري المتابعة…" : title)}
         </button>
       </form>
       <div className="mt-3 border-t border-gray-100 pt-3 text-center">
         <p className="mb-3 text-sm text-muted">
-          {register ? "لديك حساب بالفعل؟" : "ليس لديك حساب؟"}
+          {t(register ? "لديك حساب بالفعل؟" : "ليس لديك حساب؟")}
         </p>
         <Link
           href={authHref(register ? "/login" : "/register", destination)}
           className="inline-flex min-h-11 w-full items-center justify-center rounded-lg border border-primary px-4 py-2 text-sm font-bold text-[#087B82] md:text-base transition-colors hover:bg-primary/5"
         >
-          {register ? "تسجيل الدخول" : "إنشاء حساب"}
+          {t(register ? "تسجيل الدخول" : "إنشاء حساب")}
         </Link>
         <Link
           href={destination === "/profile" ? "/products" : destination}
           className="mt-3 inline-block text-sm text-primary hover:underline"
         >
-          الدخول كزائر
+          {t("الدخول كزائر")}
         </Link>
       </div>
     </AuthLayout>

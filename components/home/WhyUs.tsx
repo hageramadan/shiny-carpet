@@ -1,3 +1,5 @@
+"use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 import Link from "next/link";
 import { FiArrowLeft, FiMapPin, FiFileText, FiClock } from "react-icons/fi";
 import { PiRulerBold } from "react-icons/pi";
@@ -6,7 +8,7 @@ import { CiCamera } from "react-icons/ci";
 const features = [
   {
     icon: FiMapPin,
-    title: "اطلب من أي مكان",
+    title: "اطلب من أي مكان  داخل مدينه الرياض",
     description: "خدمة سهلة توصلك في الوقت والمكان اللي تختاره",
   },
   {
@@ -27,6 +29,7 @@ const features = [
 ];
 
 export default function WhyUs() {
+  const t = useTranslation();
   return (
     <section
       id="why"
@@ -36,24 +39,24 @@ export default function WhyUs() {
       <div className="container mx-auto grid items-center gap-10 px-5 sm:px-6 lg:grid-cols-2 lg:gap-20 lg:px-8 max-sm:gap-6">
         <div>
           <span className="text-sm font-extrabold text-[#087B82] md:text-base max-sm:text-xs">
-            ليه Shiny Carpet؟
+            {t("ليه Shiny Carpet؟")}
           </span>
           <h2
             id="why-title"
             className="mt-4 text-3xl font-semibold leading-[60.52px] tracking-[-1.6px] text-ink lg:text-[43.23px] max-sm:mt-3 max-sm:text-2xl max-sm:leading-9 max-sm:tracking-tight"
           >
-            لأن راحتك ونظافة بيتك
-            <br className="hidden sm:block" /> يهمونا
+            {t("لأن راحتك ونظافة بيتك")}
+            <br className="hidden sm:block" /> {t(" يهمونا")}
           </h2>
           <p className="mt-4 text-sm leading-8 text-[#607779] md:text-base max-sm:mt-3 max-sm:text-xs max-sm:leading-6">
-            صممنا كل خطوة علشان نوفر لك تجربة مريحة، واضحة، وتستحق ثقتك.
+            {t("صممنا كل خطوة علشان نوفر لك تجربة مريحة، واضحة، وتستحق ثقتك.")}
           </p>
-          <Link
+          {/* <Link
             href="/products"
             className="mt-7 inline-flex min-h-12 items-center justify-center gap-5 rounded-xl bg-primary px-6 py-3 text-base font-semibold text-white transition-colors hover:bg-ink shadow-button max-sm:mt-4 max-sm:gap-3 max-sm:px-4 max-sm:text-sm"
           >
-            ابدأ طلبك <FiArrowLeft />
-          </Link>
+            ابدأ طلبك <FiArrowLeft aria-hidden="true" className="ltr:rotate-180" />
+          </Link> */}
         </div>
         <div className="grid overflow-hidden rounded-3xl border border-gray-200 sm:grid-cols-2">
           {features.map(({ icon: Icon, title, description }, index) => (
@@ -70,9 +73,11 @@ export default function WhyUs() {
                 <Icon />
               </span>
               <div>
-                <h3 className="text-base font-bold text-ink max-sm:text-sm">{title}</h3>
+                <h3 className="text-base font-bold text-ink max-sm:text-sm">
+                  {t(title)}
+                </h3>
                 <p className="mt-2 text-sm leading-7 text-muted max-sm:text-xs max-sm:leading-6">
-                  {description}
+                  {t(description)}
                 </p>
               </div>
             </article>

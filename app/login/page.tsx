@@ -1,8 +1,9 @@
+import { localizeMetadata } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import AuthForm from "@/components/auth/AuthForm";
 import { authDestination } from "@/lib/auth-flow";
 
-export const metadata: Metadata = {
+const metadata: Metadata = {
   title: "تسجيل الدخول",
   robots: { index: false, follow: false },
   alternates: { canonical: "/login" },
@@ -19,4 +20,8 @@ export default async function Page({
       destination={authDestination(typeof next === "string" ? next : undefined)}
     />
   );
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  return localizeMetadata(metadata);
 }

@@ -1,9 +1,11 @@
 "use client";
+import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import { useEffect, useRef, useState } from "react";
 import { FaApple } from "react-icons/fa";
 
 function GooglePlayIcon() {
+  const t = useTranslation();
   return (
     <svg
       aria-hidden="true"
@@ -46,6 +48,7 @@ const stores = [
 ];
 
 export default function AppStoreBadges() {
+  const t = useTranslation();
   const container = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
 
@@ -77,7 +80,7 @@ export default function AppStoreBadges() {
           rel="noopener noreferrer"
           data-visible={visible}
           dir="ltr"
-          aria-label={`تحميل التطبيق من ${name}`}
+          aria-label={t(`تحميل التطبيق من ${name}`)}
           className="inline-flex cursor-pointer h-11 items-center gap-2 rounded-lg bg-black px-3 py-1 text-white transition duration-200 hover:bg-black/85 motion-safe:hover:-translate-y-0.5 motion-safe:data-[visible=true]:animate-store-reveal sm:h-12 sm:px-3.5"
         >
           <Icon
@@ -85,9 +88,9 @@ export default function AppStoreBadges() {
             className="size-6 shrink-0 sm:size-7"
           />
           <span className="text-left font-sans text-xs leading-tight">
-            {caption}
+            {t(caption)}
             <strong className="block whitespace-nowrap text-base font-semibold leading-tight max-sm:text-sm">
-              {name}
+              {t(name)}
             </strong>
           </span>
         </a>

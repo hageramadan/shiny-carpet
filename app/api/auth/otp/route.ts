@@ -1,3 +1,4 @@
+import { normalizeLocale } from "../../../../lib/i18n";
 import { NextResponse } from "next/server";
 import { sendOtp, verifyOtp } from "../../../../lib/auth/otp-server";
 import { ApiError } from "../../../../lib/api/client";
@@ -40,7 +41,13 @@ export async function POST(request: Request) {
           .find((part) => part.startsWith(COOKIE + "="))
           ?.slice(COOKIE.length + 1) || "";
       const token = request.headers.get("authorization")?.replace(/^Bearer /, "");
-      const result = await verifyOtp(body, id, token, request.signal);
+      const result = await verifyOtp(
+        body,
+        id,
+        token,
+        request.signal,
+        normalizeLocale(request.headers.get("accept-language")),
+      );
       response = NextResponse.json(result);
       response.cookies.set(COOKIE, "", { ...cookieOptions, maxAge: 0 });
     } else throw new ApiError(422, { message: "عملية غير صالحة." });
