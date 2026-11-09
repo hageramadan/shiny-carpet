@@ -68,7 +68,7 @@ export default function FAQ() {
             target="_blank"
             rel="noopener noreferrer"
             aria-disabled={!whatsappHref}
-            className="mt-7 flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-5 text-ink max-sm:mt-4 max-sm:p-4"
+            className="mt-7 hidden lg:flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-5 text-ink max-sm:mt-4 max-sm:p-4"
           >
             <span className="grid size-11 shrink-0 place-items-center rounded-full bg-primary/10 text-xl text-primary max-sm:text-lg">
               <SlPhone />
@@ -155,6 +155,29 @@ export default function FAQ() {
             </details>
           ))}
         </div>
+         <a
+            href={whatsappHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-disabled={!whatsappHref}
+            className="mb-7 flex lg:hidden items-center gap-4 rounded-2xl border border-gray-200 bg-white p-5 text-ink max-sm:mt-4 max-sm:p-4"
+          >
+            <span className="grid size-11 shrink-0 place-items-center rounded-full bg-primary/10 text-xl text-primary max-sm:text-lg">
+              <SlPhone />
+            </span>
+            <span className="flex-1">
+              <small className="block text-xs text-[#607779] md:text-[10px]">
+                {t("محتاج مساعدة أكتر؟")}
+              </small>
+              <strong className="text-sm text-ink max-sm:text-xs">
+                {t("تواصل مع فريق خدمة العملاء")}
+              </strong>
+            </span>
+            <FiArrowLeft
+              aria-hidden="true"
+              className="ltr:rotate-180"
+            />
+          </a>
       </div>
     </section>
   );
