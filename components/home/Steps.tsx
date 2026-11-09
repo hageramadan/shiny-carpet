@@ -4,11 +4,16 @@ import { FiGrid, FiFileText, FiTruck } from "react-icons/fi";
 import { PiRulerBold } from "react-icons/pi";
 
 const steps = [
-  { number: "01", icon: FiGrid, title: "اختر الخدمة", description: "سجاد أو بطاطين" },
+  {
+    number: "01",
+    icon: FiGrid,
+    title: "اختر الخدمه من مجموعات الخدمات",
+    description: "سجاد أو بطاطين",
+  },
   {
     number: "02",
     icon: PiRulerBold,
-    title: "حدد المقاس والكمية",
+    title: "حدد المقاس والكميه حسب احتياجك",
     description: "اللي يناسب احتياجك",
   },
   {
@@ -21,7 +26,7 @@ const steps = [
     number: "04",
     icon: FiTruck,
     title: "تابع طلبك",
-    description: "   لحد الاستلام",
+    description: "إلى الاستلام",
   },
 ];
 
@@ -45,7 +50,7 @@ export default function Steps() {
             {t("من أول طلبك إلى باب بيتك")}
           </h2>
           <p className="mt-3 text-sm md:text-base text-[#607779] max-sm:text-xs">
-            {t("خمس خطوات منك ، واترك الباقي علينا")}
+            {t("اربع خطوات منك ، واترك الباقي علينا")}
           </p>
         </div>
         <div className="relative mt-12 max-sm:mt-6">

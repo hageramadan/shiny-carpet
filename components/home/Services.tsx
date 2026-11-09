@@ -94,6 +94,18 @@ export default function Services() {
       className="py-16 lg:py-20 max-sm:py-9"
     >
       <div className="container mx-auto px-5 sm:px-6 lg:px-8">
+        <div className="mb-8 flex justify-center max-sm:mb-5">
+          <Link
+            href="/products"
+            className="inline-flex min-h-12 items-center justify-center gap-5 rounded-xl bg-[#1CA6AD] px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-ink max-sm:gap-3 max-sm:px-4 max-sm:text-xs"
+          >
+            {t("استعرض الخدمات والأسعار")}
+            <FiArrowLeft
+              aria-hidden="true"
+              className="ltr:rotate-180"
+            />
+          </Link>
+        </div>
         <div className="mb-10 text-center max-sm:mb-6">
           <span className="text-sm font-extrabold text-[#087B82] md:text-base max-sm:text-xs">
             {t("خدماتنا")}
@@ -113,7 +125,7 @@ export default function Services() {
             href="/products"
             className="inline-flex min-h-12 items-center justify-center gap-5 rounded-xl bg-[#1CA6AD] px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-ink max-sm:gap-3 max-sm:px-4 max-sm:text-xs"
           >
-            {t("استعرض المقاسات والأسعار ")}
+            {t("اطلب الآن")}
             <FiArrowLeft
               aria-hidden="true"
               className="ltr:rotate-180"
@@ -121,14 +133,6 @@ export default function Services() {
           </Link>
         </div>
         <ServiceCards />
-        {/* <div className="mt-8 flex justify-center max-sm:mt-5">
-          <Link
-            href="/products"
-            className="inline-flex min-h-12 items-center justify-center gap-5 rounded-xl bg-[#1CA6AD] px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-ink max-sm:gap-3 max-sm:px-4 max-sm:text-xs"
-          >
-            استعرض المقاسات والأسعار <FiArrowLeft aria-hidden="true" className="ltr:rotate-180" />
-          </Link>
-        </div> */}
       </div>
     </section>
   );

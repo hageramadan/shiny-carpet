@@ -6,14 +6,7 @@ import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import Logo from "@/components/layout/Logo";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import {
-  FiShoppingCart,
-  FiUser,
-  FiMenu,
-  FiX,
-  FiChevronDown,
-  FiCheck,
-} from "react-icons/fi";
+import { FiShoppingCart, FiUser, FiMenu, FiX, FiGlobe, FiCheck } from "react-icons/fi";
 import { useStore } from "@/components/store";
 import { useCart } from "@/components/cart/CartProvider";
 import { useCategories } from "@/hooks/useCatalogApi";
@@ -144,12 +137,11 @@ export default function Navbar() {
           type="button"
           dir="rtl"
           aria-label={t("اختيار اللغة")}
-          className="inline-flex h-10 min-w-14 shrink-0 items-center justify-center gap-1 bg-transparent text-sm font-bold text-ink outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+          className="inline-flex size-11 shrink-0 items-center justify-center rounded-xl bg-transparent text-ink outline-none hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         >
-          <span>{t.locale === "en" ? "Eng" : "العربية"}</span>
-          <FiChevronDown
+          <FiGlobe
             aria-hidden="true"
-            className="size-3.5 text-muted"
+            className="size-5"
           />
         </button>
       </DropdownMenu.Trigger>

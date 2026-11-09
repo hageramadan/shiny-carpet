@@ -26,7 +26,7 @@ const choices = [
     number: "03",
     title: "كل التفاصيل اللي تهمك",
     description:
-      "أضف عنوانك، صور القطع، وأي ملاحظات خاصة. كل حاجة بتوصل لفريقنا زي ما كتبتها بالضبط.",
+      "أضف عنوانك، صور القطع، وأي ملاحظه إضافيه. كل حاجة بتوصل لفريقنا زي ما كتبتها بالضبط.",
     points: ["ارفع صور بسهولة", "أضف ملاحظاتك الخاصة"],
     screen: "details" as const,
     background: "from-[#dcebed] to-[#f2f8f8]",
@@ -49,7 +49,7 @@ export default function ChooseYourService() {
             id="choose-title"
             className="mt-3 text-3xl font-semibold leading-relaxed text-ink lg:text-[43.23px] max-sm:text-2xl max-sm:leading-snug"
           >
-            {t("منصة واحد… وتحكم أسهل في طلباتك")}
+            {t("منصة واحده... وتحكم أسهل في طلباتك")}
           </h2>
         </div>
         <div

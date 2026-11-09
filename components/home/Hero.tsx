@@ -14,23 +14,17 @@ export default function Hero() {
       <div className="container grid grid-cols-1 gap-11.25 items-center min-h-0 pt-9 pb-11 mx-auto sm:grid-cols-[1fr_1.06fr] sm:gap-7.5 sm:min-h-150 sm:pt-13.75 sm:pb-17.5 md:gap-10 md:min-h-165 lg:gap-16.25 xl:gap-25 xl:min-h-180 px-5 sm:px-6 lg:px-8 max-sm:gap-7 max-sm:pt-6 max-sm:pb-8">
         <div className="text-center sm:[text-align:inherit]">
           <span className="text-[13px] font-extrabold text-[#087B82] inline-flex items-center gap-2.25 sm:text-[14px] max-sm:text-xs">
-            {t("شايني كاربت | عناية تستحقها تفاصيل بيتك ")}
+            {t("شايني كاربت - متخصصون في العناية بالسجاد والبطانيات")}
             <PiSparkle className="text-[19px]" />
           </span>
           <h1 className="mt-4.25 mb-3.75 leading-[1.4] text-[32px] font-extrabold tracking-[-1.7px] min-[361px]:text-4xl sm:mt-5.75 sm:mb-4.5 sm:text-[49px] md:text-[55px] lg:text-[65px] xl:text-[71px] max-sm:mt-3 max-sm:mb-3 max-sm:leading-snug max-sm:tracking-tight">
-            <span className={t.locale === "ar" ? "max-sm:whitespace-nowrap" : ""}>
-              {t("سجادك ")}
-              <br className="hidden sm:block" />
-              {t("وبطاطينك…")}
-            </span>
+            <span>{t("بدون ما تتعب..")}</span>
             <br />
-            <span className="text-primary whitespace-nowrap min-[361px]:[white-space:inherit]">
-              {t("نظافتهم علينا!")}
-            </span>
+            <span className="text-primary">{t("نخلي سجادك وبطانياتك تلمع")}</span>
           </h1>
           <p className="text-[#607779] text-[14px] max-w-82.5 mx-auto sm:max-w-129.75 sm:mx-0 md:text-[17px] max-sm:text-xs">
             {t(
-              "اطلب خدمة الغسيل بكل سهولة، اختار المقاس والكمية، وحدد عنوانك، وسيب الباقي علينا. مع شايني كاربت، النظافة بقت أسهل وأقرب ليك.",
+              "نستلم من باب بيتك، نعتني فيها في مغاسلنا المركزية، ونرجعها لك نظيفة ومغلفة، بدون ما تشيل هم الشيل والحط.",
             )}
           </p>
           <div className="flex gap-2.5 mt-5.75 justify-center sm:gap-2 sm:mt-7 sm:[justify-content:initial] md:gap-3 max-sm:mt-4">

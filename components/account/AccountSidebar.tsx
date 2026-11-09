@@ -15,7 +15,7 @@ import toast from "react-hot-toast";
 
 const accountLinks = [
   { href: "/profile", label: "الملف الشخصي", icon: FiUser },
-  { href: "/orders", label: "طلباتي", icon: FiShoppingBag },
+  // { href: "/orders", label: "طلباتي", icon: FiShoppingBag },
   { href: "/addresses", label: "العناوين المحفوظة", icon: FiMapPin },
 ];
 
