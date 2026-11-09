@@ -32,7 +32,7 @@ export default function Hero() {
               href="/products"
               className="inline-flex items-center justify-center gap-2 min-h-13 font-bold text-[12px] transition-[background,transform] duration-200 text-white bg-primary hover:-translate-y-0.5 hover:bg-[#188e95] px-4 py-3 rounded-[9px] border border-solid border-transparent min-[361px]:gap-2.5 min-[361px]:text-[14px] min-[361px]:px-5 sm:text-[13px] sm:px-4.25 md:gap-5 md:text-[15px] md:px-6 md:py-3.25 shadow-button"
             >
-              {t("اطلب الخدمة الآن ")}
+              {t("استعرض الخدمات والأسعار")}
               <FiArrowLeft
                 aria-hidden="true"
                 className="ltr:rotate-180"
