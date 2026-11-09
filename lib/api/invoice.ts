@@ -53,6 +53,14 @@ export async function fetchInvoice(
   const footer = isRecord(data.footer) ? data.footer : {};
   const support = isRecord(data.support) ? data.support : {};
   const summary = data.summary;
+  const discountAmount = summary.discount ?? summary.discount_amount;
+  const formattedDiscount = text(summary.discount_formatted)
+    .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
+    .replace(/٬|,/g, "")
+    .replace(/٫/g, ".")
+    .match(/-?\d+(?:\.\d+)?/)?.[0];
+  const hasDiscount = Number(discountAmount ?? formattedDiscount) > 0;
+  const discountValue = hasDiscount ? text(summary.discount_formatted) : "";
   const sections: OrderInvoice["sections"] = [];
   function section(title: string, entries: [string, unknown][]) {
     const lines = entries.flatMap(([label, value]) =>
@@ -107,7 +115,7 @@ export async function fetchInvoice(
   section("ملخص الفاتورة", [
     ["المجموع الفرعي", required(summary.subtotal_formatted)],
     ["رسوم التوصيل", summary.delivery_fee_formatted],
-    [text(summary.discount_label) || "الخصم", summary.discount_formatted],
+    [text(summary.discount_label) || "الخصم", discountValue],
     ["كود الخصم", summary.coupon_code],
     [
       `ضريبة القيمة المضافة${typeof summary.vat_percentage === "number" ? ` (${summary.vat_percentage}%)` : ""}`,
@@ -131,7 +139,7 @@ export async function fetchInvoice(
     { label: "رسوم التوصيل", value: text(summary.delivery_fee_formatted) },
     {
       label: text(summary.discount_label) || "الخصم",
-      value: text(summary.discount_formatted),
+      value: discountValue,
     },
     { label: "كود الخصم", value: text(summary.coupon_code) },
     {

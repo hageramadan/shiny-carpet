@@ -22,6 +22,12 @@ async function main() {
       fail = true,
       release;
     const invoiceRequests = [];
+    const backendPdf = Buffer.from("%PDF-1.7\nbackend invoice design\n%%EOF");
+    await context.route("**/api/invoice-download", (route) =>
+      route.fulfill({
+        json: { data: backendPdf.toString("base64") },
+      }),
+    );
     const calls = [],
       errors = [];
     const order = () => ({
@@ -61,8 +67,13 @@ async function main() {
       if (url.pathname === "/api/settings") return respond({ result: true, data: {} });
       if (/\/orders\/541\/(invoice|view|download)$/.test(url.pathname)) {
         invoiceRequests.push(url.pathname);
-        assert.equal(url.pathname, "/api/orders/541/invoice");
         assert.equal(request.headers().authorization, "Bearer fixture-ratings-token");
+        if (url.pathname === "/api/orders/541/view")
+          return respond({
+            message: "Invoice generated successfully.",
+            url: "https://admin.shinycarpet-sa.com/storage/invoices/invoice_541.pdf",
+          });
+        assert.equal(url.pathname, "/api/orders/541/invoice");
         return respond(require("./fixtures/invoice.cjs")(541));
       }
       if (url.pathname === "/api/ratings") {
@@ -142,9 +153,9 @@ async function main() {
     assert.equal(downloaded.suggestedFilename(), "invoice-541.pdf");
     const pdfBytes = await fs.readFile(await downloaded.path());
     assert.equal(pdfBytes.subarray(0, 5).toString(), "%PDF-");
-    assert.ok(pdfBytes.length > 10000);
+    assert.deepEqual(pdfBytes, backendPdf);
     assert.ok(invoiceRequests.length > 0);
-    assert.ok(invoiceRequests.every((url) => url === "/api/orders/541/invoice"));
+    assert.ok(invoiceRequests.includes("/api/orders/541/view"));
     if (process.env.INVOICE_PDF_PATH)
       await downloaded.saveAs(process.env.INVOICE_PDF_PATH);
     assert.equal(await page.getByRole("dialog", { name: "فاتورة الطلب" }).count(), 0);

@@ -8,7 +8,7 @@ import { useAuthAction } from "@/hooks/useAuthAction";
 import type { OrderInvoice } from "@/lib/api/invoice";
 import { ApiError } from "@/lib/api/client";
 import { readAuthSession } from "@/lib/auth/session";
-import { createInvoicePdf } from "@/lib/invoice-pdf";
+import { fetchInvoiceDocument } from "@/lib/api/invoice-document";
 
 export default function InvoiceActions({
   id,
@@ -30,7 +30,7 @@ export default function InvoiceActions({
     void run("download", async (signal) => {
       const token = readAuthSession()?.token;
       if (!token) throw new ApiError(401);
-      const pdf = await createInvoicePdf(invoice, signal);
+      const pdf = await fetchInvoiceDocument(id, signal);
       signal.throwIfAborted();
       if (readAuthSession()?.token !== token) throw new ApiError(401);
       if (downloadUrl.current) URL.revokeObjectURL(downloadUrl.current);
