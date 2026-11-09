@@ -34,8 +34,8 @@ const metadata: Metadata = {
     "عناية تستحقها تفاصيل بيتك. اكتشف خدمات غسيل السجاد والبطاطين من Shiny Carpet، اختر خدمتك وحدد عنوانك وموعد الاستلام بسهولة.",
   applicationName: "Shiny Carpet",
   icons: {
-    icon: { url: "/images/logo1.png", type: "image/png" },
-    shortcut: "/images/logo1.png",
+    icon: { url: "/images/favicon-transparent.png", type: "image/png" },
+    shortcut: "/images/favicon-transparent.png",
     apple: "/images/logo1.png",
   },
   alternates: { canonical: "/" },
