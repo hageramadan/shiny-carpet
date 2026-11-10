@@ -29,6 +29,9 @@ button {
   }
 }
 @layer base {
+  :root {
+    color-scheme: only light;
+  }
   a,
   button,
   input,

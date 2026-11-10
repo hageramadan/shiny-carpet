@@ -20,7 +20,7 @@ export default function Hero() {
           <h1 className="mt-4.25 mb-3.75 leading-[1.4] text-[32px] font-extrabold tracking-[-1.7px] min-[361px]:text-4xl sm:mt-5.75 sm:mb-4.5 sm:text-[49px] md:text-[55px] lg:text-[65px] xl:text-[71px] max-sm:mt-3 max-sm:mb-3 max-sm:leading-snug max-sm:tracking-tight">
             <span>{t("بدون ما تتعب..")}</span>
             <br />
-            <span className="text-primary">{t("نخلي سجادك وبطانياتك تلمع")}</span>
+            <span className="text-primary">{t("نخلي سجادك وبطانياتك معطرة وتلمع")}</span>
           </h1>
           <p className="text-[#607779] text-[14px] max-w-82.5 mx-auto sm:max-w-129.75 sm:mx-0 md:text-[17px] max-sm:text-xs">
             {t(

@@ -60,3 +60,41 @@ test("GET settings is public, uncached, Arabic and abortable", async (t) => {
   };
   assert.equal((await fetchSettings(controller.signal)).email, "info@tawajood.com");
 });
+
+test("combined API policies are separated without changing their wording", () => {
+  const privacy = "First: Privacy Policy\r\nData we collect: name and phone.";
+  const terms = "Second: Terms & Conditions\r\nCancellation: 3 hours before pickup.";
+  const s = parseSettings({
+    result: true,
+    data: { privacy_policy_and_terms_condition: `${privacy}\r\n ${terms}` },
+  });
+  assert.equal(s.privacyPolicy, privacy.replace(/\r\n/g, "\n"));
+  assert.equal(s.termsAndConditions, terms.replace(/\r\n/g, "\n"));
+});
+
+test("combined policies support Arabic headings and preserve unrecognized content", () => {
+  const privacy = "أولاً: سياسة الخصوصية\nنحترم خصوصيتك.";
+  const terms = "ثانياً: الشروط والأحكام\nنطاق الخدمة.";
+  const s = parseSettings({
+    result: true,
+    data: { privacy_policy_and_terms_condition: `${privacy}\n${terms}` },
+  });
+  assert.equal(s.privacyPolicy, privacy);
+  assert.equal(s.termsAndConditions, terms);
+  const fallback = parseSettings({
+    result: true,
+    data: { privacy_policy_and_terms_condition: "Combined legal text" },
+  });
+  assert.equal(fallback.privacyPolicy, "Combined legal text");
+  assert.equal(fallback.termsAndConditions, "Combined legal text");
+  const separate = parseSettings({
+    result: true,
+    data: {
+      privacy_policy_and_terms_condition: "Combined legal text",
+      privacy_policy: "Separate privacy",
+      terms_and_conditions: "Separate terms",
+    },
+  });
+  assert.equal(separate.privacyPolicy, "Separate privacy");
+  assert.equal(separate.termsAndConditions, "Separate terms");
+});

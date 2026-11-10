@@ -1,7 +1,7 @@
 import { localizeMetadata } from "@/lib/i18n/server";
 import { LanguageProvider } from "@/components/i18n/LanguageProvider";
 import { getServerLocale } from "@/lib/i18n/server";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { StoreProvider } from "@/components/store";
 import Navbar from "@/components/layout/Navbar";
@@ -23,6 +23,10 @@ const cairo = localFont({
   variable: "--font-cairo",
   display: "swap",
 });
+
+export const viewport: Viewport = {
+  colorScheme: "light",
+};
 
 const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

@@ -14,7 +14,6 @@ import { useCategories } from "@/hooks/useCatalogApi";
 const links = [
   ["/#top", "الرئيسية"],
   ["/#services", "خدماتنا"],
-  ["/#why", "لماذا Shiny Carpet؟"],
   ["/orders", "طلباتي"],
   // ["/tracking", "تتبع الطلب"],
   ["/#faq", "الأسئلة الشائعة"],

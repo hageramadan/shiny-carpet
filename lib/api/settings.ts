@@ -53,11 +53,32 @@ function image(value: unknown) {
     /* Unusable image. */
   }
 }
+// The settings API can return both policies in one plain-text field.
+function combinedPolicies(value: unknown) {
+  const content = text(value);
+  if (!content) return {};
+  const privacyHeading =
+    /^\s*(?:First\s*:\s*Privacy Policy|أول[ًاا]*\s*[:：]\s*سياسة الخصوصية)/im;
+  const termsHeading =
+    /^\s*(?:Second\s*:\s*Terms\s*(?:&|and)\s*Conditions|ثاني[ًاا]*\s*[:：]\s*الشروط والأحكام)/im;
+  const normalized = content.replace(/\r\n?/g, "\n");
+  const privacy = privacyHeading.exec(normalized);
+  const terms = termsHeading.exec(normalized);
+  if (privacy && terms && privacy.index < terms.index) {
+    return {
+      privacyPolicy: normalized.slice(privacy.index, terms.index).trim(),
+      termsAndConditions: normalized.slice(terms.index).trim(),
+    };
+  }
+  // Keep all supplied text available if the backend changes its headings.
+  return { privacyPolicy: content, termsAndConditions: content };
+}
 export function parseSettings(body: unknown): SiteSettings {
   if (!isRecord(body)) throw new ApiResponseError("Invalid settings response");
   if (body.result !== true) throw new ApiError(400, body);
   const data = body.data;
   if (!isRecord(data)) throw new ApiResponseError("Missing settings");
+  const policies = combinedPolicies(data.privacy_policy_and_terms_condition);
   const email = text(data.email),
     phone = text(data.phone);
   return {
@@ -79,8 +100,8 @@ export function parseSettings(body: unknown): SiteSettings {
     noDataIcon: image(data.no_data_icon),
     defaultUser: image(data.default_user),
     loginBackground: image(data.login_background),
-    privacyPolicy: text(data.privacy_policy),
-    termsAndConditions: text(data.terms_and_conditions),
+    privacyPolicy: text(data.privacy_policy) ?? policies.privacyPolicy,
+    termsAndConditions: text(data.terms_and_conditions) ?? policies.termsAndConditions,
   };
 }
 export async function fetchSettings(signal?: AbortSignal) {

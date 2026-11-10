@@ -29,7 +29,7 @@ export default function PolicyPage({ kind }: { kind: "privacy" | "terms" }) {
               dir="auto"
               className="whitespace-pre-wrap break-words text-start leading-8"
             >
-              {t(content || "المحتوى غير متاح حاليًا.")}
+              {content || t("المحتوى غير متاح حاليًا.")}
             </p>
           )}
         </div>
