@@ -20,7 +20,10 @@ export async function POST(request: Request) {
     return new Response(null, { status: 400 });
   try {
     const response = await fetch(url.href, {
-      headers: { Accept: "application/pdf" },
+      headers: {
+        Accept: "application/pdf",
+        "Accept-Language": request.headers.get("Accept-Language") === "en" ? "en" : "ar",
+      },
       cache: "no-store",
       redirect: "error",
       signal: AbortSignal.any([request.signal, AbortSignal.timeout(60_000)]),

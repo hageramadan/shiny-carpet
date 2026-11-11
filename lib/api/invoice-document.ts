@@ -1,3 +1,4 @@
+import { getLocale } from "../i18n";
 import { API_BASE_URL, ApiError, ApiResponseError } from "./client";
 import { assertPositiveId, isRecord } from "./validation";
 import { readAuthSession } from "../auth/session";
@@ -31,6 +32,7 @@ export async function fetchInvoiceDocument(id: number, signal?: AbortSignal) {
     method: "POST",
     headers: {
       Accept: "application/json",
+      "Accept-Language": getLocale(),
       "Content-Type": "application/json",
     },
     cache: "no-store",

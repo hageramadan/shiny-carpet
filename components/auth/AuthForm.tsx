@@ -154,17 +154,7 @@ export default function AuthForm({
                   rel="noopener noreferrer"
                   className="underline"
                 >
-                  {t("الشروط والأحكام")}
-                </Link>
-                {t(" ")}
-                {t("و")}
-                <Link
-                  href="/privacy-policy"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline"
-                >
-                  {t("سياسة الخصوصية")}
+                  {t("الشروط والأحكام")} {t("و")} {t("سياسة الخصوصية")}
                 </Link>
               </span>
             </label>

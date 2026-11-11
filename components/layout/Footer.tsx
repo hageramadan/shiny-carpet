@@ -169,16 +169,7 @@ export default function Footer() {
               href="/terms-and-conditions"
               className="hover:text-white"
             >
-              {t("الشروط والأحكام")}
-            </Link>
-            {t(" ")}
-            {t("·")}
-            {t(" ")}
-            <Link
-              href="/privacy-policy"
-              className="hover:text-white"
-            >
-              {t("سياسة الخصوصية")}
+              {t("الشروط والأحكام")} {t("و")} {t("سياسة الخصوصية")}
             </Link>
           </p>
         </div>
