@@ -20,7 +20,18 @@ const data = {
 const reply = (patch = {}) => ({ success: true, data: { ...data, ...patch } });
 test("checkout validates matching order, amount, currency and the payment widget URL", () => {
   assert.equal(parsePaymentCheckout(reply(), 532).amount, 40.25);
+  const testUrl = data.payment_url.replace("eu-prod", "eu-test");
+  assert.equal(
+    parsePaymentCheckout(reply({ payment_url: testUrl }), 532).paymentUrl,
+    testUrl,
+  );
   for (const patch of [
+    {
+      payment_url: data.payment_url.replace(
+        "eu-prod.oppwa.com",
+        "eu-test.oppwa.com.evil.example",
+      ),
+    },
     { order_id: 533 },
     { amount: "" },
     { amount: -1 },

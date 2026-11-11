@@ -22,7 +22,7 @@ type PaymentMethod = PaymentBrand | "TAMARA";
 const methods: { brand: PaymentMethod; label: string; image?: string }[] = [
   { brand: "MADA", label: "مدى", image: "/images/payment/mada.png" },
   { brand: "TAMARA", label: "تمارا", image: "/images/payment/tamara.png" },
-  // { brand: "APPLEPAY", label: "Apple Pay", image: "/images/payment/ApplePay.png" },
+  { brand: "APPLEPAY", label: "Apple Pay", image: "/images/payment/ApplePay.png" },
   { brand: "VISA", label: "Visa", image: "/images/payment/Visa.png" },
   { brand: "MASTER", label: "Mastercard", image: "/images/payment/Mastercard.png" },
 ];
@@ -298,6 +298,13 @@ export default function OrderPayment({
           ))}
         </div>
       </fieldset>
+      {brand === "APPLEPAY" && (
+        <p className="mt-3 text-sm leading-6 text-muted">
+          {t(
+            "لاستخدام Apple Pay، افتح الموقع عبر HTTPS في Safari على iPhone أو iPad أو Mac، مع إضافة بطاقة إلى Apple Wallet.",
+          )}
+        </p>
+      )}
       {t(
         tamaraReference && (
           <p

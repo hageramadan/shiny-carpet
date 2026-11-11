@@ -780,5 +780,6 @@
   "تم الإرجاع للمغسلة": "Returned to the laundry",
   "حالة الطلب غير متاحة": "Order status unavailable",
   "هل تريد الحذف؟": "Do you want to delete this item?",
-  "يمكن إلغاء الطلب فقط عندما تكون حالته «تم تأكيد الطلب».": "Only confirmed orders can be cancelled."
+  "يمكن إلغاء الطلب فقط عندما تكون حالته «تم تأكيد الطلب».": "Only confirmed orders can be cancelled.",
+  "لاستخدام Apple Pay، افتح الموقع عبر HTTPS في Safari على iPhone أو iPad أو Mac، مع إضافة بطاقة إلى Apple Wallet.": "To use Apple Pay, open the site over HTTPS in Safari on iPhone, iPad or Mac, with a card added to Apple Wallet."
 }

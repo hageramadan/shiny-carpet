@@ -35,7 +35,7 @@ export function parsePaymentCheckout(body: unknown, orderId: number): PaymentChe
     throw new ApiResponseError("Invalid payment widget URL");
   }
   if (
-    url.origin !== "https://eu-prod.oppwa.com" ||
+    !["https://eu-prod.oppwa.com", "https://eu-test.oppwa.com"].includes(url.origin) ||
     url.pathname !== "/v1/paymentWidgets.js" ||
     url.username ||
     url.password ||

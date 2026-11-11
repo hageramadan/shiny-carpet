@@ -63,7 +63,24 @@ export default function PaymentDialog({
   const returnUrl = new URL("/payment-result", window.location.origin);
   returnUrl.searchParams.set("order", String(checkout.orderId));
   returnUrl.searchParams.set("checkout_id", checkout.checkoutId);
-  const html = `<!doctype html><html lang="${t.locale}" dir="${t.dir}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;padding:16px;font-family:Tahoma,Arial,sans-serif;color:#14383B;background:#fff}.wpwl-form{max-width:100%;box-shadow:none}#widget-status{text-align:center;font-size:14px;color:#607779}button{cursor:pointer}</style></head><body><p id="widget-status" role="status">${t("جاري تحميل نموذج الدفع…")}</p><form action="${escapeHtml(returnUrl.href)}" target="_self" class="paymentWidgets" data-brands="${brand}"></form><script>var wpwlOptions={locale:"${t.locale}",style:"card",paymentTarget:"_self"};</script><script src="${escapeHtml(checkout.paymentUrl)}" onload="document.getElementById('widget-status').hidden=true" onerror="document.getElementById('widget-status').textContent='${t("تعذر تحميل نموذج الدفع. أغلق النافذة وحاول مرة أخرى.")}'"></script></body></html>`;
+  // This document runs inside the iframe, so options must precede its widget script.
+  const widgetOptions = {
+    locale: t.locale,
+    style: "card",
+    paymentTarget: "_self",
+    ...(brand === "APPLEPAY"
+      ? {
+          applePay: {
+            displayName: "Shiny Carpet",
+            total: {
+              label: "Shiny Carpet",
+              amount: checkout.amount.toFixed(2),
+            },
+          },
+        }
+      : {}),
+  };
+  const html = `<!doctype html><html lang="${t.locale}" dir="${t.dir}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;padding:16px;font-family:Tahoma,Arial,sans-serif;color:#14383B;background:#fff}.wpwl-form{max-width:100%;box-shadow:none}#widget-status{text-align:center;font-size:14px;color:#607779}button{cursor:pointer}</style></head><body><p id="widget-status" role="status">${t("جاري تحميل نموذج الدفع…")}</p><form action="${escapeHtml(returnUrl.href)}" target="_self" class="paymentWidgets" data-brands="${brand}"></form><script>var wpwlOptions=${JSON.stringify(widgetOptions)};</script><script src="${escapeHtml(checkout.paymentUrl)}" onload="document.getElementById('widget-status').hidden=true" onerror="document.getElementById('widget-status').textContent='${t("تعذر تحميل نموذج الدفع. أغلق النافذة وحاول مرة أخرى.")}'"></script></body></html>`;
   return (
     <dialog
       ref={dialog}

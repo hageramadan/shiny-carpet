@@ -107,8 +107,7 @@ async function main() {
             order_id: 532,
             amount: "40.25",
             currency: "SAR",
-            payment_url:
-              "https://eu-prod.oppwa.com/v1/paymentWidgets.js?checkoutId=fixture.prod01",
+            payment_url: `https://${request.postDataJSON().payment_brand === "APPLEPAY" ? "eu-test" : "eu-prod"}.oppwa.com/v1/paymentWidgets.js?checkoutId=fixture.prod01`,
           },
         });
       }
@@ -129,10 +128,10 @@ async function main() {
       if (path === "/api/categories") return send({ success: true, data: [] });
       return send({ message: path }, 404);
     });
-    await context.route("https://eu-prod.oppwa.com/**", (route) =>
+    await context.route("https://{eu-prod,eu-test}.oppwa.com/**", (route) =>
       route.fulfill({
         contentType: "application/javascript",
-        body: "const form=document.querySelector('.paymentWidgets');form.textContent='نموذج تجريبي للبوابة';const done=document.createElement('a');done.href=form.action;done.textContent='إتمام الاختبار';form.append(done);",
+        body: "window.optionsAtWidgetLoad=window.wpwlOptions;const form=document.querySelector('.paymentWidgets');form.textContent='نموذج تجريبي للبوابة';const done=document.createElement('a');done.href=form.action;done.textContent='إتمام الاختبار';form.append(done);",
       }),
     );
     const page = await context.newPage();
@@ -164,7 +163,7 @@ async function main() {
       .waitFor();
     for (const [label, brand] of [
       ["مدى", "MADA"],
-      // ["Apple Pay", "APPLEPAY"],
+      ["Apple Pay", "APPLEPAY"],
       ["Visa", "VISA"],
       ["Mastercard", "MASTER"],
     ]) {
@@ -201,6 +200,22 @@ async function main() {
         await frame.locator("form").getAttribute("action"),
         base + "/payment-result?order=532&checkout_id=fixture.prod01",
       );
+      const widgetFrame = page.frames().find((frame) => frame.parentFrame());
+      const options = await widgetFrame.evaluate(() => window.optionsAtWidgetLoad);
+      if (brand === "APPLEPAY") {
+        assert.deepEqual(options.applePay, {
+          displayName: "Shiny Carpet",
+          total: { label: "Shiny Carpet", amount: "40.25" },
+        });
+        await payment.getByText("لاستخدام Apple Pay،", { exact: false }).waitFor();
+        assert.ok(
+          (await frame.locator("script[src]").getAttribute("src")).startsWith(
+            "https://eu-test.oppwa.com/",
+          ),
+        );
+      } else {
+        assert.equal(options.applePay, undefined);
+      }
       assert.equal(status, "arrived_to_customer_again");
       if (brand === "MADA") {
         await dialog
@@ -215,13 +230,13 @@ async function main() {
       await dialog.waitFor({ state: "hidden" });
       assert.notEqual(await page.evaluate(() => document.body.style.overflow), "hidden");
     }
-    const visaBox = await payment
-      .getByRole("radio", { name: "Visa", exact: true })
+    const madaBox = await payment
+      .getByRole("radio", { name: "مدى", exact: true })
       .boundingBox();
-    const masterBox = await payment
-      .getByRole("radio", { name: "Mastercard", exact: true })
+    const tamaraBox = await payment
+      .getByRole("radio", { name: "تمارا", exact: true })
       .boundingBox();
-    assert.ok(Math.abs(visaBox.y - masterBox.y) < 2);
+    assert.ok(Math.abs(madaBox.y - tamaraBox.y) < 2);
     assert.equal(
       await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
       false,
