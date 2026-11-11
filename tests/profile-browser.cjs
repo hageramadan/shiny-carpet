@@ -2,7 +2,11 @@ const assert = require("node:assert/strict");
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE_PATH || "playwright");
 const base = process.env.AUTH_TEST_APP_URL || "http://localhost:3107";
 async function main() {
-  const browser = await chromium.launch({ channel: "msedge", headless: true });
+  const browser = await chromium.launch({
+    channel: "msedge",
+    headless: true,
+    args: ["--use-fake-device-for-media-stream", "--use-fake-ui-for-media-stream"],
+  });
   try {
     const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
     let releaseProfile, releaseAddresses;
@@ -176,9 +180,40 @@ async function main() {
     assert.equal(await page.getByRole("dialog").count(), 0);
     await page.getByLabel("رقم الهاتف", { exact: true }).fill("1112345678");
     assert.equal(await page.getByText("الصورة الشخصية", { exact: true }).count(), 0);
-    const chooserPromise = page.waitForEvent("filechooser");
     await page
       .getByRole("button", { name: "تغيير صورة الملف الشخصي", exact: true })
+      .click();
+    const cameraOption = page.getByRole("button", {
+      name: "التقاط صورة بالكاميرا",
+      exact: true,
+    });
+    await cameraOption.waitFor();
+    await cameraOption.click();
+    const cameraDialog = page.getByRole("dialog", { name: "التقاط صورة بالكاميرا" });
+    await cameraDialog.waitFor();
+    await page.waitForFunction(
+      () => document.querySelector("dialog video")?.readyState >= 2,
+    );
+    await page.evaluate(() => {
+      window.cameraStream = document.querySelector("dialog video").srcObject;
+    });
+    await cameraDialog
+      .getByRole("button", { name: "التقاط الصورة", exact: true })
+      .click();
+    await cameraDialog.waitFor({ state: "hidden" });
+    assert.equal(
+      await page.evaluate(() =>
+        window.cameraStream.getTracks().every((track) => track.readyState === "ended"),
+      ),
+      true,
+    );
+    await page.getByRole("status").filter({ hasText: "لحفظ الصورة" }).waitFor();
+    await page
+      .getByRole("button", { name: "تغيير صورة الملف الشخصي", exact: true })
+      .click();
+    const chooserPromise = page.waitForEvent("filechooser");
+    await page
+      .getByRole("button", { name: "اختيار صورة من الجهاز", exact: true })
       .click();
     const chooser = await chooserPromise;
     await chooser.setFiles({

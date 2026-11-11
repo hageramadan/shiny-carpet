@@ -4,13 +4,22 @@ import { useTranslation } from "@/components/i18n/LanguageProvider";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { FiEdit2, FiLogOut, FiMapPin, FiShoppingBag, FiUser } from "react-icons/fi";
+import {
+  FiCamera,
+  FiEdit2,
+  FiImage,
+  FiLogOut,
+  FiMapPin,
+  FiShoppingBag,
+  FiUser,
+} from "react-icons/fi";
 import { useStore } from "@/components/store";
 import { clearAuthDraft } from "@/lib/auth-flow";
 import { useAuthAction } from "@/hooks/useAuthAction";
 import { announceSessionChange, authRequest } from "@/lib/auth/client";
 import ProfileAvatar from "./ProfileAvatar";
 import LogoutDialog from "./LogoutDialog";
+import CameraDialog from "./CameraDialog";
 import toast from "react-hot-toast";
 
 const accountLinks = [
@@ -36,6 +45,8 @@ export default function AccountSidebar({
   const { error, setError, pending, run } = useAuthAction();
   const [confirmLogout, setConfirmLogout] = useState(false);
   const imageInput = useRef<HTMLInputElement>(null);
+  const [showCamera, setShowCamera] = useState(false);
+  const [showImageOptions, setShowImageOptions] = useState(false);
   const [preview, setPreview] = useState<string>();
   const [imageError, setImageError] = useState("");
   useEffect(() => {
@@ -75,7 +86,8 @@ export default function AccountSidebar({
                 type="button"
                 aria-label={t("تغيير صورة الملف الشخصي")}
                 title={t("تغيير الصورة")}
-                onClick={() => imageInput.current?.click()}
+                aria-expanded={showImageOptions}
+                onClick={() => setShowImageOptions((visible) => !visible)}
                 disabled={pending || imageDisabled}
                 className="absolute -bottom-1 -right-1 flex size-8 items-center justify-center rounded-full border-2 border-white bg-primary text-white shadow-sm transition-colors hover:bg-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50"
               >
@@ -84,6 +96,34 @@ export default function AccountSidebar({
                   className="size-4"
                 />
               </button>
+              {showImageOptions && (
+                <div className="absolute start-1/2 top-full z-20 mt-3 w-56 -translate-x-1/2 rounded-xl border border-gray-200 bg-white p-2 text-ink shadow-lg rtl:translate-x-1/2">
+                  <button
+                    type="button"
+                    disabled={pending || imageDisabled}
+                    className="flex min-h-11 w-full items-center gap-2 rounded-lg px-3 text-start text-sm hover:bg-gray-50 disabled:opacity-50"
+                    onClick={() => {
+                      setShowImageOptions(false);
+                      imageInput.current?.click();
+                    }}
+                  >
+                    <FiImage aria-hidden="true" />
+                    {t("اختيار صورة من الجهاز")}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={pending || imageDisabled}
+                    className="flex min-h-11 w-full items-center gap-2 rounded-lg px-3 text-start text-sm hover:bg-gray-50 disabled:opacity-50"
+                    onClick={() => {
+                      setShowImageOptions(false);
+                      setShowCamera(true);
+                    }}
+                  >
+                    <FiCamera aria-hidden="true" />
+                    {t("التقاط صورة بالكاميرا")}
+                  </button>
+                </div>
+              )}
               <input
                 ref={imageInput}
                 type="file"
@@ -172,6 +212,15 @@ export default function AccountSidebar({
           </li>
         </ul>
       </nav>
+      {showCamera && onImageChange && (
+        <CameraDialog
+          onCapture={(file) => {
+            setImageError("");
+            onImageChange(file);
+          }}
+          onClose={() => setShowCamera(false)}
+        />
+      )}
       {confirmLogout && (
         <LogoutDialog
           pending={pending}

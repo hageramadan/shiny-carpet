@@ -50,7 +50,7 @@ export default function OrdersSupport() {
       )}
       {email || phone ? (
         <a
-          href={email ? `mailto:${email}` : `tel:${phone}`}
+          href={phone ? `tel:${phone}` : `mailto:${email}`}
           className="mt-3 inline-flex min-h-11 items-center justify-center rounded-lg border border-primary bg-white px-5 py-2 text-sm font-bold text-primary transition-colors hover:bg-primary/5"
         >
           {t("تواصل مع الدعم")}
