@@ -16,6 +16,7 @@ export type SiteSettings = {
   noDataIcon?: string;
   defaultUser?: string;
   loginBackground?: string;
+  privacyPolicyAndTermsCondition?: string;
   privacyPolicy?: string;
   termsAndConditions?: string;
 };
@@ -100,6 +101,11 @@ export function parseSettings(body: unknown): SiteSettings {
     noDataIcon: image(data.no_data_icon),
     defaultUser: image(data.default_user),
     loginBackground: image(data.login_background),
+    privacyPolicyAndTermsCondition:
+      typeof data.privacy_policy_and_terms_condition === "string" &&
+      data.privacy_policy_and_terms_condition.trim()
+        ? data.privacy_policy_and_terms_condition
+        : undefined,
     privacyPolicy: text(data.privacy_policy) ?? policies.privacyPolicy,
     termsAndConditions: text(data.terms_and_conditions) ?? policies.termsAndConditions,
   };

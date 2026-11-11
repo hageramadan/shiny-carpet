@@ -98,3 +98,22 @@ test("combined policies support Arabic headings and preserve unrecognized conten
   assert.equal(separate.privacyPolicy, "Separate privacy");
   assert.equal(separate.termsAndConditions, "Separate terms");
 });
+
+test("combined policy preserves API order, whitespace and line endings verbatim", () => {
+  const content =
+    "  أولاً: سياسة الخصوصية\r\nنحترم خصوصيتك.\r\n\r\nثانياً: الشروط والأحكام\r\nنطاق الخدمة.  ";
+  const settings = parseSettings({
+    result: true,
+    data: {
+      privacy_policy_and_terms_condition: content,
+      privacy_policy: "Separate privacy",
+      terms_and_conditions: "Separate terms",
+    },
+  });
+  assert.equal(settings.privacyPolicyAndTermsCondition, content);
+  assert.equal(
+    parseSettings({ result: true, data: { privacy_policy_and_terms_condition: "  " } })
+      .privacyPolicyAndTermsCondition,
+    undefined,
+  );
+});

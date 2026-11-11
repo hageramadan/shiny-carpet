@@ -19,7 +19,9 @@ const quickLinks = [
   { href: "/", label: "الرئيسية" },
   { href: "/#services", label: "خدماتنا" },
   { href: "/orders", label: "طلباتي" },
-  { href: "/tracking", label: "تتبع الطلب" },
+   { href: "/tracking", label: "تتبع الطلب" },
+  { href: "/terms-and-conditions", label: "سياسة الخصوصية والشروط والأحكام" },
+ 
 ];
 export default function Footer() {
   const t = useTranslation();
@@ -163,14 +165,14 @@ export default function Footer() {
         <div className="border-t border-gray-200 pt-6 text-center text-sm leading-7 text-slate-300">
           <p>
             {t("© ")}
-            {new Date().getFullYear()} {settings?.name || "Shiny Carpet"} {t(" ·")}
+            {new Date().getFullYear()} {settings?.name || "Shiny Carpet"}
             {t(" ")}
-            <Link
+            {/* <Link
               href="/terms-and-conditions"
               className="hover:text-white"
             >
               {t("الشروط والأحكام")} {t("و")} {t("سياسة الخصوصية")}
-            </Link>
+            </Link> */}
           </p>
         </div>
       </div>
