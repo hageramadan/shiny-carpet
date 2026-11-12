@@ -2,7 +2,7 @@
 import { useTranslation } from "@/components/i18n/LanguageProvider";
 
 import Link from "next/link";
-import { FiShoppingBag } from "react-icons/fi";
+import { FiShoppingBag, FiTruck } from "react-icons/fi";
 import { ProductCard } from "@/components/products";
 import { useCategories, useCategoryProducts } from "@/hooks/useCatalogApi";
 import CatalogFeedback from "./CatalogFeedback";
@@ -46,8 +46,14 @@ export default function Catalog({ categoryId }: { categoryId?: number }) {
         <h1 className="text-2xl font-extrabold leading-snug text-[#17202A] sm:text-3xl lg:text-4xl">
           {t("المنتجات")}
         </h1>
-        <p className="mt-2 text-sm leading-7 sm:mt-4 text-[#6B7280] md:text-base">
-          {t("حدد القطع التي تريد إضافتها إلى طلبك.")}
+        <p className="mt-3 inline-flex max-w-full items-center gap-3 rounded-xl border border-primary/20 bg-primary/10 px-4 py-3 text-lg font-bold leading-8 text-ink sm:mt-4 sm:text-xl">
+          <FiTruck
+            aria-hidden="true"
+            className="size-6 shrink-0 text-primary"
+          />
+          <span className="text-balance">
+            {t("التوصيل مجاني للطلبات أكثر من 150 ريال")}
+          </span>
         </p>
         {categories.length > 0 && (
           <nav
