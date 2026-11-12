@@ -32,6 +32,10 @@ export default function PaymentDialog({
   const dialog = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const frame = useRef<HTMLIFrameElement>(null);
+  const baseFrameName = "shiny-payment-" + titleId.replace(/[^a-zA-Z0-9_-]/g, "");
+  // Keep the payment target distinct from the containing page's browsing context.
+  const frameName =
+    baseFrameName === window.name ? baseFrameName + "-widget" : baseFrameName;
   useEffect(() => {
     function returned(event: MessageEvent) {
       if (
@@ -67,7 +71,8 @@ export default function PaymentDialog({
   const widgetOptions = {
     locale: t.locale,
     style: "card",
-    paymentTarget: "_self",
+    paymentTarget: frameName,
+    shopperResultTarget: frameName,
     ...(brand === "APPLEPAY"
       ? {
           applePay: {
@@ -80,7 +85,7 @@ export default function PaymentDialog({
         }
       : {}),
   };
-  const html = `<!doctype html><html lang="${t.locale}" dir="${t.dir}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;padding:16px;font-family:Tahoma,Arial,sans-serif;color:#14383B;background:#fff}.wpwl-form{max-width:100%;box-shadow:none}#widget-status{text-align:center;font-size:14px;color:#607779}button{cursor:pointer}</style></head><body><p id="widget-status" role="status">${t("جاري تحميل نموذج الدفع…")}</p><form action="${escapeHtml(returnUrl.href)}" target="_self" class="paymentWidgets" data-brands="${brand}"></form><script>var wpwlOptions=${JSON.stringify(widgetOptions)};</script><script src="${escapeHtml(checkout.paymentUrl)}" onload="document.getElementById('widget-status').hidden=true" onerror="document.getElementById('widget-status').textContent='${t("تعذر تحميل نموذج الدفع. أغلق النافذة وحاول مرة أخرى.")}'"></script></body></html>`;
+  const html = `<!doctype html><html lang="${t.locale}" dir="${t.dir}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;padding:16px;font-family:Tahoma,Arial,sans-serif;color:#14383B;background:#fff}.wpwl-form{max-width:100%;box-shadow:none}#widget-status{text-align:center;font-size:14px;color:#607779}button{cursor:pointer}</style></head><body><p id="widget-status" role="status">${t("جاري تحميل نموذج الدفع…")}</p><form action="${escapeHtml(returnUrl.href)}" target="${escapeHtml(frameName)}" class="paymentWidgets" data-brands="${brand}"></form><script>var wpwlOptions=${JSON.stringify(widgetOptions)};</script><script src="${escapeHtml(checkout.paymentUrl)}" onload="document.getElementById('widget-status').hidden=true" onerror="document.getElementById('widget-status').textContent='${t("تعذر تحميل نموذج الدفع. أغلق النافذة وحاول مرة أخرى.")}'"></script></body></html>`;
   return (
     <dialog
       ref={dialog}
@@ -132,6 +137,7 @@ export default function PaymentDialog({
       </div>
       <iframe
         ref={frame}
+        name={frameName}
         title={t("نموذج بوابة الدفع")}
         srcDoc={html}
         allow="payment *"

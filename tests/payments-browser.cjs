@@ -131,7 +131,7 @@ async function main() {
     await context.route("https://{eu-prod,eu-test}.oppwa.com/**", (route) =>
       route.fulfill({
         contentType: "application/javascript",
-        body: "window.optionsAtWidgetLoad=window.wpwlOptions;const form=document.querySelector('.paymentWidgets');form.textContent='نموذج تجريبي للبوابة';const done=document.createElement('a');done.href=form.action;done.textContent='إتمام الاختبار';form.append(done);",
+        body: "window.optionsAtWidgetLoad=window.wpwlOptions;const form=document.querySelector('.paymentWidgets');form.textContent='نموذج تجريبي للبوابة';const done=document.createElement('a');done.href=form.action;done.target=window.wpwlOptions.shopperResultTarget;done.textContent='إتمام الاختبار';form.append(done);",
       }),
     );
     const page = await context.newPage();
@@ -202,6 +202,14 @@ async function main() {
       );
       const widgetFrame = page.frames().find((frame) => frame.parentFrame());
       const options = await widgetFrame.evaluate(() => window.optionsAtWidgetLoad);
+      const frameName = await page
+        .locator('iframe[title="نموذج بوابة الدفع"]')
+        .getAttribute("name");
+      assert.ok(frameName);
+      assert.notEqual(frameName, await page.evaluate(() => window.name));
+      assert.equal(options.paymentTarget, frameName);
+      assert.equal(options.shopperResultTarget, frameName);
+      assert.equal(await frame.locator("form").getAttribute("target"), frameName);
       if (brand === "APPLEPAY") {
         assert.deepEqual(options.applePay, {
           displayName: "Shiny Carpet",
